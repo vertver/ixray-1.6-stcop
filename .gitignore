@@ -59,4 +59,5 @@ _appdata_/
 temp/
 gamedata_origin/
 patch/
+logs/
 *.log
