@@ -60,4 +60,5 @@ temp/
 gamedata_origin/
 patch/
 logs/
+temp/
 *.log
