@@ -102,6 +102,7 @@
     <ClCompile Include="Export\ExportKeys.cpp">
       <Filter>Export Skin Keys</Filter>
     </ClCompile>
+    <ClCompile Include="..\Shared\MaxStringAdapter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Export\MeshExpUtility.h">
@@ -163,6 +164,9 @@
     </ClInclude>
     <ClInclude Include="..\Shared\Vert.h">
       <Filter>Export Skin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Shared\MaxStringAdapter.h">
+      <Filter>Shared Files\Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

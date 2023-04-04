@@ -67,6 +67,9 @@
     <ClInclude Include="..\Shared\ELog.h">
       <Filter>Shared Files\Editor</Filter>
     </ClInclude>
+    <ClInclude Include="..\Shared\MaxStringAdapter.h">
+      <Filter>Shared Files\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Material\GameMaterial.rc">
