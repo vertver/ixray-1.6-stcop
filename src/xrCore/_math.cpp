@@ -243,6 +243,7 @@ void _initialize_cpu	(void)
     if (CPU::ID.feature&_CPU_FEATURE_SSE)	xr_strcat(features,", SSE");
     if (CPU::ID.feature&_CPU_FEATURE_SSE2)	xr_strcat(features,", SSE2");
     if (CPU::ID.feature&_CPU_FEATURE_SSE3)	xr_strcat(features,", SSE3");
+    if (CPU::ID.feature&_CPU_FEATURE_MWAIT)	xr_strcat(features,", MWAIT");
     if (CPU::ID.feature&_CPU_FEATURE_SSSE3)	xr_strcat(features,", SSSE3");
     if (CPU::ID.feature&_CPU_FEATURE_SSE4_1)xr_strcat(features,", SSE4.1");
     if (CPU::ID.feature&_CPU_FEATURE_SSE4_2)xr_strcat(features,", SSE4.2");
@@ -314,7 +315,7 @@ void	thread_name	(const char* name)
 	tn.dwFlags		= 0;
 	__try
 	{
-		RaiseException(0x406D1388,0,sizeof(tn)/sizeof(DWORD),(DWORD*)&tn);
+		RaiseException(0x406D1388,0,sizeof(tn)/sizeof(DWORD),(PDWORD_PTR) &tn);
 	}
 	__except(EXCEPTION_CONTINUE_EXECUTION)
 	{
