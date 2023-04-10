@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "MaxStringAdapter.h"
 
 #ifdef MCHAR_IS_WCHAR

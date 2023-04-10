@@ -36,6 +36,9 @@
     <ClCompile Include="..\Shared\ELog.cpp">
       <Filter>Shared Files\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="..\Shared\MaxStringAdapter.cpp">
+      <Filter>Shared Files\Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Shared\GameMaterial.def">
