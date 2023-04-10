@@ -22,27 +22,21 @@ u16			getFPUsw()		{ return 0;	}
 namespace	FPU 
 {
 	XRCORE_API void 	m24		(void)	{
-		_control87	( _PC_24,   MCW_PC );
 		_control87	( _RC_CHOP, MCW_RC );
 	}
 	XRCORE_API void 	m24r	(void)	{
-		_control87	( _PC_24,   MCW_PC );
 		_control87	( _RC_NEAR, MCW_RC );
 	}
 	XRCORE_API void 	m53		(void)	{
-		_control87	( _PC_53,   MCW_PC );
 		_control87	( _RC_CHOP, MCW_RC );
 	}
 	XRCORE_API void 	m53r	(void)	{
-		_control87	( _PC_53,   MCW_PC );
 		_control87	( _RC_NEAR, MCW_RC );
 	}
 	XRCORE_API void 	m64		(void)	{
-		_control87	( _PC_64,   MCW_PC );
 		_control87	( _RC_CHOP, MCW_RC );
 	}
 	XRCORE_API void 	m64r	(void)	{
-		_control87	( _PC_64,   MCW_PC );
 		_control87	( _RC_NEAR, MCW_RC );
 	}
 
@@ -162,6 +156,11 @@ namespace CPU
 			abort				();
 		}
 
+		// Number of processors
+		SYSTEM_INFO siSysInfo;
+		GetSystemInfo(&siSysInfo); 
+		ID.n_threads = siSysInfo.dwNumberOfProcessors;
+
 		// Timers & frequency
 		u64			start,end;
 		u32			dwStart,dwTest;
@@ -200,7 +199,9 @@ namespace CPU
 		clk_per_milisec	=	clk_per_second/1000;
 		clk_per_microsec	=	clk_per_milisec/1000;
 
+#ifndef _WIN64
 		_control87	( _PC_64,   MCW_PC );
+#endif
 //		_control87	( _RC_CHOP, MCW_RC );
 		double a,b;
 		a = 1;		b = double(clk_per_second);
@@ -250,7 +251,7 @@ void _initialize_cpu	(void)
     if (CPU::ID.feature&_CPU_FEATURE_HTT)	xr_strcat(features,", HTT");
 
 	Msg("* CPU features: %s" , features );
-	Msg("* CPU cores/threads: %d/%d\n" , CPU::ID.n_cores , CPU::ID.n_threads );
+	Msg("* CPU threads: %d\n" , CPU::ID.n_threads );
 
 	Fidentity.identity		();	// Identity matrix
 	Didentity.identity		();	// Identity matrix

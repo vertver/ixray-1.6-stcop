@@ -229,14 +229,14 @@ public:
 	IC void		getANY_P	(xr_vector<TNode*,typename allocator::template helper<TNode*>::result>&	D)
 	{
 		D.resize			(size());
-		TNode** _it			= &*D.begin();
+		auto _it			= D.begin();
 		TNode*	_end		= end();
 		for (TNode* cur = begin(); cur!=_end; cur++,_it++) *_it = cur;
 	}
 	IC void		getANY_P	(xr_vector<void*,typename allocator::template helper<void*>::result>&	D)
 	{
 		D.resize			(size());
-		void** _it			= &*D.begin();
+		auto _it			= D.begin();
 		TNode*	_end		= end();
 		for (TNode* cur = begin(); cur!=_end; cur++,_it++) *_it = cur;
 	}

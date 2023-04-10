@@ -3,7 +3,7 @@
 
 XRCORE_API void vminfo (size_t *_free, size_t *reserved, size_t *committed) {
 	MEMORY_BASIC_INFORMATION memory_info;
-	memory_info.BaseAddress = nullptr;
+	memory_info.BaseAddress = 0;
 	*_free = *reserved = *committed = 0;
 	while (VirtualQuery (memory_info.BaseAddress, &memory_info, sizeof (memory_info))) {
 		switch (memory_info.State) {

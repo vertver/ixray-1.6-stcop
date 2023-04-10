@@ -10,7 +10,7 @@ int g_stackTraceCount = 0;
 void BuildStackTrace	(struct _EXCEPTION_POINTERS *g_BlackBoxUIExPtrs)
 {
 	for (int i = 0; i != MAX_STACK_TRACE; ++i) {
-		FillMemory(g_stackTrace[0], 4096, 0);
+		FillMemory(g_stackTrace[i], 4096, 0);
 	}
 
 	const TCHAR* traceDump = 

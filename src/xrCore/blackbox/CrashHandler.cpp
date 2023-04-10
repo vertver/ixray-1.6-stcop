@@ -805,7 +805,7 @@ LPCTSTR __stdcall
                     if ( dwDisp64 > 0 )
                     {
                         iCurr += wsprintf ( g_szBuff + iCurr         ,
-                                            _T( "%s()") ,
+                                            _T("%s + %d byte(s)"),
                                             pSym->Name               ,
                                             dwDisp64                   );
                     }
@@ -862,7 +862,7 @@ LPCTSTR __stdcall
                     if ( dwDisp > 0 )
                     {
                         iCurr += wsprintf(g_szBuff + iCurr             ,
-                                       _T("%s, %d"),
+                                          _T("%s, %d + %d byte(s)")    ,
                                           g_stLine.FileName            ,
                                           g_stLine.LineNumber          ,
                                           dwDisp                     );
