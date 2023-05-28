@@ -43,7 +43,7 @@
 */
 
 // *** try to minimize code bloat of STLport
-#ifdef __BORLANDC__
+#if defined (_EDITOR) && defined (_XRCOREB)
 #else
 	#ifdef XRCORE_EXPORTS				// no exceptions, export allocator and common stuff
 	#define _STLP_DESIGNATED_DLL	1
@@ -108,34 +108,12 @@
 
 #include <time.h>
 // work-around dumb borland compiler
-#ifdef __BORLANDC__
+#if defined (_EDITOR) && defined (_XRCOREB)
 	#define ALIGN(a)
 
 	#include <assert.h>
-	#include <utime.h>
-	#define _utimbuf utimbuf
-	#define MODULE_NAME 		"xrCoreB.dll"
 
-	// function redefinition
-    #define fabsf(a) fabs(a)
-    #define sinf(a) sin(a)
-    #define asinf(a) asin(a)
-    #define cosf(a) cos(a)
-    #define acosf(a) acos(a)
-    #define tanf(a) tan(a)
-    #define atanf(a) atan(a)
-    #define sqrtf(a) sqrt(a)
-    #define expf(a) ::exp(a)
-    #define floorf floor
-    #define atan2f atan2
-    #define logf log
-	// float redefine
-	#define _PC_24 PC_24
-	#define _PC_53 PC_53
-	#define _PC_64 PC_64
-	#define _RC_CHOP RC_CHOP
-	#define _RC_NEAR RC_NEAR
-    #define _MCW_EM MCW_EM
+	#define MODULE_NAME 		"xrCoreB.dll"
 #else
 	#define ALIGN(a)		__declspec(align(a))
 	#include <sys\utime.h>

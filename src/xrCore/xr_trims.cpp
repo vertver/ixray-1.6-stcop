@@ -1,6 +1,10 @@
 #include "stdafx.h"
 #pragma hdrstop
 
+#include <memory>
+#include <string>
+#include <stdexcept>
+
 LPSTR _TrimLeft( LPSTR str )
 {
 	LPSTR p 	= str;
@@ -45,7 +49,7 @@ LPCSTR _CopyVal ( LPCSTR src, LPSTR dst, char separator )
 	LPCSTR	p;
 	size_t	n;
 	p			= strchr	( src, separator );
-	n			= (p>0) ? (p-src) : xr_strlen(src);
+	n			= (p != NULL) ? (p-src) : xr_strlen(src);
 	strncpy		( dst, src, n );
 	dst[n]		= 0;
 	return		dst;
@@ -206,9 +210,33 @@ AnsiString& _ReplaceItems ( LPCSTR src, int idx_start, int idx_end, LPCSTR new_i
 	return dst;
 }
 
+static inline void ltrim(std::string& s) {
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+		return !std::isspace(ch);
+		}));
+}
+
+static inline void rtrim(std::string& s) {
+	s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+		return !std::isspace(ch);
+		}).base(), s.end());
+}
+
+template<typename ... Args>
+std::string string_format(const std::string& format, Args ... args) {
+	int size_s = std::snprintf(nullptr, 0, format.c_str(), args ...) + 1; // Extra space for '\0'
+	if (size_s <= 0) { throw std::runtime_error("Error during formatting."); }
+	auto size = static_cast<size_t>(size_s);
+	std::unique_ptr<char[]> buf(new char[size]);
+	std::snprintf(buf.get(), size, format.c_str(), args ...);
+	return std::string(buf.get(), buf.get() + size - 1); // Without '\0' inside
+}
+
 AnsiString& _Trim( AnsiString& str )
 {
-	return str=str.Trim();
+	rtrim(str);
+	ltrim(str);
+	return str;
 }
 
 LPCSTR _CopyVal ( LPCSTR src, AnsiString& dst, char separator )
@@ -216,9 +244,9 @@ LPCSTR _CopyVal ( LPCSTR src, AnsiString& dst, char separator )
 	LPCSTR	p;
 	u32		n;
 	p			= strchr	( src, separator );
-	n			= (p>0) ? (p-src) : xr_strlen(src);
+	n			= (p != NULL) ? (p-src) : xr_strlen(src);
 	dst			= src;
-	dst			= dst.Delete(n+1,dst.Length());
+	dst			= dst.erase(n+1,dst.length());
 	return		dst.c_str();
 }
 
@@ -240,7 +268,10 @@ LPCSTR _GetItem ( LPCSTR src, int index, AnsiString& dst, char separator, LPCSTR
 	ptr			= _SetPos	( src, index, separator );
 	if( ptr )	_CopyVal	( ptr, dst, separator );
 	else	dst = def;
-	if (trim)	dst			= dst.Trim();
+	if (trim) {
+		rtrim(dst);
+		ltrim(dst);
+	}
 	return		dst.c_str();
 }
 
@@ -277,7 +308,7 @@ void _SequenceToList(AStringVec& lst, LPCSTR in, char separator)
 	for (int i=0; i<t_cnt; i++){
 		_GetItem(in,i,T,separator,0);
         _Trim(T);
-        if (!T.IsEmpty()) lst.push_back(T);
+        if (!T.empty()) lst.push_back(T);
 	}
 }
 
@@ -286,10 +317,10 @@ AnsiString FloatTimeToStrTime(float v, bool _h, bool _m, bool _s, bool _ms)
 	AnsiString buf="";
     int h=0,m=0,s=0,ms;
     AnsiString t;
-    if (_h){ h=iFloor(v/3600); 					t.sprintf("%02d",h); buf += t;}
-    if (_m){ m=iFloor((v-h*3600)/60);			t.sprintf("%02d",m); buf += buf.IsEmpty()?t:":"+t;}
-    if (_s){ s=iFloor(v-h*3600-m*60);			t.sprintf("%02d",s); buf += buf.IsEmpty()?t:":"+t;}
-    if (_ms){ms=iFloor((v-h*3600-m*60-s)*1000.f);t.sprintf("%03d",ms);buf += buf.IsEmpty()?t:"."+t;}
+    if (_h){ h=iFloor(v/3600); 					t = string_format("%02d", h); buf += t;}
+    if (_m){ m=iFloor((v-h*3600)/60);			t = string_format("%02d", m); buf += buf.empty()?t:":"+t;}
+    if (_s){ s=iFloor(v-h*3600-m*60);			t = string_format("%02d", s); buf += buf.empty()?t:":"+t;}
+    if (_ms){ms=iFloor((v-h*3600-m*60-s)*1000.f); t = string_format("%03d", ms);buf += buf.empty()?t:"."+t;}
     return buf;
 }
 
@@ -393,7 +424,7 @@ LPCSTR _CopyVal ( LPCSTR src, xr_string& dst, char separator )
 	LPCSTR		p;
 	ptrdiff_t	n;
 	p			= strchr	( src, separator );
-	n			= (p>0) ? (p-src) : xr_strlen(src);
+	n			= (p != NULL) ? (p-src) : xr_strlen(src);
 	dst			= src;
 	dst			= dst.erase	(n,dst.length());
 	return		dst.c_str();

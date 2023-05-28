@@ -148,8 +148,7 @@ namespace CPU
 #ifdef M_BORLAND
 	u64	__fastcall GetCLK		(void)
 	{
-		_asm    db 0x0F;
-		_asm    db 0x31;
+		return __rdtsc();
 	}
 #endif
 

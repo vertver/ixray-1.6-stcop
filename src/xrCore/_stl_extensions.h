@@ -1,6 +1,8 @@
 #ifndef _STL_EXT_internal
 #define _STL_EXT_internal
 
+#include <unordered_map>
+
 using std::swap;
 
 #ifdef	__BORLANDC__
@@ -194,7 +196,9 @@ using LPFloatIt = LPFloatVec::iterator;
 using LPIntVec = xr_vector<int*>;
 using LPIntIt = LPIntVec::iterator;
 
-#ifdef __BORLANDC__
+#if defined (_EDITOR) && defined (_XRCOREB)
+using AnsiString = std::string;
+
 using boolVec = xr_vector<bool>;
 using boolIt = boolVec::iterator;
 

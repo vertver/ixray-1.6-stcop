@@ -2,6 +2,10 @@
 #define stdafxH
 #pragma once
 
+#ifdef _EDITOR
+#define XRCORE_API __declspec(dllimport)
+#endif
+
 #include "../xrCore/xrCore.h"
 
 // mmsystem.h

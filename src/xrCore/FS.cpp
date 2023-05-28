@@ -13,10 +13,6 @@
 //typedef void DUMMY_STUFF (const void*,const u32&,void*);
 //XRCORE_API DUMMY_STUFF	*g_dummy_stuff = 0;
 
-#ifdef M_BORLAND
-#	define O_SEQUENTIAL 0
-#endif // M_BORLAND
-
 #ifdef DEBUG
 	XRCORE_API	u32					g_file_mapped_memory = 0;
 	u32								g_file_mapped_count	= 0;
@@ -100,7 +96,7 @@ bool file_handle_internal	(LPCSTR file_name, u32 &size, int &hFile)
 			return		(false);
 	}
 	
-	size				= filelength(hFile);
+	size				= _filelength(hFile);
 	return				(true);
 }
 #else // EDITOR

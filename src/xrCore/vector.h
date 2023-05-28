@@ -16,10 +16,10 @@
 #endif
 
 // Select platform
-#ifdef	_MSC_VER
+#if !defined (_EDITOR)
 #define	M_VISUAL
 #endif
-#ifdef	__BORLANDC__
+#if defined (_EDITOR)
 #define M_BORLAND
 #endif
 

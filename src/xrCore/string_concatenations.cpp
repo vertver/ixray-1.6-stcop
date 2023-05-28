@@ -118,7 +118,7 @@ void	string_tupples::error_process () const
 using namespace xray::core::detail;
 
 // dest = S1+S2
-LPSTR						strconcat				( int dest_sz, char* dest, const char* S1, const char* S2)
+inline LPSTR						strconcat				( int dest_sz, char* dest, const char* S1, const char* S2)
 {
 	VERIFY			(dest);
 	VERIFY			(S1);
@@ -145,7 +145,7 @@ LPSTR						strconcat				( int dest_sz, char* dest, const char* S1, const char* S
 }
 
 // dest = S1+S2+S3
-LPSTR						strconcat				( int dest_sz, char* dest, const char* S1, const char* S2, const char* S3)
+inline LPSTR						strconcat				( int dest_sz, char* dest, const char* S1, const char* S2, const char* S3)
 {
 	VERIFY			(dest);
 	VERIFY			(S1);
@@ -178,7 +178,7 @@ LPSTR						strconcat				( int dest_sz, char* dest, const char* S1, const char* S
 }
 
 // dest = S1+S2+S3+S4
-LPSTR						strconcat				( int dest_sz, char* dest, const char* S1, const char* S2, const char* S3, const char* S4)
+inline LPSTR						strconcat				( int dest_sz, char* dest, const char* S1, const char* S2, const char* S3, const char* S4)
 {
 	VERIFY			(dest);
 	VERIFY			(S1);
@@ -217,7 +217,7 @@ LPSTR						strconcat				( int dest_sz, char* dest, const char* S1, const char* S
 }
 
 // dest = S1+S2+S3+S4+S5
-LPSTR						strconcat				( int dest_sz, char* dest, const char* S1, const char* S2, const char* S3, const char* S4, const char* S5)
+inline LPSTR						strconcat				( int dest_sz, char* dest, const char* S1, const char* S2, const char* S3, const char* S4, const char* S5)
 {
 	VERIFY			(dest);
 	VERIFY			(S1);
@@ -262,7 +262,7 @@ LPSTR						strconcat				( int dest_sz, char* dest, const char* S1, const char* S
 }
 
 // dest = S1+S2+S3+S4+S5+S6
-LPSTR						strconcat				( int dest_sz, char* dest, const char* S1, const char* S2, const char* S3, const char* S4, const char* S5, const char* S6)
+inline LPSTR						strconcat				( int dest_sz, char* dest, const char* S1, const char* S2, const char* S3, const char* S4, const char* S5, const char* S6)
 {
 	VERIFY			(dest);
 	VERIFY			(S1);

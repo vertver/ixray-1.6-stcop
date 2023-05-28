@@ -30,11 +30,6 @@
 #endif
 
 #ifdef  _EDITOR
-IC char* strncpy_s(char* strDestination, size_t sizeInBytes, const char *strSource, size_t count)
-{
-    return strncpy(strDestination, strSource, count);
-}
-
 IC char* xr_strcpy(char* strDestination,   size_t sizeInBytes,   const char *strSource)
 {
 	return strcpy(strDestination, strSource);
@@ -43,11 +38,6 @@ IC char* xr_strcpy(char* strDestination,   size_t sizeInBytes,   const char *str
 IC char* xr_strcpy(char* strDestination,   const char *strSource)
 {
 	return strcpy(strDestination, strSource);
-}
-
-IC char* _strlwr_s(char* strDestination, size_t sizeInBytes)
-{
-    return strlwr(strDestination);
 }
 
 IC char* xr_strcat(char* strDestination,   size_t sizeInBytes,   const char *strSource)

@@ -13,8 +13,8 @@
 
 #include "psystem.h"
 
-#ifdef __BORLANDC__
-#pragma comment( lib, "x:\\xrCoreB.lib"	)
+#ifdef _EDITOR
+#pragma comment(lib, "xrCoreB.lib")
 #endif
 
 #endif //stdafxH

@@ -4,7 +4,7 @@
 // refs
 struct xr_token;
 
-#ifdef __BORLANDC__
+#if defined (_EDITOR) && defined (_XRCOREB)
 	XRCORE_API 	AnsiString&	_Trim					( AnsiString& str );
 	XRCORE_API 	LPCSTR		_GetItem				( LPCSTR src, int, AnsiString& p, char separator=',', LPCSTR ="", bool trim=true);
 	XRCORE_API 	LPCSTR		_GetItems 				( LPCSTR src, int idx_start, int idx_end, AnsiString& dst, char separator );
