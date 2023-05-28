@@ -57,9 +57,9 @@ bool CtaGameArtefact::Action(s32 cmd, u32 flags)
 	return inherited::Action((u16)cmd, flags);
 }
 
-void CtaGameArtefact::OnStateSwitch(u32 S)
+void CtaGameArtefact::OnStateSwitch(u32 S, u32 OldState)
 {
-	inherited::OnStateSwitch(S);
+	inherited::OnStateSwitch(S, OldState);
 	/*// just temporary (before we get huds for artefact activation)
 	if (S == eActivating)
 	{

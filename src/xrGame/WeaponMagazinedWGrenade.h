@@ -39,7 +39,7 @@ public:
 			void	LaunchGrenade			();
 			void	LaunchGrenade_Correct	(Fvector3* v);
 	
-	virtual void	OnStateSwitch	(u32 S);
+	virtual void	OnStateSwitch	(u32 S, u32 OldState);
 	
 	virtual void	switch2_Reload	();
 	virtual void	switch2_SwitchMode();

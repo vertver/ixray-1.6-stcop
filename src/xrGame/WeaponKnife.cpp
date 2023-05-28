@@ -72,9 +72,9 @@ void CWeaponKnife::Load	(LPCSTR section)
 	m_bShowKnifeStats = READ_IF_EXISTS(pSettings, r_bool, section, "show_knife_stats", true);
 }
 
-void CWeaponKnife::OnStateSwitch	(u32 S)
+void CWeaponKnife::OnStateSwitch	(u32 S, u32 OldState)
 {
-	inherited::OnStateSwitch(S);
+	inherited::OnStateSwitch(S, OldState);
 	switch (S)
 	{
 	case eIdle:
@@ -84,7 +84,8 @@ void CWeaponKnife::OnStateSwitch	(u32 S)
 		switch2_Showing	();
 		break;
 	case eHiding:
-		switch2_Hiding	();
+		if (OldState != eHiding)
+			switch2_Hiding	();
 		break;
 	case eHidden:
 		switch2_Hidden	();

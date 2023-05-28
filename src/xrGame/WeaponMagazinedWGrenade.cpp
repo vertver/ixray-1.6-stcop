@@ -421,7 +421,7 @@ void CWeaponMagazinedWGrenade::ReloadMagazine()
 	}
 }
 
-void CWeaponMagazinedWGrenade::OnStateSwitch(u32 S) 
+void CWeaponMagazinedWGrenade::OnStateSwitch(u32 S, u32 OldState) 
 {
 	switch (S)
 	{
@@ -430,7 +430,7 @@ void CWeaponMagazinedWGrenade::OnStateSwitch(u32 S)
 		break;
 	}
 	
-	inherited::OnStateSwitch(S);
+	inherited::OnStateSwitch(S, OldState);
 	UpdateGrenadeVisibility(!!iAmmoElapsed || S == eReload);
 }
 

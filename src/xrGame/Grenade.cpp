@@ -94,7 +94,7 @@ void CGrenade::OnH_A_Chield()
 	inherited::OnH_A_Chield				();
 }
 
-void CGrenade::State(u32 state) 
+void CGrenade::State(u32 state, u32 OldState) 
 {
 	switch (state)
 	{
@@ -124,7 +124,7 @@ void CGrenade::State(u32 state)
 			};
 		}break;
 	};
-	inherited::State( state );
+	inherited::State(state, OldState);
 }
 
 bool CGrenade::DropGrenade()
@@ -144,8 +144,12 @@ bool CGrenade::DropGrenade()
 
 void CGrenade::DiscardState()
 {
-	if(IsGameTypeSingle() && (GetState()==eReady || GetState()==eThrow) )
-		OnStateSwitch(eIdle);
+	if(IsGameTypeSingle())
+	{
+		auto state = GetState();
+		if (state == eReady || state == eThrow)
+			OnStateSwitch(eIdle, state);
+	}
 }
 
 void CGrenade::SendHiddenItem						()

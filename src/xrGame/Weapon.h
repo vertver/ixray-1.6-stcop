@@ -318,7 +318,7 @@ protected:
 	virtual void			SetDefaults				();
 	
 	virtual bool			MovingAnimAllowedNow	();
-	virtual void			OnStateSwitch			(u32 S);
+	virtual void			OnStateSwitch			(u32 S, u32 OldState);
 	virtual void			OnAnimationEnd			(u32 state);
 
 	//трассирование полета пули

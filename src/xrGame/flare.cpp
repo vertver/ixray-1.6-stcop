@@ -41,9 +41,9 @@ bool CFlare::IsFlareActive()
 	return ( GetState()==eFlareIdle );
 }
 
-void CFlare::OnStateSwitch(u32 S)
+void CFlare::OnStateSwitch(u32 S, u32 OldState)
 {
-	inherited::OnStateSwitch(S);
+	inherited::OnStateSwitch(S, OldState);
 
 	switch(S)
 	{
@@ -55,8 +55,11 @@ void CFlare::OnStateSwitch(u32 S)
 		}break;
 	case eFlareHiding:
 		{
-			PlayHUDMotion				("anm_hide", TRUE, this, GetState());
-			SetPending					(TRUE);
+			if (OldState != eFlareHiding)
+			{
+				PlayHUDMotion				("anm_hide", TRUE, this, GetState());
+				SetPending					(TRUE);
+			}
 		}break;
 	case eFlareIdle:
 		{

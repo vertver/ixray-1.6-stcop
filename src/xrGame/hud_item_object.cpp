@@ -34,9 +34,9 @@ void CHudItemObject::SwitchState		(u32 S)
 	CHudItem::SwitchState		(S);
 }
 
-void CHudItemObject::OnStateSwitch		(u32 S)
+void CHudItemObject::OnStateSwitch		(u32 S, u32 OldState)
 {
-	CHudItem::OnStateSwitch		(S);
+	CHudItem::OnStateSwitch		(S, OldState);
 }
 
 void CHudItemObject::OnMoveToRuck(const SInvItemPlace& prev)

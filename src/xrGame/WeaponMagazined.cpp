@@ -396,9 +396,9 @@ void CWeaponMagazined::ReloadMagazine()
 	VERIFY((u32)iAmmoElapsed == m_magazine.size());
 }
 
-void CWeaponMagazined::OnStateSwitch	(u32 S)
+void CWeaponMagazined::OnStateSwitch	(u32 S, u32 OldState)
 {
-	inherited::OnStateSwitch(S);
+	inherited::OnStateSwitch(S, OldState);
 	CInventoryOwner* owner = smart_cast<CInventoryOwner*>(this->H_Parent());
 	switch (S)
 	{
@@ -423,9 +423,12 @@ void CWeaponMagazined::OnStateSwitch	(u32 S)
 		switch2_Showing	();
 		break;
 	case eHiding:
-		if(owner)
-			m_sounds_enabled = owner->CanPlayShHdRldSounds();
-		switch2_Hiding	();
+		if (OldState != eHiding)
+		{
+			if(owner)
+				m_sounds_enabled = owner->CanPlayShHdRldSounds();
+			switch2_Hiding	();
+		}
 		break;
 	case eHidden:
 		switch2_Hidden	();
