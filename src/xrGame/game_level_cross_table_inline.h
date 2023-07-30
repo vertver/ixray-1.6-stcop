@@ -15,31 +15,41 @@ IC CGameLevelCrossTable::CGameLevelCrossTable(LPCSTR fName)
 	R_ASSERT2			(m_tpCrossTableVFS,"Can't open cross table!");
 	
 	IReader				*chunk = m_tpCrossTableVFS->open_chunk(CROSS_TABLE_CHUNK_VERSION);
-	R_ASSERT2			(chunk,"Cross table is corrupted!");
-	chunk->r			(&m_tCrossTableHeader,sizeof(m_tCrossTableHeader));
+	R_ASSERT2			(chunk, "Cross table is corrupted!");
+	chunk->r			(&m_tCrossTableHeader, sizeof(m_tCrossTableHeader));
 	chunk->close		();
 	
-	R_ASSERT2			(m_tCrossTableHeader.version() == XRAI_CURRENT_VERSION,"Cross table version mismatch!");
+	R_ASSERT2			(m_tCrossTableHeader.version() == XRAI_CURRENT_VERSION, "Cross table version mismatch!");
 
 	m_chunk				= m_tpCrossTableVFS->open_chunk(CROSS_TABLE_CHUNK_DATA);
-	R_ASSERT2			(m_chunk,"Cross table is corrupted!");
+	R_ASSERT2			(m_chunk, "Cross table is corrupted!");
 	m_tpaCrossTable		= (CCell*)m_chunk->pointer();
 }
-#endif // AI_COMPILER
+#endif
 
 IC CGameLevelCrossTable::CGameLevelCrossTable	(const void *buffer, const u32 &buffer_size)
+#	ifdef AI_COMPILER
+	: m_tpCrossTableVFS(0)
+#	endif
 {
-	Memory.mem_copy		(&m_tCrossTableHeader,buffer,sizeof(m_tCrossTableHeader));
+	Memory.mem_copy		(&m_tCrossTableHeader, buffer, sizeof(m_tCrossTableHeader));
 	buffer				= (const u8*)buffer + sizeof(m_tCrossTableHeader);
 
-	R_ASSERT2			(m_tCrossTableHeader.version() == XRAI_CURRENT_VERSION,"Cross table version mismatch!");
+	R_ASSERT2			(m_tCrossTableHeader.version() == XRAI_CURRENT_VERSION, "Cross table version mismatch!");
 	
 	m_tpaCrossTable		= (CCell*)buffer;
 }
 
 IC CGameLevelCrossTable::~CGameLevelCrossTable	()
 {
-};
+#ifdef AI_COMPILER
+	if (!m_chunk && !m_tpCrossTableVFS)
+		return;
+
+	m_chunk->close		();
+	FS.r_close			(m_tpCrossTableVFS);
+#endif
+}
 
 IC const CGameLevelCrossTable::CCell &CGameLevelCrossTable::vertex(u32 level_vertex_id) const
 {

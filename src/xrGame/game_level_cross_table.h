@@ -10,9 +10,9 @@
 
 #ifdef AI_COMPILER
 #	include "../../xrEngine/xrLevel.h"
-#else // AI_COMPILER
+#else
 #	include "../xrEngine/xrLevel.h"
-#endif // AI_COMPILER
+#endif
 
 #include "alife_space.h"
 #include "game_graph_space.h"
@@ -28,10 +28,10 @@ class CGameLevelCrossTable {
 	friend class CCrossTableBuilder;
 	friend class CRenumbererConverter;
 	friend class CGameGraphBuilder;
-#endif // AI_COMPILER
+#endif
 
 public:
-#pragma pack(push,2)
+#pragma pack(push, 2)
 	class CHeader {
 		u32					dwVersion;
 		u32					dwNodeCount;
@@ -51,7 +51,7 @@ public:
 		friend class CCrossTableBuilder;
 		friend class CRenumbererConverter;
 		friend class CGameGraphBuilder;
-#endif // AI_COMPILER
+#endif
 	};
 	
 	class  CCell {
@@ -65,7 +65,7 @@ public:
 		friend class CCrossTableBuilder;
 		friend class CRenumbererConverter;
 		friend class CGameGraphBuilder;
-#endif // AI_COMPILER
+#endif
 	};
 #pragma pack(pop)
 
@@ -77,13 +77,14 @@ private:
 private:
 	IReader					*m_tpCrossTableVFS;
 	IReader					*m_chunk;
-#endif // AI_COMPILER
+#endif
 
 public:
 	IC						CGameLevelCrossTable	(const void *buffer, const u32 &buffer_size);
+
 #ifdef AI_COMPILER
 	IC						CGameLevelCrossTable	(LPCSTR fName);
-#endif // AI_COMPILER
+#endif
 
 public:
 	IC virtual				~CGameLevelCrossTable	();
