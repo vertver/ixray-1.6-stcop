@@ -154,6 +154,7 @@ Flags32		ps_r2_ls_flags				= { R2FLAG_SUN
 	|R2FLAG_SUN_TSM
 	|R2FLAG_TONEMAP
 	|R2FLAG_VOLUMETRIC_LIGHTS
+	| R2FLAG_SHADOWS_BY_CLOUDS
 	};	// r2-only
 
 Flags32		ps_r2_ls_flags_ext			= {
@@ -218,6 +219,8 @@ float		ps_r2_slight_fade			= 0.5f;				// 1.f
 Fvector3	ps_r2_dof					= Fvector3().set(-1.25f, 1.4f, 600.f);
 float		ps_r2_dof_sky				= 30;				//	distance to sky
 float		ps_r2_dof_kernel_size		= 5.0f;						//	7.0f
+
+float		ps_r2_def_aref_quality		= 200.f;
 
 float		ps_r3_dyn_wet_surf_near		= 10.f;				// 10.0f
 float		ps_r3_dyn_wet_surf_far		= 30.f;				// 30.0f
@@ -823,7 +826,11 @@ void		xrRender_initconsole	()
 //	float		ps_r2_dof_near			= 0.f;					// 0.f
 //	float		ps_r2_dof_focus			= 1.4f;					// 1.4f
 	
+	CMD4(CCC_Float,		"r2_def_aref_quality",		    &ps_r2_def_aref_quality,		70.f, 200.f);
+
 	CMD3(CCC_Mask,		"r2_volumetric_lights",			&ps_r2_ls_flags,			R2FLAG_VOLUMETRIC_LIGHTS);
+	CMD3(CCC_Mask,		"r2_shadows_by_clouds",			&ps_r2_ls_flags,			R2FLAG_SHADOWS_BY_CLOUDS);
+
 //	CMD3(CCC_Mask,		"r2_sun_shafts",				&ps_r2_ls_flags,			R2FLAG_SUN_SHAFTS);
 	CMD3(CCC_Token,		"r2_sun_shafts",				&ps_r_sun_shafts,			qsun_shafts_token);
 	CMD3(CCC_SSAO_Mode,	"r2_ssao_mode",					&ps_r_ssao_mode,			qssao_mode_token);

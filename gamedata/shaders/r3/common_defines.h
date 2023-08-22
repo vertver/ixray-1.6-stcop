@@ -4,7 +4,10 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 // Defines                                		//
 #define def_gloss       float(2.f /255.f)
-#define def_aref        float(200.f/255.f)
+
+static const float 		tp_textures = opt_def_aref.x;
+static const float 		def_aref    = tp_textures / 255.0f;
+
 #define def_dbumph      float(0.333f)
 #define def_virtualh    float(0.05f)              // 5cm
 #define def_distort     float(0.05f)             // we get -0.5 .. 0.5 range, this is -512 .. 512 for 1024, so scale it

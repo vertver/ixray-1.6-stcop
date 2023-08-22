@@ -303,6 +303,14 @@ static class cl_screen_res : public R_constant_setup
 	}
 }	binder_screen_res;
 
+static class cl_def_aref : public R_constant_setup
+{
+	virtual void setup(R_constant* C) override
+	{
+		float def_aref_cmd = ps_r2_def_aref_quality;
+		RCache.set_c(C, def_aref_cmd, 0.f, 0.f, 0.f);
+	}
+}	binder_def_aref;
 
 // Standart constant-binding
 void	CBlender_Compile::SetMapping	()
@@ -315,6 +323,8 @@ void	CBlender_Compile::SetMapping	()
 	r_Constant				("m_WV",			&binder_wv);
 	r_Constant				("m_VP",			&binder_vp);
 	r_Constant				("m_WVP",			&binder_wvp);
+
+	r_Constant				("opt_def_aref",	&binder_def_aref);
 
 	r_Constant				("m_xform_v",		&tree_binder_m_xform_v);
 	r_Constant				("m_xform",			&tree_binder_m_xform);

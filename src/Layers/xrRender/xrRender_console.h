@@ -130,6 +130,8 @@ extern ECORE_API Fvector3		ps_r2_dof;
 extern ECORE_API float			ps_r2_dof_sky;				//	distance to sky
 extern ECORE_API float			ps_r2_dof_kernel_size;		//	7.0f
 
+extern ECORE_API float			ps_r2_def_aref_quality;
+
 extern ECORE_API float			ps_r3_dyn_wet_surf_near;	// 10.0f
 extern ECORE_API float			ps_r3_dyn_wet_surf_far;		// 30.0f
 extern ECORE_API int			ps_r3_dyn_wet_surf_sm_res;	// 256
@@ -178,6 +180,7 @@ enum
 	R3FLAG_MSAA_OPT				= (1<<29),
 	R3FLAG_GBUFFER_OPT			= (1<<30),
 	//R3FLAG_MSAA_ALPHATEST		= (1<<31),
+	R2FLAG_SHADOWS_BY_CLOUDS    = (1<<31),
 };
 
 enum

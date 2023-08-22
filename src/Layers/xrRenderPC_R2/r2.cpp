@@ -688,70 +688,110 @@ HRESULT	CRender::shader_compile			(
 		defines[def_it].Definition	=	"1";
 		def_it						++	;
 	}
-	sh_name[len]='0'+char(o.fp16_filter); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(o.fp16_filter);
+		++len;
+	}
 
 	if (o.fp16_blend)		{
 		defines[def_it].Name		=	"FP16_BLEND";
 		defines[def_it].Definition	=	"1";
 		def_it						++	;
 	}
-	sh_name[len]='0'+char(o.fp16_blend); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(o.fp16_blend); 
+		++len;
+	}
 
 	if (o.HW_smap)			{
 		defines[def_it].Name		=	"USE_HWSMAP";
 		defines[def_it].Definition	=	"1";
 		def_it						++	;
 	}
-	sh_name[len]='0'+char(o.HW_smap); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(o.HW_smap);
+		++len;
+	}
 
 	if (o.HW_smap_PCF)			{
 		defines[def_it].Name		=	"USE_HWSMAP_PCF";
 		defines[def_it].Definition	=	"1";
 		def_it						++	;
 	}
-	sh_name[len]='0'+char(o.HW_smap_PCF); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(o.HW_smap_PCF); 
+		++len;
+	}
 
 	if (o.HW_smap_FETCH4)			{
 		defines[def_it].Name		=	"USE_FETCH4";
 		defines[def_it].Definition	=	"1";
 		def_it						++	;
 	}
-	sh_name[len]='0'+char(o.HW_smap_FETCH4); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(o.HW_smap_FETCH4); 
+		++len;
+	}
 
 	if (HW.Caps.raster_major >= 3)	{
 		defines[def_it].Name		=	"USE_BRANCHING";
 		defines[def_it].Definition	=	"1";
 		def_it						++	;
 	}
-	sh_name[len]='0'+char(HW.Caps.raster_major >= 3); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(HW.Caps.raster_major >= 3); 
+		++len;
+	}
 
 	if (HW.Caps.geometry.bVTF)	{
 		defines[def_it].Name		=	"USE_VTF";
 		defines[def_it].Definition	=	"1";
 		def_it						++	;
 	}
-	sh_name[len]='0'+char(HW.Caps.geometry.bVTF); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(HW.Caps.geometry.bVTF); 
+		++len;
+	}
 
 	if (o.Tshadows)			{
 		defines[def_it].Name		=	"USE_TSHADOWS";
 		defines[def_it].Definition	=	"1";
 		def_it						++	;
 	}
-	sh_name[len]='0'+char(o.Tshadows); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(o.Tshadows); 
+		++len;
+	}
 
 	if (o.mblur)			{
 		defines[def_it].Name		=	"USE_MBLUR";
 		defines[def_it].Definition	=	"1";
 		def_it						++	;
 	}
-	sh_name[len]='0'+char(o.mblur); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(o.mblur); 
+		++len;
+	}
 
 	if (o.sunstatic)		{
 		defines[def_it].Name		=	"USE_R2_STATIC_SUN";
 		defines[def_it].Definition	=	"1";
 		def_it						++	;
 	}
-	sh_name[len]='0'+char(o.sunstatic); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(o.sunstatic); 
+		++len;
+	}
 
 	if (o.forcegloss)		{
 		xr_sprintf						(c_gloss,"%f",o.forcegloss_v);
@@ -759,14 +799,22 @@ HRESULT	CRender::shader_compile			(
 		defines[def_it].Definition	=	c_gloss;
 		def_it						++	;
 	}
-	sh_name[len]='0'+char(o.forcegloss); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(o.forcegloss); 
+		++len;
+	}
 
 	if (o.forceskinw)		{
 		defines[def_it].Name		=	"SKIN_COLOR";
 		defines[def_it].Definition	=	"1";
 		def_it						++;
 	}
-	sh_name[len]='0'+char(o.forceskinw); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(o.forceskinw); 
+		++len;
+	}
 
 	if (o.ssao_blur_on)
 	{
@@ -774,7 +822,11 @@ HRESULT	CRender::shader_compile			(
 		defines[def_it].Definition	=	"1";
 		def_it						++;
 	}
-	sh_name[len]='0'+char(o.ssao_blur_on); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(o.ssao_blur_on);
+		++len;
+	}
 
 	if (o.ssao_hbao)
 	{
@@ -782,7 +834,11 @@ HRESULT	CRender::shader_compile			(
 		defines[def_it].Definition	=	"1";
 		def_it						++;
 	}
-	sh_name[len]='0'+char(o.ssao_hbao); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(o.ssao_hbao); 
+		++len;
+	}
 
 	if (o.ssao_opt_data)
 	{
@@ -793,7 +849,11 @@ HRESULT	CRender::shader_compile			(
 			defines[def_it].Definition	=	"1";
 		def_it						++;
 	}
-	sh_name[len]='0'+char(o.ssao_opt_data ? (o.ssao_half_data ? 2 : 1) : 0); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(o.ssao_opt_data ? (o.ssao_half_data ? 2 : 1) : 0); 
+		++len;
+	}
 
 	// skinning
 	if (m_skinning<0)		{
@@ -804,7 +864,8 @@ HRESULT	CRender::shader_compile			(
 	}
 	else
 	{
-		sh_name[len]='0'; ++len;
+		sh_name[len]='0' + static_cast<char>(m_skinning < 0);
+		++len;
 	}
 
 	if (0==m_skinning)		{
@@ -812,36 +873,56 @@ HRESULT	CRender::shader_compile			(
 		defines[def_it].Definition	=	"1";
 		def_it						++;
 	}
-	sh_name[len]='0'+char(0==m_skinning); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(0 == m_skinning); 
+		++len;
+	}
 
 	if (1==m_skinning)		{
 		defines[def_it].Name		=	"SKIN_1";
 		defines[def_it].Definition	=	"1";
 		def_it						++;
 	}
-	sh_name[len]='0'+char(1==m_skinning); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(1 == m_skinning); 
+		++len;
+	}
 
 	if (2==m_skinning)		{
 		defines[def_it].Name		=	"SKIN_2";
 		defines[def_it].Definition	=	"1";
 		def_it						++;
 	}
-	sh_name[len]='0'+char(2==m_skinning); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(2 == m_skinning); 
+		++len;
+	}
 
 	if (3==m_skinning)		{
 		defines[def_it].Name		=	"SKIN_3";
 		defines[def_it].Definition	=	"1";
 		def_it						++;
 	}
-	sh_name[len]='0'+char(3==m_skinning); ++len;
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(3 == m_skinning); 
+		++len;
+	}
 
 	if (4==m_skinning)		{
 		defines[def_it].Name		=	"SKIN_4";
 		defines[def_it].Definition	=	"1";
 		def_it						++;
 	}
-	sh_name[len]='0'+char(4==m_skinning); ++len;
-	
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(4 == m_skinning); 
+		++len;
+	}
+
 	//	Igor: need restart options
 	if (RImplementation.o.advancedpp && ps_r2_ls_flags.test(R2FLAG_SOFT_WATER))
 	{
@@ -852,7 +933,8 @@ HRESULT	CRender::shader_compile			(
 	}
 	else
 	{
-		sh_name[len]='0'; ++len;
+		sh_name[len]='0' + static_cast<char>(RImplementation.o.advancedpp && ps_r2_ls_flags.test(R2FLAG_SOFT_WATER));
+		++len;
 	}
 
 	if (RImplementation.o.advancedpp && ps_r2_ls_flags.test(R2FLAG_SOFT_PARTICLES))
@@ -864,7 +946,8 @@ HRESULT	CRender::shader_compile			(
 	}
 	else
 	{
-		sh_name[len]='0'; ++len;
+		sh_name[len]='0' + static_cast<char>(RImplementation.o.advancedpp && ps_r2_ls_flags.test(R2FLAG_SOFT_PARTICLES));
+		++len;
 	}
 
 	if (RImplementation.o.advancedpp && ps_r2_ls_flags.test(R2FLAG_DOF))
@@ -876,7 +959,21 @@ HRESULT	CRender::shader_compile			(
 	}
 	else
 	{
-		sh_name[len]='0'; ++len;
+		sh_name[len] = '0' + static_cast<char>(RImplementation.o.advancedpp && ps_r2_ls_flags.test(R2FLAG_DOF));
+		++len;
+	}
+
+	if (RImplementation.o.advancedpp && ps_r2_ls_flags.test(R2FLAG_SHADOWS_BY_CLOUDS))
+	{
+		defines[def_it].Name = "USE_SUNMASK";
+		defines[def_it].Definition = "1";
+		def_it++;
+		sh_name[len] = '1'; ++len;
+	}
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(RImplementation.o.advancedpp && ps_r2_ls_flags.test(R2FLAG_SHADOWS_BY_CLOUDS));
+		++len;
 	}
 
 	if (RImplementation.o.advancedpp && ps_r_sun_shafts)
@@ -889,7 +986,8 @@ HRESULT	CRender::shader_compile			(
 	}
 	else
 	{
-		sh_name[len]='0'; ++len;
+		sh_name[len]='0' + static_cast<char>(RImplementation.o.advancedpp && ps_r_sun_shafts);
+		++len;
 	}
 
 	if (RImplementation.o.advancedpp && ps_r_ssao)
@@ -898,11 +996,12 @@ HRESULT	CRender::shader_compile			(
 		defines[def_it].Name		=	"SSAO_QUALITY";
 		defines[def_it].Definition	=	c_ssao;
 		def_it						++;
-		sh_name[len]='0'+char(ps_r_ssao); ++len;
+		sh_name[len]='0'+ static_cast<char>(ps_r_ssao); ++len;
 	}
 	else
 	{
-		sh_name[len]='0'; ++len;
+		sh_name[len]='0' + static_cast<char>(RImplementation.o.advancedpp && ps_r_ssao);
+		++len;
 	}
 
 	if (RImplementation.o.advancedpp && ps_r_sun_quality)
@@ -911,11 +1010,12 @@ HRESULT	CRender::shader_compile			(
 		defines[def_it].Name		=	"SUN_QUALITY";
 		defines[def_it].Definition	=	c_sun_quality;
 		def_it						++;
-		sh_name[len]='0'+char(ps_r_sun_quality); ++len;
+		sh_name[len]='0'+ static_cast<char>(ps_r_sun_quality); ++len;
 	}
 	else
 	{
-		sh_name[len]='0'; ++len;
+		sh_name[len]='0' + static_cast<char>(RImplementation.o.advancedpp && ps_r_sun_quality);
+		++len;
 	}
 
 	if (RImplementation.o.advancedpp && ps_r2_ls_flags.test(R2FLAG_STEEP_PARALLAX))
@@ -927,7 +1027,8 @@ HRESULT	CRender::shader_compile			(
 	}
 	else
 	{
-		sh_name[len]='0'; ++len;
+		sh_name[len]='0' + static_cast<char>(RImplementation.o.advancedpp && ps_r2_ls_flags.test(R2FLAG_STEEP_PARALLAX));
+		++len;
 	}
 
 	// finish

@@ -1234,6 +1234,19 @@ HRESULT	CRender::shader_compile			(
 		++len;
 	}
 
+	if (RImplementation.o.advancedpp && ps_r2_ls_flags.test(R2FLAG_SHADOWS_BY_CLOUDS))
+	{
+		defines[def_it].Name = "USE_SUNMASK";
+		defines[def_it].Definition = "1";
+		def_it++;
+		sh_name[len] = '1'; ++len;
+	}
+	else
+	{
+		sh_name[len] = '0' + static_cast<char>(RImplementation.o.advancedpp && ps_r2_ls_flags.test(R2FLAG_SHADOWS_BY_CLOUDS));
+		++len;
+	}
+
 	if (RImplementation.o.advancedpp && ps_r_sun_shafts)
 	{
 		xr_sprintf					(c_sun_shafts,"%d",ps_r_sun_shafts);
