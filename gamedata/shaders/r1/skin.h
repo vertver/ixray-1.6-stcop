@@ -167,23 +167,23 @@ v_model skinning_2lq 	(v_model_skinned_2	v)
 v_model skinning_3 	(v_model_skinned_3	v)
 {
 	// matrices
-	int 	id_0 	= v.tc.z;
-	float4  m0_0 	= sbones_array[id_0+0];
-	float4  m1_0 	= sbones_array[id_0+1];
-	float4  m2_0 	= sbones_array[id_0+2];
-	int 	id_1 	= v.tc.w;
-	float4  m0_1 	= sbones_array[id_1+0];
-	float4  m1_1 	= sbones_array[id_1+1];
-	float4  m2_1 	= sbones_array[id_1+2];
-	int 	id_2 	= v.B.w*255+0.3;
-	float4  m0_2 	= sbones_array[id_2+0];
-	float4  m1_2 	= sbones_array[id_2+1];
-	float4  m2_2 	= sbones_array[id_2+2];
+	float 	id_0 	= v.tc.z;
+	float4  m0_0 	= sbones_array[id_0+0.f];
+	float4  m1_0 	= sbones_array[id_0+1.f];
+	float4  m2_0 	= sbones_array[id_0+2.f];
+	float 	id_1 	= v.tc.w;
+	float4  m0_1 	= sbones_array[id_1+0.f];
+	float4  m1_1 	= sbones_array[id_1+1.f];
+	float4  m2_1 	= sbones_array[id_1+2.f];
+	float 	id_2 	= v.B.w*255.f+0.3f;
+	float4  m0_2 	= sbones_array[id_2+0.f];
+	float4  m1_2 	= sbones_array[id_2+1.f];
+	float4  m2_2 	= sbones_array[id_2+2.f];
 
 	// lerp
 	float 	w0 	= v.N.w;
 	float 	w1 	= v.T.w;
-	float 	w2 	= 1-w0-w1;
+	float 	w2 	= 1.f-w0-w1;
 	float4  m0 	= m0_0*w0;
 	float4  m1 	= m1_0*w0;
 	float4  m2 	= m2_0*w0;
@@ -204,8 +204,8 @@ v_model skinning_3 	(v_model_skinned_3	v)
 	o.B 		= skinning_dir((float3)v.B, (float3)m0,(float3)m1,(float3)m2 );
 	o.tc 		= v.tc.xy		*(16.f / 32768.f);	// -16..+16
 #ifdef SKIN_COLOR
-	o.rgb_tint	= float3	(2,0,0)	;
-	if (id_0==id_1)	o.rgb_tint	= float3(1,2,0);
+	o.rgb_tint	= float3	(2.f,0.f,0.f)	;
+	if (id_0==id_1)	o.rgb_tint	= float3(1.f,2.f,0.f);
 #endif
 	return o;
 }
@@ -223,7 +223,7 @@ v_model skinning_4 	(v_model_skinned_4	v)
 	[unroll]
 	for (int i=0; i<4; ++i)
 	{		
-		id[i] = v.ind[i]*255+0.3;
+		id[i] = v.ind[i]*255.f+0.3f;
 		[unroll]
 		for (int j=0; j<3; ++j)
 			m[i][j] = sbones_array[id[i]+j];
@@ -234,7 +234,7 @@ v_model skinning_4 	(v_model_skinned_4	v)
 	w[0] 	= v.N.w;
 	w[1] 	= v.T.w;
 	w[2] 	= v.B.w;
-	w[3]	= 1-w[0]-w[1]-w[2];
+	w[3]	= 1.f-w[0]-w[1]-w[2];
 
 	float4  m0 	= m[0][0]*w[0];
 	float4  m1 	= m[0][1]*w[0];
@@ -256,8 +256,8 @@ v_model skinning_4 	(v_model_skinned_4	v)
 	o.B 		= skinning_dir(float3)v.B, float3)m0,float3)m1,float3)m2 );
 	o.tc 		= v.tc.xy		*(16.f / 32768.f);	// -16..+16
 #ifdef SKIN_COLOR
-	o.rgb_tint	= float3	(2,0,0)	;
-	if (id_0==id_1)	o.rgb_tint	= float3(1,2,0);
+	o.rgb_tint	= float3	(2.f,0.f,0.f)	;
+	if (id_0==id_1)	o.rgb_tint	= float3(1.f,2.f,0.f);
 #endif
 	return o;
 }
