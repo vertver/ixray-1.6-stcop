@@ -246,9 +246,9 @@ processor_info::processor_info()
 	m_dwNumberOfProcessors = sysInfo.dwNumberOfProcessors;
 	const size_t PerformanceInfoSize = sizeof(SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION) * m_dwNumberOfProcessors;
 
-	fUsage = static_cast<float*>(Memory.mem_alloc(sizeof(float) * m_dwNumberOfProcessors, "CPUID_Usage"));
+	fUsage = new float[sizeof(float) * m_dwNumberOfProcessors];
 	m_pNtQuerySystemInformation = (NTQUERYSYSTEMINFORMATION)(GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtQuerySystemInformation"));
-	perfomanceInfo = static_cast<SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION*>(Memory.mem_alloc(PerformanceInfoSize, "CPUID"));
+	perfomanceInfo = (SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION*)(new char[PerformanceInfoSize]);
 }
 
 processor_info::~processor_info()
