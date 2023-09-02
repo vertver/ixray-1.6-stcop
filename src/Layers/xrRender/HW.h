@@ -7,6 +7,7 @@
 #pragma once
 
 #include "hwcaps.h"
+#include <renderdoc/renderdoc_app.h>
 
 #ifndef _MAYA_EXPORT
 #include "stats_manager.h"
@@ -93,6 +94,8 @@ public:
 
 	virtual	void	OnAppActivate();
 	virtual void	OnAppDeactivate();
+public:
+	RENDERDOC_API_1_6_0* rdoc_api;
 #endif //USE_DX11
 
 private:

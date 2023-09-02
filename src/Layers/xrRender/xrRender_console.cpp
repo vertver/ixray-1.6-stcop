@@ -425,6 +425,34 @@ public:
 	}
 };
 
+class	CCC_RenderDocCaptureStart		: public IConsole_Command
+{
+public:
+	CCC_RenderDocCaptureStart(LPCSTR N) : IConsole_Command(N) { bEmptyArgsHandled = true; };
+
+	virtual void	Execute	(LPCSTR args)	
+	{
+		if (HW.rdoc_api)
+		{
+			HW.rdoc_api->StartFrameCapture(HW.pDevice, Device.m_hWnd);
+		}
+	}
+};
+
+class	CCC_RenderDocCaptureEnd		: public IConsole_Command
+{
+public:
+	CCC_RenderDocCaptureEnd(LPCSTR N) : IConsole_Command(N) { bEmptyArgsHandled = true; };
+
+	virtual void	Execute	(LPCSTR args)	
+	{
+		if (HW.rdoc_api)
+		{
+			HW.rdoc_api->EndFrameCapture(HW.pDevice, Device.m_hWnd);
+		}
+	}
+};
+
 
 class CCC_memory_stats : public IConsole_Command
 {
@@ -874,6 +902,8 @@ void		xrRender_initconsole	()
 
 	CMD3(CCC_Mask,			"r3_volumetric_smoke",			&ps_r2_ls_flags,			R3FLAG_VOLUMETRIC_SMOKE);
 	CMD1(CCC_memory_stats,	"render_memory_stats" );
+	CMD1(CCC_RenderDocCaptureStart,	"rdoc_start" );
+	CMD1(CCC_RenderDocCaptureEnd,	"rdoc_end" );
 	
 
 //	CMD3(CCC_Mask,		"r2_sun_ignore_portals",		&ps_r2_ls_flags,			R2FLAG_SUN_IGNORE_PORTALS);
