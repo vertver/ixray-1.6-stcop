@@ -107,6 +107,8 @@ void CHW::DestroyD3D()
 
 void CHW::CreateDevice( HWND m_hWnd, bool move_window )
 {
+	CreateRDoc();
+
 	m_move_window			= move_window;
 	CreateD3D();
 
@@ -373,7 +375,10 @@ void CHW::CreateDevice( HWND m_hWnd, bool move_window )
 	updateWindowProps							(m_hWnd);
 	fill_vid_mode_list							(this);
 #endif
+}
 
+void CHW::CreateRDoc()
+{
 	if (strstr(Core.Params, "-renderdoc"))
 	{
 		rdoc_api = nullptr;
@@ -387,8 +392,9 @@ void CHW::CreateDevice( HWND m_hWnd, bool move_window )
 			int Major, Minor, Path;
 			rdoc_api->GetAPIVersion(&Major, &Minor, &Path);
 			Msg("RenderDoc API: %d.%d.%d", Major, Minor, Path);
+			//rdoc_api->LaunchReplayUI(1, "IX-Ray 1.6.02");
 
-			rdoc_api->SetActiveWindow(pDevice, Device.m_hWnd);
+			//rdoc_api->SetActiveWindow(pDevice, Device.m_hWnd);
 		}
 	}
 

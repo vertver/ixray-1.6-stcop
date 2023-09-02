@@ -30,7 +30,6 @@ IDirect3DStateBlock9*	dwDebugSB = 0;
 #endif
 
 CHW::CHW() : 
-	hD3D(NULL),
 	pD3D(NULL),
 	pDevice(NULL),
 	pBaseRT(NULL),
@@ -47,6 +46,27 @@ CHW::~CHW()
 {
 	;
 }
+
+void CHW::CreateRDoc()
+{
+	if (strstr(Core.Params, "-renderdoc"))
+	{
+		rdoc_api = nullptr;
+		if (HMODULE mod = LoadLibraryA("renderdoc.dll"))
+		{
+			pRENDERDOC_GetAPI RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(mod, "RENDERDOC_GetAPI");
+
+			int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_5_0, (void**)&rdoc_api);
+			assert(ret == 1);
+
+			int Major, Minor, Path;
+			rdoc_api->GetAPIVersion(&Major, &Minor, &Path);
+			Msg("RenderDoc API: %d.%d.%d", Major, Minor, Path);
+			rdoc_api->LaunchReplayUI(1, "IX-Ray 1.6.02");
+
+			//rdoc_api->SetActiveWindow(pDevice, Device.m_hWnd);
+	}
+}}
 
 void CHW::Reset		(HWND hwnd)
 {
@@ -111,19 +131,12 @@ void CHW::CreateD3D	()
 #endif    
 		_name			= "d3d9.dll";
 
-
-	hD3D            			= LoadLibrary(_name);
-	R_ASSERT2	           	 	(hD3D,"Can't find 'd3d9.dll'\nPlease install latest version of DirectX before running this program");
-    typedef IDirect3D9 * WINAPI _Direct3DCreate9(UINT SDKVersion);
-	_Direct3DCreate9* createD3D	= (_Direct3DCreate9*)GetProcAddress(hD3D,"Direct3DCreate9");	R_ASSERT(createD3D);
-    this->pD3D 					= createD3D( D3D_SDK_VERSION );
-    R_ASSERT2					(this->pD3D,"Please install DirectX 9.0c");
+	this->pD3D = Direct3DCreate9(D3D_SDK_VERSION);
 }
 
 void CHW::DestroyD3D()
 {
 	_RELEASE					(this->pD3D);
-    FreeLibrary					(hD3D);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -220,6 +233,9 @@ void	CHW::selectResolution	(u32 &dwWidth, u32 &dwHeight, BOOL bWindowed)
 
 void		CHW::CreateDevice		(HWND m_hWnd, bool move_window)
 {
+#if 0
+	CreateRDoc();
+#endif
 	m_move_window			= move_window;
 	CreateD3D				();
 

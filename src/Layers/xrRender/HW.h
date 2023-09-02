@@ -27,7 +27,7 @@ public:
 	void					CreateD3D				();
 	void					DestroyD3D				();
 	void					CreateDevice			(HWND hw, bool move_window);
-
+	void					CreateRDoc				();
 	void					DestroyDevice			();
 
 	void					Reset					(HWND hw);
@@ -67,8 +67,6 @@ public:
 	bool					m_bUsePerfhud;
 	D3D_FEATURE_LEVEL		FeatureLevel;
 #else //USE_DX11
-private:
-	HINSTANCE 				hD3D;
 
 public:
 
@@ -94,9 +92,10 @@ public:
 
 	virtual	void	OnAppActivate();
 	virtual void	OnAppDeactivate();
+#endif //USE_DX11
+
 public:
 	RENDERDOC_API_1_6_0* rdoc_api;
-#endif //USE_DX11
 
 private:
 	bool					m_move_window;
