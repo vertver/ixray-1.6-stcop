@@ -21,8 +21,16 @@ private:
 	//FXAA
 	ref_shader s_fxaa;
 	ref_geom g_fxaa;
+
+	//SMAA
+	ref_shader s_smaa;
+	ref_geom g_smaa;
+	ref_rt rt_smaa_edgetex;
+	ref_rt rt_smaa_blendtex;
+
 	IDirect3DSurface9*	ZB;
 	IBlender* b_fxaa;
+	IBlender* b_smaa;
 
 	//	Can't implement in a single pass of a shader since
 	//	should be compiled only for the hardware that supports it.
@@ -100,4 +108,5 @@ public:
 			u32			get_rtheight		()				{ return rtHeight;											}
 
 			void		phase_fxaa(u32 pass);
+			void		phase_smaa();
 };

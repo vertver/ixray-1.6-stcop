@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -228,6 +228,7 @@
     <ClInclude Include="..\xrRender\Blender_Model_EbB.h" />
     <ClInclude Include="..\xrRender\Blender_Particle.h" />
     <ClInclude Include="..\xrRender\Blender_Screen_SET.h" />
+    <ClInclude Include="..\xrRender\blender_smaa.h" />
     <ClInclude Include="..\xrRender\Blender_tree.h" />
     <ClInclude Include="..\xrRender\cl_intersect.h" />
     <ClInclude Include="..\xrRender\ColorMapManager.h" />
@@ -461,6 +462,7 @@
     <ClCompile Include="Blender_Model.cpp" />
     <ClCompile Include="Blender_Screen_GRAY.cpp" />
     <ClCompile Include="Blender_Shadow_World.cpp" />
+    <ClCompile Include="blender_smaa.cpp" />
     <ClCompile Include="Blender_Vertex.cpp" />
     <ClCompile Include="Blender_Vertex_aref.cpp" />
     <ClCompile Include="FStaticRender.cpp" />

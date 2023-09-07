@@ -2,6 +2,7 @@
 #include "fstaticrender_rendertarget.h"
 #include "../../xrEngine/IGame_Persistent.h"
 #include "../xrRender/blender_fxaa.h"
+#include "../xrRender/blender_smaa.h"
 
 static LPCSTR		RTname			= "$user$rendertarget";
 static LPCSTR		RTTempName = "$user$rendertarget_temp";
@@ -43,6 +44,8 @@ CRenderTarget::CRenderTarget()
 BOOL CRenderTarget::Create	()
 {
 	b_fxaa = xr_new<CBlender_FXAA>();
+	b_smaa = xr_new<CBlender_SMAA>();
+
 	curWidth			= Device.dwWidth;
 	curHeight			= Device.dwHeight;
 
@@ -77,6 +80,12 @@ BOOL CRenderTarget::Create	()
 		ZB			= HW.pBaseZB;
 		ZB->AddRef	();
 	}
+
+	// SMAA
+	s_smaa.create(b_smaa);
+	g_smaa.create(FVF::F_TL, RCache.Vertex.Buffer(), RCache.QuadIB);
+	rt_smaa_edgetex.create("$user$edgetex", rtWidth, rtHeight, HW.Caps.fTarget);
+	rt_smaa_blendtex.create("$user$blendtex", rtWidth, rtHeight, HW.Caps.fTarget);
 
 	// Temp ZB, used by some of the shadowing code
 	R_CHK	(HW.pDevice->CreateDepthStencilSurface	(512,512,HW.Caps.fDepth,D3DMULTISAMPLE_NONE,0,TRUE,&pTempZB,NULL));
@@ -126,11 +135,103 @@ void CRenderTarget::phase_fxaa(u32 pass) {
 	RCache.Render(D3DPT_TRIANGLELIST, Offset, 0, 4, 0, 2);
 }
 
+void CRenderTarget::phase_smaa() {
+	u32 Offset;
+	Fvector2 p0, p1;
+	float d_Z = EPS_S;
+	float d_W = 1.0f;
+	constexpr u32 C = color_rgba(0, 0, 0, 255);
+	FLOAT ColorRGBA[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+	float _w = float(curWidth);
+	float _h = float(curHeight);
+
+	p0.set(0.5f / _w, 0.5f / _h);
+	p1.set((_w + 0.5f) / _w, (_h + 0.5f) / _h);
+
+	// Phase 0: edge detection ////////////////////////////////////////////////
+	RCache.set_RT(rt_smaa_edgetex->pRT);
+	RCache.set_CullMode(CULL_NONE);
+	//RCache.set_Stencil(TRUE, D3DCMP_ALWAYS, 0x1, 0, 0, D3DSTENCILOP_KEEP, D3DSTENCILOP_REPLACE, D3DSTENCILOP_KEEP);
+	CHK_DX(HW.pDevice->Clear(0, 0, D3DCLEAR_TARGET, color_rgba(0, 0, 0, 0), 1, 0));
+	//HW.pDevice->Clear(RCache.get_RT(), ColorRGBA);
+
+	// Fill vertex buffer
+	FVF::TL* pv = (FVF::TL*)RCache.Vertex.Lock(4, g_smaa->vb_stride, Offset);
+	pv->set(EPS, _h + EPS, d_Z, d_W, C, p0.x, p1.y);
+	pv++;
+	pv->set(EPS, EPS, d_Z, d_W, C, p0.x, p0.y);
+	pv++;
+	pv->set(_w + EPS, _h + EPS, d_Z, d_W, C, p1.x, p1.y);
+	pv++;
+	pv->set(_w + EPS, EPS, d_Z, d_W, C, p1.x, p0.y);
+	pv++;
+	RCache.Vertex.Unlock(4, g_smaa->vb_stride);
+
+	// Draw COLOR
+	RCache.set_Element(s_smaa->E[0]);
+	RCache.set_Geometry(g_smaa);
+	RCache.set_c("screen_res", _w, _h, 1.0f / _w, 1.0f / _h);
+	RCache.Render(D3DPT_TRIANGLELIST, Offset, 0, 4, 0, 2);
+
+	// Phase 1: blend weights calculation ////////////////////////////////////
+	RCache.set_RT(rt_smaa_blendtex->pRT);
+	RCache.set_CullMode(CULL_NONE);
+	RCache.set_Stencil(TRUE, D3DCMP_EQUAL, 0x1, 0, 0, D3DSTENCILOP_KEEP, D3DSTENCILOP_REPLACE, D3DSTENCILOP_KEEP);
+
+	CHK_DX(HW.pDevice->Clear(0, 0, D3DCLEAR_TARGET, color_rgba(0, 0, 0, 0), 1, 0));
+
+	// Fill vertex buffer
+	pv = (FVF::TL*)RCache.Vertex.Lock(4, g_smaa->vb_stride, Offset);
+	pv->set(EPS, _h + EPS, d_Z, d_W, C, p0.x, p1.y);
+	pv++;
+	pv->set(EPS, EPS, d_Z, d_W, C, p0.x, p0.y);
+	pv++;
+	pv->set(_w + EPS, _h + EPS, d_Z, d_W, C, p1.x, p1.y);
+	pv++;
+	pv->set(_w + EPS, EPS, d_Z, d_W, C, p1.x, p0.y);
+	pv++;
+	RCache.Vertex.Unlock(4, g_smaa->vb_stride);
+
+	// Draw COLOR
+	RCache.set_Element(s_smaa->E[1]);
+	RCache.set_Geometry(g_smaa);
+	RCache.set_c("screen_res", _w, _h, 1.0f / _w, 1.0f / _h);
+	RCache.Render(D3DPT_TRIANGLELIST, Offset, 0, 4, 0, 2);
+
+	// Phase 2: neighbour blend //////////////////////////////////////////////
+	RCache.set_RT(RTTemp->pRT);
+
+	RCache.set_CullMode(CULL_NONE);
+	RCache.set_Stencil(FALSE);
+
+	// Fill vertex buffer
+	pv = (FVF::TL*)RCache.Vertex.Lock(4, g_smaa->vb_stride, Offset);
+	pv->set(EPS, _h + EPS, d_Z, d_W, C, p0.x, p1.y);
+	pv++;
+	pv->set(EPS, EPS, d_Z, d_W, C, p0.x, p0.y);
+	pv++;
+	pv->set(_w + EPS, _h + EPS, d_Z, d_W, C, p1.x, p1.y);
+	pv++;
+	pv->set(_w + EPS, EPS, d_Z, d_W, C, p1.x, p0.y);
+	pv++;
+	RCache.Vertex.Unlock(4, g_smaa->vb_stride);
+
+	// Draw COLOR
+	RCache.set_Element(s_smaa->E[2]);
+	RCache.set_Geometry(g_smaa);
+	RCache.set_c("screen_res", _w, _h, 1.0f / _w, 1.0f / _h);
+	RCache.Render(D3DPT_TRIANGLELIST, Offset, 0, 4, 0, 2);
+
+	// Resolve RT
+	D3DXLoadSurfaceFromSurface(RT->pRT, 0, 0, RTTemp->pRT, 0, 0, D3DX_DEFAULT, 0);
+}
 
 
 CRenderTarget::~CRenderTarget	()
 {
 	xr_delete(b_fxaa);
+	xr_delete(b_smaa);
 	_RELEASE					(pFB);
 	_RELEASE					(pTempZB);
 	_RELEASE					(ZB);
@@ -330,6 +431,10 @@ void CRenderTarget::End		()
 		phase_fxaa(0);
 		RCache.set_RT(RT->pRT);
 		phase_fxaa(1);
+		//RCache.set_Stencil(FALSE);
+	}
+	else if (ps_r2_aa_type == 2) {
+		phase_smaa();
 		//RCache.set_Stencil(FALSE);
 	}
 
