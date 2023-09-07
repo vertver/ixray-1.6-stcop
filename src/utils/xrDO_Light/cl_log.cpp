@@ -174,12 +174,12 @@ void logThread(void *dummy)
 		BOOL bWasChanges = FALSE;
 		char tbuf		[256];
 		csLog.Enter		();
-		if (LogSize!=LogFile->size())
+		if (LogSize != LogFile.size())
 		{
 			bWasChanges		= TRUE;
-			for (; LogSize<LogFile->size(); LogSize++)
+			for (; LogSize < LogFile.size(); LogSize++)
 			{
-				const char *S = *(*LogFile)[LogSize];
+				const char* S = LogFile[LogSize].c_str();
 				if (0==S)	S = "";
 				SendMessage	( hwLog, LB_ADDSTRING, 0, (LPARAM) S);
 			}

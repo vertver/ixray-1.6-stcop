@@ -27,14 +27,14 @@ class XRCORE_API IWriter
 private:
 	xr_stack<u32>		chunk_pos;
 public:
-	shared_str			fName;
+	xr_string fName;
 public:
 	IWriter	()
 	{
 	}
 	virtual	~IWriter	()
 	{
-        R_ASSERT3	(chunk_pos.empty(),"Opened chunk not closed.",*fName);
+		R_ASSERT3(chunk_pos.empty(), "Opened chunk not closed.", fName.c_str());
 	}
 
 	// kernel

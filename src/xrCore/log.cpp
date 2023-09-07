@@ -17,7 +17,7 @@ static BOOL 				no_log			= TRUE;
 #else // PROFILE_CRITICAL_SECTIONS
 	static xrCriticalSection	logCS;
 #endif // PROFILE_CRITICAL_SECTIONS
-xr_vector<shared_str>*		LogFile			= NULL;
+xr_vector<xr_string> LogFile;
 static LogCallback			LogCB			= 0;
 
 void FlushLog			()
@@ -26,8 +26,8 @@ void FlushLog			()
 		logCS.Enter			();
 		IWriter *f			= FS.w_open(logFName);
         if (f) {
-            for (u32 it=0; it<LogFile->size(); it++)	{
-				LPCSTR		s	= *((*LogFile)[it]);
+			for (const auto& i : LogFile) {
+				LPCSTR s = i.c_str();
 				f->w_string	(s?s:"");
 			}
             FS.w_close		(f);
@@ -38,9 +38,6 @@ void FlushLog			()
 
 void AddOne				(const char *split) 
 {
-	if(!LogFile)		
-						return;
-
 	logCS.Enter			();
 
 	if (IsDebuggerPresent()) {
@@ -48,12 +45,7 @@ void AddOne				(const char *split)
 		OutputDebugString("\n");
 	}
 
-//	DUMP_PHASE;
-	{
-		shared_str			temp = shared_str(split);
-//		DUMP_PHASE;
-		LogFile->push_back	(temp);
-	}
+	LogFile.push_back(split);
 
 	//exec CallBack
 	if (LogExecCB&&LogCB)LogCB(split);
@@ -171,12 +163,7 @@ LPCSTR log_name			()
 	return				(log_file_name);
 }
 
-void InitLog()
-{
-	R_ASSERT			(LogFile==NULL);
-	LogFile				= xr_new< xr_vector<shared_str> >();
-	LogFile->reserve	(1000);
-}
+void InitLog() { LogFile.reserve(1000); }
 
 void CreateLog			(BOOL nl)
 {
@@ -194,9 +181,7 @@ void CreateLog			(BOOL nl)
     }
 }
 
-void CloseLog(void)
-{
-	FlushLog		();
- 	LogFile->clear	();
-	xr_delete		(LogFile);
+void CloseLog(void) {
+	FlushLog();
+	LogFile.clear();
 }
