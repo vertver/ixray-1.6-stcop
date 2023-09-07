@@ -8,17 +8,17 @@
 	#include "malloc.h"
 #endif
 
-extern BOOL					LogExecCB		= TRUE;
-static string_path			logFName		= "engine.log";
-static string_path			log_file_name	= "engine.log";
-static BOOL 				no_log			= TRUE;
+extern BOOL LogExecCB = TRUE;
+string_path logFName = "engine.log";
+string_path log_file_name = "engine.log";
+bool no_log = true;
 #ifdef PROFILE_CRITICAL_SECTIONS
-	static xrCriticalSection	logCS(MUTEX_PROFILE_ID(log));
+	xrCriticalSection logCS(MUTEX_PROFILE_ID(log));
 #else // PROFILE_CRITICAL_SECTIONS
-	static xrCriticalSection	logCS;
+	xrCriticalSection logCS;
 #endif // PROFILE_CRITICAL_SECTIONS
 xr_vector<xr_string> LogFile;
-static LogCallback			LogCB			= 0;
+LogCallback LogCB = 0;
 
 void FlushLog			()
 {
