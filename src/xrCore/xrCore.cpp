@@ -81,7 +81,6 @@ void xrCore::_initialize	(LPCSTR _ApplicationName, LogCallback cb, BOOL init_fs,
 
 		DUMP_PHASE;
 
-		InitLog				();
 		_initialize_cpu		();
 
 //		Debug._initialize	();
