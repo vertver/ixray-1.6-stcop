@@ -18,74 +18,75 @@ CSoundRender_Emitter*	CSoundRender_Core::i_play(ref_sound* S, BOOL _loop, float 
 	return E;
 }
 
-void CSoundRender_Core::update	( const Fvector& P, const Fvector& D, const Fvector& N )
+void CSoundRender_Core::update(const Fvector& P, const Fvector& D, const Fvector& N)
 {
 	u32 it;
 
-	if (0==bReady)				return;
-    bLocked						= TRUE;
-	float new_tm				= Timer.GetElapsed_sec();
-	fTimer_Delta				= new_tm-fTimer_Value;
-//.	float dt					= float(Timer_Delta)/1000.f;
-	float dt_sec				= fTimer_Delta;
-	fTimer_Value				= new_tm;
+	if (0 == bReady)				return;
+	bLocked = TRUE;
+	float new_tm = Timer.GetElapsed_sec();
+	fTimer_Delta = new_tm - fTimer_Value;
+	//.	float dt					= float(Timer_Delta)/1000.f;
+	float dt_sec = fTimer_Delta;
+	fTimer_Value = new_tm;
 
-	s_emitters_u	++	;
+	s_emitters_u++;
 
 	// Firstly update emitters, which are now being rendered
 	//Msg	("! update: r-emitters");
-	for (it=0; it<s_targets.size(); it++)
+	for (it = 0; it < s_targets.size(); it++)
 	{
-		CSoundRender_Target*	T	= s_targets	[it];
-		CSoundRender_Emitter*	E	= T->get_emitter();
+		CSoundRender_Target* T = s_targets[it];
+		CSoundRender_Emitter* E = T->get_emitter();
 		if (E) {
-			E->update	(dt_sec);
-			E->marker	= s_emitters_u;
-			E			= T->get_emitter();	// update can stop itself
-			if (E)		T->priority	= E->priority();
-			else		T->priority	= -1;
-		} else {
-			T->priority	= -1;
+			E->update(dt_sec);
+			E->marker = s_emitters_u;
+			E = T->get_emitter();	// update can stop itself
+			if (E)		T->priority = E->priority();
+			else		T->priority = -1;
+		}
+		else {
+			T->priority = -1;
 		}
 	}
 
 	// Update emmitters
 	//Msg	("! update: emitters");
-	for (it=0; it<s_emitters.size(); it++)
+	for (it = 0; it < s_emitters.size(); it++)
 	{
-		CSoundRender_Emitter*	pEmitter = s_emitters[it];
-		if (pEmitter->marker!=s_emitters_u)
+		CSoundRender_Emitter* pEmitter = s_emitters[it];
+		if (pEmitter->marker != s_emitters_u)
 		{
-			pEmitter->update		(dt_sec);
-			pEmitter->marker		= s_emitters_u;
+			pEmitter->update(dt_sec);
+			pEmitter->marker = s_emitters_u;
 		}
-		if (!pEmitter->isPlaying())		
+		if (!pEmitter->isPlaying())
 		{
 			// Stopped
-			xr_delete		(pEmitter);
-			s_emitters.erase(s_emitters.begin()+it);
+			xr_delete(pEmitter);
+			s_emitters.erase(s_emitters.begin() + it);
 			it--;
 		}
 	}
 
 	// Get currently rendering emitters
 	//Msg	("! update: targets");
-	s_targets_defer.clear	();
-	s_targets_pu			++;
+	s_targets_defer.clear();
+	s_targets_pu++;
 	// u32 PU				= s_targets_pu%s_targets.size();
-	for (it=0; it<s_targets.size(); it++)
+	for (it = 0; it < s_targets.size(); it++)
 	{
-		CSoundRender_Target*	T	= s_targets	[it];
+		CSoundRender_Target* T = s_targets[it];
 		if (T->get_emitter())
 		{
 			// Has emmitter, maybe just not started rendering
-			if		(T->get_Rendering())	
+			if (T->get_Rendering())
 			{
-				/*if	(PU == it)*/	T->fill_parameters	();
-				T->update		();
+				/*if	(PU == it)*/	T->fill_parameters();
+				T->update();
 			}
-			else 	
-				s_targets_defer.push_back		(T);
+			else
+				s_targets_defer.push_back(T);
 		}
 	}
 
@@ -93,41 +94,41 @@ void CSoundRender_Core::update	( const Fvector& P, const Fvector& D, const Fvect
 	if (!s_targets_defer.empty())
 	{
 		//Msg	("! update: start render - commit");
-		s_targets_defer.erase	(std::unique(s_targets_defer.begin(),s_targets_defer.end()),s_targets_defer.end());
-		for (it=0; it<s_targets_defer.size(); it++)
+		s_targets_defer.erase(std::unique(s_targets_defer.begin(), s_targets_defer.end()), s_targets_defer.end());
+		for (it = 0; it < s_targets_defer.size(); it++)
 			s_targets_defer[it]->fill_parameters();
 	}
 
 	// update EFX
-    if (m_is_supported)
+	if (m_is_supported)
 	{
-        if (bListenerMoved)
+		if (bListenerMoved)
 		{
-            bListenerMoved			= FALSE;
-            e_target				= *get_environment	(P);
-        }
+			bListenerMoved = FALSE;
+			e_target = *get_environment(P);
+		}
 
-        e_current.lerp				(e_current,e_target,dt_sec);
+		e_current.lerp(e_current, e_target, dt_sec);
 
-        set_listener			(e_current);
-		commit		();
+		set_listener(e_current);
+		commit();
 	}
 
-    // update listener
-    update_listener					(P,D,N,dt_sec);
-    
+	// update listener
+	update_listener(P, D, N, dt_sec);
+
 	// Start rendering of pending targets
 	if (!s_targets_defer.empty())
 	{
 		//Msg	("! update: start render");
-		for (it=0; it<s_targets_defer.size(); it++)
-			s_targets_defer[it]->render	();
+		for (it = 0; it < s_targets_defer.size(); it++)
+			s_targets_defer[it]->render();
 	}
 
 	// Events
-	update_events					();
+	update_events();
 
-    bLocked							= FALSE;
+	bLocked = FALSE;
 }
 
 static	u32	g_saved_event_count		= 0;

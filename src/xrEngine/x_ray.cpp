@@ -20,7 +20,7 @@
 #include "LightAnimLibrary.h"
 #include "../xrcdb/ispatial.h"
 #include "Text_Console.h"
-
+#include <optick/optick.h>
 //---------------------------------------------------------------------
 ENGINE_API CInifile* pGameIni		= NULL;
 BOOL	g_bIntroFinished			= FALSE;
@@ -103,11 +103,17 @@ ENGINE_API	string512		g_sLaunchOnExit_app;
 ENGINE_API	string_path		g_sLaunchWorkingFolder;
 // -------------------------------------------
 // startup point
-void InitEngine		()
+void InitEngine()
 {
-	Engine.Initialize			( );
-	while (!g_bIntroFinished)	Sleep	(100);
-	Device.Initialize			( );
+	OPTICK_APP("IX-Ray 1.6.02");
+	OPTICK_FRAME("MainThread");
+
+	Engine.Initialize();
+
+	while (!g_bIntroFinished)	
+		Sleep(100);
+
+	Device.Initialize();
 }
 
 struct path_excluder_predicate

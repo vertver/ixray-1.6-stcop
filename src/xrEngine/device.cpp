@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <optick/optick.h>
 
 using namespace DirectX;
 
@@ -39,6 +40,7 @@ ref_light	precache_light = 0;
 
 BOOL CRenderDevice::Begin	()
 {
+	OPTICK_EVENT(__FUNCTION__);
 #ifndef DEDICATED_SERVER
 
 	/*
@@ -106,6 +108,7 @@ extern void CheckPrivilegySlowdown();
 
 void CRenderDevice::End		(void)
 {
+	OPTICK_EVENT(__FUNCTION__);
 #ifndef DEDICATED_SERVER
 
 
@@ -170,31 +173,39 @@ void CRenderDevice::End		(void)
 }
 
 
-volatile u32	mt_Thread_marker		= 0x12345678;
-void 			mt_Thread	(void *ptr)	{
-	while (true) {
+volatile u32 mt_Thread_marker = 0x12345678;
+void mt_Thread(void* ptr)
+{
+	while (true)
+	{
 		// waiting for Device permission to execute
-		Device.mt_csEnter.Enter	();
+		Device.mt_csEnter.Enter();
+		OPTICK_FRAME("Secondary thread");
 
-		if (Device.mt_bMustExit) {
+		if (Device.mt_bMustExit) 
+		{
 			Device.mt_bMustExit = FALSE;				// Important!!!
 			Device.mt_csEnter.Leave();					// Important!!!
 			return;
 		}
 		// we has granted permission to execute
-		mt_Thread_marker			= Device.dwFrame;
- 
-		for (u32 pit=0; pit<Device.seqParallel.size(); pit++)
-			Device.seqParallel[pit]	();
+		mt_Thread_marker = Device.dwFrame;
+
+		for (u32 pit = 0; pit < Device.seqParallel.size(); pit++)
+		{
+			OPTICK_EVENT();
+			Device.seqParallel[pit]();
+		}
+		
 		Device.seqParallel.clear();
-		Device.seqFrameMT.Process	(rp_Frame);
+		Device.seqFrameMT.Process(rp_Frame);
 
 		// now we give control to device - signals that we are ended our work
-		Device.mt_csEnter.Leave	();
+		Device.mt_csEnter.Leave();
 		// waits for device signal to continue - to start again
-		Device.mt_csLeave.Enter	();
+		Device.mt_csLeave.Enter();
 		// returns sync signal to device
-		Device.mt_csLeave.Leave	();
+		Device.mt_csLeave.Leave();
 	}
 }
 
@@ -227,92 +238,100 @@ int g_svDedicateServerUpdateReate = 100;
 
 ENGINE_API xr_list<LOADING_EVENT>			g_loading_events;
 
-void CRenderDevice::on_idle		()
+void CRenderDevice::on_idle()
 {
-	if (!b_is_Ready) {
-		Sleep	(100);
+	if (!b_is_Ready)
+	{
+		Sleep(100);
 		return;
 	}
 
+	OPTICK_FRAME("Primary thread");
+
 	u32 FrameStartTime = TimerGlobal.GetElapsed_ms();
 
-	if (psDeviceFlags.test(rsStatistic))	g_bEnableStatGather	= TRUE;
-	else									g_bEnableStatGather	= FALSE;
-	if(g_loading_events.size())
+	if (psDeviceFlags.test(rsStatistic))	g_bEnableStatGather = TRUE;
+	else									g_bEnableStatGather = FALSE;
+
+	if (g_loading_events.size())
 	{
-		if( g_loading_events.front()() )
+		if (g_loading_events.front()())
 			g_loading_events.pop_front();
-		pApp->LoadDraw				();
+		pApp->LoadDraw();
 		return;
-	}else 
+	}
+	else
 	{
-		FrameMove						( );
+		FrameMove();
 	}
 
 	// Precache
 	if (dwPrecacheFrame)
 	{
-		float factor					= float(dwPrecacheFrame)/float(dwPrecacheTotal);
-		float angle						= PI_MUL_2 * factor;
-		vCameraDirection.set			(_sin(angle),0,_cos(angle));	vCameraDirection.normalize	();
-		vCameraTop.set					(0,1,0);
-		vCameraRight.crossproduct		(vCameraTop,vCameraDirection);
+		float factor = float(dwPrecacheFrame) / float(dwPrecacheTotal);
+		float angle = PI_MUL_2 * factor;
+		vCameraDirection.set(_sin(angle), 0, _cos(angle));	vCameraDirection.normalize();
+		vCameraTop.set(0, 1, 0);
+		vCameraRight.crossproduct(vCameraTop, vCameraDirection);
 
-		mView.build_camera_dir			(vCameraPosition,vCameraDirection,vCameraTop);
+		mView.build_camera_dir(vCameraPosition, vCameraDirection, vCameraTop);
 	}
 
 	// Matrices
-	mFullTransform.mul			( mProject,mView	);
+	mFullTransform.mul(mProject, mView);
 	m_pRender->SetCacheXform(mView, mProject);
 	//RCache.set_xform_view		( mView				);
 	//RCache.set_xform_project	( mProject			);
-	
+
 	XMStoreFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&mInvFullTransform),
 		XMMatrixInverse(nullptr, XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&mFullTransform))));
 
-	vCameraPosition_saved	= vCameraPosition;
-	mFullTransform_saved	= mFullTransform;
-	mView_saved				= mView;
-	mProject_saved			= mProject;
+	vCameraPosition_saved = vCameraPosition;
+	mFullTransform_saved = mFullTransform;
+	mView_saved = mView;
+	mProject_saved = mProject;
 
 	// *** Resume threads
 	// Capture end point - thread must run only ONE cycle
 	// Release start point - allow thread to run
-	mt_csLeave.Enter			();
-	mt_csEnter.Leave			();
-	Sleep						(0);
+	mt_csLeave.Enter();
+	mt_csEnter.Leave();
+	Sleep(0);
 
 #ifndef DEDICATED_SERVER
-	Statistic->RenderTOTAL_Real.FrameStart	();
-	Statistic->RenderTOTAL_Real.Begin		();
-	if (b_is_Active)							{
-		if (Begin())				{
+	Statistic->RenderTOTAL_Real.FrameStart();
+	Statistic->RenderTOTAL_Real.Begin();
+	if (b_is_Active) 
+	{
+		if (Begin())
+		{
 
-			seqRender.Process						(rp_Render);
-			if (psDeviceFlags.test(rsCameraPos) || psDeviceFlags.test(rsStatistic) || Statistic->errors.size())	
-				Statistic->Show						();
+			seqRender.Process(rp_Render);
+			if (psDeviceFlags.test(rsCameraPos) || psDeviceFlags.test(rsStatistic) || Statistic->errors.size())
+				Statistic->Show();
 			//	TEST!!!
 			//Statistic->RenderTOTAL_Real.End			();
 			//	Present goes here
-			End										();
+			End();
 		}
 	}
-	Statistic->RenderTOTAL_Real.End			();
-	Statistic->RenderTOTAL_Real.FrameEnd	();
-	Statistic->RenderTOTAL.accum	= Statistic->RenderTOTAL_Real.accum;
+	Statistic->RenderTOTAL_Real.End();
+	Statistic->RenderTOTAL_Real.FrameEnd();
+	Statistic->RenderTOTAL.accum = Statistic->RenderTOTAL_Real.accum;
 #endif // #ifndef DEDICATED_SERVER
 	// *** Suspend threads
 	// Capture startup point
 	// Release end point - allow thread to wait for startup point
-	mt_csEnter.Enter						();
-	mt_csLeave.Leave						();
+	mt_csEnter.Enter();
+	mt_csLeave.Leave();
 
 	// Ensure, that second thread gets chance to execute anyway
-	if (dwFrame!=mt_Thread_marker)			{
-		for (u32 pit=0; pit<Device.seqParallel.size(); pit++)
-			Device.seqParallel[pit]			();
+	if (dwFrame != mt_Thread_marker) 
+	{
+		for (u32 pit = 0; pit < Device.seqParallel.size(); pit++)
+			Device.seqParallel[pit]();
 		Device.seqParallel.clear();
-		seqFrameMT.Process					(rp_Frame);
+		seqFrameMT.Process(rp_Frame);
 	}
 
 #ifndef DEDICATED_SERVER
@@ -329,7 +348,7 @@ void CRenderDevice::on_idle		()
 	}
 
 	if (!b_is_Active)
-		Sleep		(1);
+		Sleep(1);
 }
 
 #ifdef INGAME_EDITOR
@@ -412,6 +431,8 @@ u32 app_inactive_time_start = 0;
 void ProcessLoading(RP_FUNC *f);
 void CRenderDevice::FrameMove()
 {
+	OPTICK_EVENT(__FUNCTION__);
+
 	dwFrame			++;
 
 	dwTimeContinual	= TimerMM.GetElapsed_ms() - app_inactive_time;

@@ -1,5 +1,5 @@
-#ifndef _PURE_H_AAA_
-#define _PURE_H_AAA_
+#pragma once
+#include <optick/optick.h>
 
 // messages
 #define REG_PRIORITY_LOW		0x11111111ul
@@ -12,7 +12,7 @@ typedef void __fastcall RP_FUNC		(void *obj);
 #define DECLARE_MESSAGE_CL(name,calling)		extern ENGINE_API RP_FUNC rp_##name; class ENGINE_API pure##name { public: virtual void calling On##name(void)=0;	}
 	
 #define DECLARE_MESSAGE( name )	DECLARE_MESSAGE_CL(name, )
-#define DECLARE_RP(name) void __fastcall rp_##name(void *p) { ((pure##name *)p)->On##name(); }
+#define DECLARE_RP(name) void __fastcall rp_##name(void *p) { OPTICK_EVENT(__FUNCTION__); ((pure##name *)p)->On##name(); }
 
 DECLARE_MESSAGE_CL(Frame,_BCL);
 DECLARE_MESSAGE(Render);
@@ -26,7 +26,8 @@ DECLARE_MESSAGE(ScreenResolutionChanged);
 
 
 //-----------------------------------------------------------------------------
-struct _REG_INFO {
+struct _REG_INFO 
+{
 	void*	Object;
 	int		Prio;
 	u32		Flags;
@@ -99,5 +100,3 @@ public:
 		changed				= false;
 	};
 };
-
-#endif
