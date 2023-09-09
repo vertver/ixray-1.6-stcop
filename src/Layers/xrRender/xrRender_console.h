@@ -178,6 +178,7 @@ enum
 	R3FLAG_MSAA_OPT				= (1<<29),
 	R3FLAG_GBUFFER_OPT			= (1<<30),
 	//R3FLAG_MSAA_ALPHATEST		= (1<<31),
+	RFLAG_CLOUD_SHADOWS = (1 << 31),
 };
 
 enum
