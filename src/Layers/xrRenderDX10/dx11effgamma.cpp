@@ -8,7 +8,8 @@ void CGammaControl::Update() {
 		DXGI_GAMMA_CONTROL				G;
 		IDXGIOutput* pOutput;
 
-		CHK_DX(((IDXGISwapChain*)(EngineInterface->GetParent()->GetSwapchain()))->GetContainingOutput(&pOutput));
+		auto Swapchain = (IDXGISwapChain*)(EngineInterface->GetParent()->GetSwapchain());
+		CHK_DX(Swapchain->GetContainingOutput(&pOutput));
 		HRESULT hr = pOutput->GetGammaControlCapabilities(&GC);
 		if (SUCCEEDED(hr))
 		{

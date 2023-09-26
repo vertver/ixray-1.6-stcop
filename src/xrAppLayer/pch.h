@@ -25,6 +25,8 @@ private:
 	void* RenderTarget = nullptr;
 	ApplicationInterface* AppInterface = nullptr;
 
+	void ResizeTarget(int Width, int Height);
+
 public:
 	AppLayer();
 	~AppLayer() override;

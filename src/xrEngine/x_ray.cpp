@@ -216,6 +216,8 @@ ENGINE_API void EngineLoadStage4()
 		LPCSTR	pStartup			= strstr				(Core.Params,"-load ");
 		if (pStartup)				Console->Execute		(pStartup+1);
 	}
+
+	EngineInterface->Create();
 }
 
 ENGINE_API void EngineLoadStage5()

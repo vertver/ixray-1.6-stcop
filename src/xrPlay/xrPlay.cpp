@@ -16,39 +16,6 @@ ENGINE_API void EngineLoadStage5();
 INT_PTR CALLBACK logDlgProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-void CreateGameWindow()
-{
-	// Unless a substitute hWnd has been specified, create a window to render into
-	if (Device.m_hWnd == NULL)
-	{
-		const char* wndclass = "_XRAY_1.6";
-
-		// Register the windows class
-		HINSTANCE hInstance = (HINSTANCE)GetModuleHandle(0);
-		WNDCLASS wndClass = { 0, WndProc, 0, 0, hInstance,
-							  LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON1)),
-							  LoadCursor(NULL, IDC_ARROW),
-							  (HBRUSH)GetStockObject(BLACK_BRUSH),
-							  NULL, wndclass };
-		RegisterClass(&wndClass);
-
-		// Set the window's initial style
-		Device.m_dwWindowStyle = WS_BORDER | WS_DLGFRAME;
-
-		// Set the window's initial width
-		RECT rc;
-		SetRect(&rc, 0, 0, 640, 480);
-		AdjustWindowRect(&rc, Device.m_dwWindowStyle, FALSE);
-
-		// Create the render window
-		Device.m_hWnd = CreateWindowEx(WS_EX_TOPMOST,
-			wndclass, "S.T.A.L.K.E.R.: Call of Pripyat", Device.m_dwWindowStyle,
-			/*rc.left, rc.top, */CW_USEDEFAULT, CW_USEDEFAULT,
-			(rc.right - rc.left), (rc.bottom - rc.top), 0L,
-			0, hInstance, 0L);
-	}
-}
-
 int APIENTRY WinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
 	char* lpCmdLine,
@@ -78,7 +45,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 #endif
 
 	SetThreadAffinityMask(GetCurrentThread(), 1);
-	CreateGameWindow();
 
 	// Title window
 	logoWindow = CreateDialog(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_STARTUP), 0, logDlgProc);
@@ -134,9 +100,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 		DestroyWindow(logoWindow);
 		logoWindow = NULL;
 	}
-
-	// Show main wnd
-	ShowWindow(Device.m_hWnd, SW_SHOWNORMAL);
 
 	EngineLoadStage5();
 

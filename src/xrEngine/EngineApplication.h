@@ -47,6 +47,7 @@ private:
 
 public:
 	void Initialize(AppLayerInterface* Layer) override;
+	void Create() override;
 	void Shutdown() override;
 	void Update(float Delta) override;
 

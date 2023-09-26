@@ -914,11 +914,13 @@ Fvector2 CRenderTarget::get_jitter(bool prevFrame)
         return { g_CameraJitterX, g_CameraJitterY };
     case SCALETYPE_FSR2:
     case SCALETYPE_DLSS: {
+#if 0
         const int32_t jitterPhaseCount = ffxFsr2GetJitterPhaseCount(RCache.get_width(), RCache.get_target_width());
         ffxFsr2GetJitterOffset(&g_CameraJitterX, &g_CameraJitterY, prevFrame ? EngineInterface->GetFrame() - 1 : EngineInterface->GetFrame(), jitterPhaseCount);
         float jitterX = g_CameraJitterX;
         float jitterY = g_CameraJitterY;
         return { jitterX, jitterY };
+#endif
     }
     default:
         break;

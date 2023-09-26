@@ -443,10 +443,12 @@ public:
 	virtual void Execute(LPCSTR args)
 	{
 		CCC_Float::Execute		(args);
-		TheEngine.Render->setGamma(ps_gamma);
-		TheEngine.Render->setBrightness(ps_brightness);
-		TheEngine.Render->setContrast(ps_contrast);
-		TheEngine.Render->updateGamma();
+		if (TheEngine.Render != nullptr) {
+			TheEngine.Render->setGamma(ps_gamma);
+			TheEngine.Render->setBrightness(ps_brightness);
+			TheEngine.Render->setContrast(ps_contrast);
+			TheEngine.Render->updateGamma();
+		}
 	}
 };
 

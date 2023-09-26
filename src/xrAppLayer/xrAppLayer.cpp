@@ -138,6 +138,22 @@ AppLayerInterface* CreateAppLayerInterface()
 #ifdef __cplusplus
 }
 #endif
+void AppLayer::ResizeTarget(int Width, int Height)
+{
+    // #TODO: 
+    ID3D11RenderTargetView*& RTV = *(ID3D11RenderTargetView**)&RenderTarget;
+    if (RTV) {
+        RTV->Release();
+        RTV = nullptr;
+    }
+
+    ID3D11Texture2D* pBackBuffer;
+    ((IDXGISwapChain*)Swapchain)->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
+    HRESULT hr = ((ID3D11Device*)Device)->CreateRenderTargetView(pBackBuffer, nullptr, &RTV);
+    R_CHK(hr);
+    pBackBuffer->Release();
+}
+
 AppLayer::AppLayer()
 {
 }
@@ -153,8 +169,8 @@ bool AppLayer::Initialize(ApplicationInterface* Application, APIEnum API, const 
 
 	SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
 	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
-	SDL_Window* window = SDL_CreateWindow(ApplicationName, DEFAULT_WIDTH, DEFAULT_HEIGHT, window_flags);
-	if (window == nullptr) {
+    WindowHandle = SDL_CreateWindow(ApplicationName, DEFAULT_WIDTH, DEFAULT_HEIGHT, window_flags);
+	if (WindowHandle == nullptr) {
 		return false;
 	}
 
@@ -170,7 +186,7 @@ bool AppLayer::Initialize(ApplicationInterface* Application, APIEnum API, const 
 	}
 
     InitImGuiStuff();
-    if (!ImGui_ImplSDL3_InitForD3D(window)) {
+    if (!ImGui_ImplSDL3_InitForD3D(WindowHandle)) {
         return false;
     }
 
@@ -189,8 +205,9 @@ bool AppLayer::Initialize(ApplicationInterface* Application, APIEnum API, const 
     ViewportHeight = DEFAULT_HEIGHT;
     WindowWidth = DEFAULT_WIDTH;
     WindowHeight = DEFAULT_HEIGHT;
-    AppInterface = Application;
 
+    ResizeTarget(ViewportWidth, ViewportHeight);
+    AppInterface = Application;
     AppInterface->Initialize(this);
 	return true;
 }
@@ -275,7 +292,7 @@ void AppLayer::Loop()
 
 void AppLayer::Resize(int NewWidth, int NewHeight)
 {
-    // #TODO: 
+    ResizeTarget(NewWidth, NewHeight);
     AppInterface->ResizeTargets(NewWidth, NewHeight);
     WindowWidth = NewWidth;
     WindowHeight = NewHeight;
@@ -330,7 +347,7 @@ void* AppLayer::GetContext() const
 
 void* AppLayer::GetSwapchain() const
 {
-	return nullptr;
+	return Swapchain;
 }
 
 void* AppLayer::GetRenderTarget() const
@@ -341,7 +358,7 @@ void* AppLayer::GetRenderTarget() const
 void* AppLayer::GetNativeWindow() const
 {
 #ifdef _WIN32
-	SDL_SysWMinfo wmInfo;
+    SDL_SysWMinfo wmInfo = {};
 	SDL_GetWindowWMInfo(WindowHandle, &wmInfo, SDL_SYSWM_CURRENT_VERSION);
 	return wmInfo.info.win.window;
 #else

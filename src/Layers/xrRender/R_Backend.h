@@ -261,8 +261,14 @@ public:
 	IC	ID3DRenderTargetView*		get_RT				(u32 ID=0);
 	IC	ID3DDepthStencilView*		get_ZB				();
 
-	IC  ID3D11Device*				get_Device()		{ return (ID3D11Device*)EngineInterface->GetParent()->GetDevice(); }
-	IC  ID3D11DeviceContext*		get_Context()		{ return (ID3D11DeviceContext*)EngineInterface->GetParent()->GetContext(); }
+	IC  ID3D11Device*				get_Device()		
+	{
+		return (ID3D11Device*)EngineInterface->GetParent()->GetDevice(); 
+	}
+	IC  ID3D11DeviceContext*		get_Context()		
+	{ 
+		return (ID3D11DeviceContext*)EngineInterface->GetParent()->GetContext();
+	}
 
 	IC	void						set_Constants		(R_constant_table* C);
 	IC	void						set_Constants		(ref_ctable& C_)						{ set_Constants(&*C_);			}

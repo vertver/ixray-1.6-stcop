@@ -47,6 +47,7 @@ class ApplicationInterface
 {
 public:
 	virtual void Initialize(AppLayerInterface* Layer) = 0;
+	virtual void Create() = 0;
 	virtual void Shutdown() = 0;
 	virtual void Update(float Delta) = 0;
 

@@ -146,14 +146,14 @@ public		:
 	virtual void	Execute	(LPCSTR args)
 	{
 		xr_token* tok = tokens;
-		while (tok->name) {
+		while (tok && tok->name) {
 			if (_stricmp(tok->name,args)==0) {
 				*value=tok->id;
 				break;
 			}
 			tok++;
 		}
-		if (!tok->name) InvalidSyntax();
+		if (tok && !tok->name) InvalidSyntax();
 	}
 	virtual void	Status	(TStatus& S)
 	{

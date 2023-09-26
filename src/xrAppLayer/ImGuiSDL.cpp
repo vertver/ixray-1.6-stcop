@@ -31,7 +31,7 @@
 //  2023-02-23: Accept SDL_GetPerformanceCounter() not returning a monotonically increasing value. (#6189, #6114, #3644)
 //  2023-02-07: Forked "imgui_impl_sdl2" into "imgui_impl_sdl3". Removed version checks for old feature. Refer to imgui_impl_sdl2.cpp for older changelog.
 
-#include "imgui.h"
+#include "pch.h"
 #ifndef IMGUI_DISABLE
 #include "ImGuiSDL.h"
 

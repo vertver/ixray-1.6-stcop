@@ -42,10 +42,11 @@ void EngineApplication::UpdateTimers()
 
 void EngineApplication::Initialize(AppLayerInterface* Layer)
 {
-	EngineInterface = this;
-	Render = RenderFactory->CreateRenderDeviceRender();
 	AppLayer = Layer;
+	EngineInterface = this;
 
+	TimerGlobal.Start();
+	TimerMM.Start();
 	GlobalTime = 0;
 	Timer_MM_Delta = 0;
 	{
@@ -55,6 +56,18 @@ void EngineApplication::Initialize(AppLayerInterface* Layer)
 		u32 time_local = TimerGlobal.GetElapsed_sec();
 		Timer_MM_Delta = time_system - time_local;
 	}
+}
+
+void EngineApplication::Create()
+{
+	Render = RenderFactory->CreateRenderDeviceRender();
+	Render->Create(true);
+
+	Render->SetupStates();
+
+	string_path			fname;
+	FS.update_path(fname, "$game_data$", "shaders.xr");
+	Render->OnDeviceCreate(fname);
 }
 
 void EngineApplication::Shutdown()

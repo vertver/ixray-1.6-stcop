@@ -12,7 +12,7 @@
 
 struct DummyDevice
 {
-
+	int hello;
 };
 
 typedef class_exporter<DummyDevice> CScriptRenderDevice;
