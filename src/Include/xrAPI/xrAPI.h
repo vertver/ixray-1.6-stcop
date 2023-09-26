@@ -17,6 +17,9 @@ extern XRAPI_API IRender_interface*	Render;
 class IRenderFactory;
 extern XRAPI_API IRenderFactory*	RenderFactory;
 
+class ApplicationInterface;
+extern XRAPI_API ApplicationInterface* EngineInterface;
+
 class CDUInterface;
 extern XRAPI_API CDUInterface*	DU;
 

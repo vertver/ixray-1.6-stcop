@@ -84,7 +84,7 @@ CInventoryItem::~CInventoryItem()
 				object().ID(),
 				p ? p->cName().c_str() : "none",
 				p ? p->ID() : -1,
-				Device.dwFrame);
+				EngineInterface->GetFrame());
 	}
 #endif // #ifndef MASTER_GOLD
 }
@@ -220,6 +220,8 @@ void CInventoryItem::UpdateCL()
 {
 #ifdef DEBUG
 	if(bDebug){
+		R_ASSERT(false);
+		/*
 		if (dbg_net_Draw_Flags.test(dbg_draw_invitem) )
 		{
 			Device.seqRender.Remove(this);
@@ -228,6 +230,7 @@ void CInventoryItem::UpdateCL()
 		{
 			Device.seqRender.Remove(this);
 		}
+		*/
 	}
 
 #endif
@@ -402,7 +405,7 @@ void CInventoryItem::net_Import			(NET_Packet& P)
 	}*/
 
 	net_update_IItem			N;
-	N.dwTimeStamp				= Device.dwTimeGlobal;
+	N.dwTimeStamp				= EngineInterface->GetRoundedGlobalTime();
 
 	net_Import_PH_Params(P,N,num_items);
 	////////////////////////////////////////////
@@ -1158,7 +1161,7 @@ void CInventoryItem::Interpolate()
 float CInventoryItem::interpolate_states(net_update_IItem const & first, net_update_IItem const & last, SPHNetState & current)
 {
 	float ret_val = 0.f;
-	u32 CurTime = Device.dwTimeGlobal;
+	u32 CurTime = EngineInterface->GetRoundedGlobalTime();
 	
 	if (CurTime == last.dwTimeStamp)
 		return 0.f;

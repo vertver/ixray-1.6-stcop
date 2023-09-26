@@ -7,7 +7,7 @@ class CUISequenceItem;
 class CUIXml;
 class IUISequenceVideoItem;
 
-class CUISequencer :public pureFrame, public pureRender,	public IInputReceiver
+class CUISequencer : public IInputReceiver
 {
 protected:
 	CUIWindow*				m_UIWindow;

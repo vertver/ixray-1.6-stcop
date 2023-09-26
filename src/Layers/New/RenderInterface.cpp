@@ -2,7 +2,7 @@
 
 using namespace Rendering;
 
-RenderInterface RenderEngineInterface;
+RenderInterface RendeEngineInterface;
 
 RenderInterface::RenderInterface()
 {

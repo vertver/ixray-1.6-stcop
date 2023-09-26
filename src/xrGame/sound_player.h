@@ -108,7 +108,7 @@ public:
 				(sound.m_synchro_mask & m_sound_mask) || 
 				(
 					!sound.m_sound->_feedback() && 
-					(sound.m_stop_time <= Device.dwTimeGlobal)
+					(sound.m_stop_time <= EngineInterface->GetRoundedGlobalTime())
 				);
 			if (result)
 				sound.destroy					();

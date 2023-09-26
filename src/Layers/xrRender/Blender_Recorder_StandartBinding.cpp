@@ -148,11 +148,11 @@ class cl_fog_plane	: public R_constant_setup {
 	Fvector4	result;
 	virtual void setup(R_constant* C)
 	{
-		if (marker!=Device.dwFrame)
+		if (marker!=EngineInterface->GetFrame())
 		{
 			// Plane
 			Fvector4		plane;
-			Fmatrix&	M	= Device.mFullTransform;
+			const Fmatrix&	M	= EngineInterface->GetCameraState().FullTransform;
 			plane.x			= -(M._14 + M._13);
 			plane.y			= -(M._24 + M._23);
 			plane.z			= -(M._34 + M._33);
@@ -176,7 +176,7 @@ class cl_fog_params	: public R_constant_setup {
 	Fvector4	result;
 	virtual void setup(R_constant* C)
 	{
-		if (marker!=Device.dwFrame)
+		if (marker!=EngineInterface->GetFrame())
 		{
 			// Near/Far
 			float	n		= g_pGamePersistent->Environment().CurrentEnv->fog_near	;
@@ -193,7 +193,7 @@ class cl_fog_color	: public R_constant_setup {
 	u32			marker;
 	Fvector4	result;
 	virtual void setup	(R_constant* C)	{
-		if (marker!=Device.dwFrame)	{
+		if (marker!=EngineInterface->GetFrame())	{
 			CEnvDescriptor&	desc	= *g_pGamePersistent->Environment().CurrentEnv;
 		#if RENDER==R_R1
 			result.set(desc.fog_color.x * ps_r1_fog_luminance, desc.fog_color.y * ps_r1_fog_luminance, desc.fog_color.z * ps_r1_fog_luminance, 0);
@@ -210,7 +210,7 @@ class cl_fog_color	: public R_constant_setup {
 class cl_times		: public R_constant_setup {
 	virtual void setup(R_constant* C)
 	{
-		float 		t	= RDEVICE.fTimeGlobal;
+		float 		t	= EngineInterface->GetGlobalTime();
 		RCache.set_c	(C,t,t*10,t/10,_sin(t))	;
 	}
 };
@@ -220,7 +220,7 @@ static cl_times		binder_times;
 class cl_eye_P		: public R_constant_setup {
 	virtual void setup(R_constant* C)
 	{
-		Fvector&		V	= RDEVICE.vCameraPosition;
+		const Fvector&		V	= EngineInterface->GetCameraState().CameraPosition;
 		RCache.set_c	(C,V.x,V.y,V.z,1);
 	}
 };
@@ -230,7 +230,7 @@ static cl_eye_P		binder_eye_P;
 class cl_eye_D		: public R_constant_setup {
 	virtual void setup(R_constant* C)
 	{
-		Fvector&		V	= RDEVICE.vCameraDirection;
+		const Fvector&		V	= EngineInterface->GetCameraState().CameraDirection;
 		RCache.set_c	(C,V.x,V.y,V.z,0);
 	}
 };
@@ -240,7 +240,7 @@ static cl_eye_D		binder_eye_D;
 class cl_eye_N		: public R_constant_setup {
 	virtual void setup(R_constant* C)
 	{
-		Fvector&		V	= RDEVICE.vCameraTop;
+		const Fvector&		V	= EngineInterface->GetCameraState().CameraTop;
 		RCache.set_c	(C,V.x,V.y,V.z,0);
 	}
 };
@@ -250,7 +250,7 @@ static cl_eye_N		binder_eye_N;
 class cl_prev_eye_P		: public R_constant_setup {
 	virtual void setup(R_constant* C)
 	{
-		Fvector&		V	= RDEVICE.vPrevCameraPosition;
+		const Fvector&		V	= EngineInterface->GetPrevCameraState().CameraPosition;
 		RCache.set_c	(C,V.x,V.y,V.z,1);
 	}
 };
@@ -260,7 +260,7 @@ static cl_prev_eye_P		binder_prev_eye_P;
 class cl_prev_eye_D		: public R_constant_setup {
 	virtual void setup(R_constant* C)
 	{
-		Fvector&		V	= RDEVICE.vPrevCameraDirection;
+		const Fvector&		V	= EngineInterface->GetPrevCameraState().CameraDirection;
 		RCache.set_c	(C,V.x,V.y,V.z,0);
 	}
 };
@@ -270,7 +270,7 @@ static cl_prev_eye_D		binder_prev_eye_D;
 class cl_prev_eye_N		: public R_constant_setup {
 	virtual void setup(R_constant* C)
 	{
-		Fvector&		V	= RDEVICE.vPrevCameraTop;
+		const Fvector&		V	= EngineInterface->GetPrevCameraState().CameraTop;
 		RCache.set_c	(C,V.x,V.y,V.z,0);
 	}
 };
@@ -282,7 +282,7 @@ class cl_sun0_color	: public R_constant_setup {
 	u32			marker;
 	Fvector4	result;
 	virtual void setup	(R_constant* C)	{
-		if (marker!=Device.dwFrame)	{
+		if (marker!=EngineInterface->GetFrame())	{
 			CEnvDescriptor&	desc	= *g_pGamePersistent->Environment().CurrentEnv;
 			result.set				(desc.sun_color.x,	desc.sun_color.y, desc.sun_color.z,	0);
 		}
@@ -293,7 +293,7 @@ class cl_sun0_dir_w	: public R_constant_setup {
 	u32			marker;
 	Fvector4	result;
 	virtual void setup	(R_constant* C)	{
-		if (marker!=Device.dwFrame)	{
+		if (marker!=EngineInterface->GetFrame())	{
 			CEnvDescriptor&	desc	= *g_pGamePersistent->Environment().CurrentEnv;
 			result.set				(desc.sun_dir.x,	desc.sun_dir.y, desc.sun_dir.z,	0);
 		}
@@ -304,10 +304,10 @@ class cl_sun0_dir_e	: public R_constant_setup {
 	u32			marker;
 	Fvector4	result;
 	virtual void setup	(R_constant* C)	{
-		if (marker!=Device.dwFrame)	{
+		if (marker!=EngineInterface->GetFrame())	{
 			Fvector D;
 			CEnvDescriptor&	desc		= *g_pGamePersistent->Environment().CurrentEnv;
-			Device.mView.transform_dir	(D,desc.sun_dir);
+			EngineInterface->GetCameraState().View.transform_dir(D,desc.sun_dir);
 			D.normalize					();
 			result.set					(D.x,D.y,D.z,0);
 		}
@@ -320,7 +320,7 @@ class cl_amb_color	: public R_constant_setup {
 	u32			marker;
 	Fvector4	result;
 	virtual void setup	(R_constant* C)	{
-		if (marker!=Device.dwFrame)	{
+		if (marker!=EngineInterface->GetFrame())	{
 			CEnvDescriptorMixer&	desc	= *g_pGamePersistent->Environment().CurrentEnv;
 			result.set				(desc.ambient.x, desc.ambient.y, desc.ambient.z, desc.weight);
 		}
@@ -331,7 +331,7 @@ class cl_hemi_color	: public R_constant_setup {
 	u32			marker;
 	Fvector4	result;
 	virtual void setup	(R_constant* C)	{
-		if (marker!=Device.dwFrame)	{
+		if (marker!=EngineInterface->GetFrame())	{
 			CEnvDescriptor&	desc	= *g_pGamePersistent->Environment().CurrentEnv;
 			result.set				(desc.hemi_color.x, desc.hemi_color.y, desc.hemi_color.z, desc.hemi_color.w);
 		}
@@ -361,7 +361,7 @@ static class cl_screen_scale : public R_constant_setup
 {	
 	virtual void setup	(R_constant* C)
 	{
-		RCache.set_c(C, RDEVICE.RenderScale);
+		RCache.set_c(C, RCache.get_scale());
 	}
 } binder_screen_scale;
 #endif

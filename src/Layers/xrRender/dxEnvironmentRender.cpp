@@ -174,19 +174,9 @@ void dxEnvironmentRender::OnFrame(CEnvironment &env)
 	dxEnvDescriptorMixerRender &mixRen = *(dxEnvDescriptorMixerRender*)&*env.CurrentEnv->m_pDescriptorMixer;
 
 	if (::Render->get_generation()==IRender_interface::GENERATION_R2){
-		//. very very ugly hack
-		if (HW.Caps.raster_major >= 3 && HW.Caps.geometry.bVTF){
-			// tonemapping in VS
-			mixRen.sky_r_textures.push_back		(std::make_pair(u32(D3DVERTEXTEXTURESAMPLER0),tonemap));	//. hack
-			mixRen.sky_r_textures_env.push_back	(std::make_pair(u32(D3DVERTEXTEXTURESAMPLER0),tonemap));	//. hack
-			mixRen.clouds_r_textures.push_back	(std::make_pair(u32(D3DVERTEXTEXTURESAMPLER0),tonemap));	//. hack
-		} else {
-			// tonemapping in PS
-			mixRen.sky_r_textures.push_back		(std::make_pair(2,tonemap));								//. hack
-			mixRen.sky_r_textures_env.push_back	(std::make_pair(2,tonemap));								//. hack
-			mixRen.clouds_r_textures.push_back	(std::make_pair(2,tonemap));								//. hack
-		}
-
+		mixRen.sky_r_textures.push_back(std::make_pair(u32(D3DVERTEXTEXTURESAMPLER0), tonemap));	//. hack
+		mixRen.sky_r_textures_env.push_back(std::make_pair(u32(D3DVERTEXTEXTURESAMPLER0), tonemap));	//. hack
+		mixRen.clouds_r_textures.push_back(std::make_pair(u32(D3DVERTEXTEXTURESAMPLER0), tonemap));	//. hack
 	}
 
 	//. Setup skybox textures, somewhat ugly
@@ -208,9 +198,9 @@ void dxEnvironmentRender::OnFrame(CEnvironment &env)
 	Fvector3	&fog_color = env.CurrentEnv->fog_color;
 #endif	//	RENDER==R_R1
 
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_FOGCOLOR,	 color_rgba_f(fog_color.x,fog_color.y,fog_color.z,0) ));
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_FOGSTART,	*(u32 *)(&env.CurrentEnv->fog_near)	));
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_FOGEND,	*(u32 *)(&env.CurrentEnv->fog_far)	));
+	CHK_DX(RCache.get_Device()->SetRenderState( D3DRS_FOGCOLOR,	 color_rgba_f(fog_color.x,fog_color.y,fog_color.z,0) ));
+	CHK_DX(RCache.get_Device()->SetRenderState( D3DRS_FOGSTART,	*(u32 *)(&env.CurrentEnv->fog_near)	));
+	CHK_DX(RCache.get_Device()->SetRenderState( D3DRS_FOGEND,	*(u32 *)(&env.CurrentEnv->fog_far)	));
 #endif
 }
 
@@ -248,11 +238,11 @@ void dxEnvironmentRender::RenderSky(CEnvironment &env)
 	// draw sky box
 	Fmatrix						mSky;
 	mSky.rotateY				(env.CurrentEnv->sky_rotation);
-	mSky.translate_over			(Device.vCameraPosition);
+	mSky.translate_over			(EngineInterface->GetCameraState().CameraPosition);
 
 	Fmatrix						mPrevSky;
 	mPrevSky.rotateY			(env.CurrentEnv->sky_rotation);
-	mPrevSky.translate_over		(Device.vPrevCameraPosition);
+	mPrevSky.translate_over		(EngineInterface->GetPrevCameraState().CameraPosition);
 
 	u32		i_offset,v_offset;
 	u32		C					= color_rgba(iFloor(env.CurrentEnv->sky_color.x*255.f), iFloor(env.CurrentEnv->sky_color.y*255.f), iFloor(env.CurrentEnv->sky_color.z*255.f), iFloor(env.CurrentEnv->weight*255.f));
@@ -301,12 +291,12 @@ void dxEnvironmentRender::RenderClouds(CEnvironment &env)
 	mScale.scale(10, 0.4f, 10);
 	mXFORM.rotateY(env.CurrentEnv->sky_rotation);
 	mXFORM.mulB_43(mScale);
-	mXFORM.translate_over(Device.vCameraPosition);
+	mXFORM.translate_over(EngineInterface->GetCameraState().CameraPosition);
 
 	Fmatrix						mPrevXFORM;
 	mPrevXFORM.rotateY(env.CurrentEnv->sky_rotation);
 	mPrevXFORM.mulB_43(mScale);
-	mPrevXFORM.translate_over(Device.vPrevCameraPosition);
+	mPrevXFORM.translate_over(EngineInterface->GetPrevCameraState().CameraPosition);
 
 	Fvector wd0, wd1;
 	Fvector4 wind_dir;

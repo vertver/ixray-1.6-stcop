@@ -16,7 +16,7 @@
 #include "RenderFactory.h"
 #include "RenderDebug.h"
 
-extern Rendering::RenderInterface RenderEngineInterface;
+extern Rendering::RenderInterface RendeEngineInterface;
 extern Rendering::UIRender UIRenderInterface;
 extern Rendering::RenderFactory RenderFactoryInterface;
 

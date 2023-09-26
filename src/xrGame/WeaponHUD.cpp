@@ -148,7 +148,7 @@ void CWeaponHUD::animPlay			(MotionID M,	BOOL bMixIn, CHudItem* W, u32 state)
 	if (anim_time>0){
 		m_bStopAtEndAnimIsRunning	= true;
 		m_pCallbackItem				= W;
-		m_dwAnimEndTime				= Device.dwTimeGlobal + anim_time;
+		m_dwAnimEndTime				= EngineInterface->GetRoundedGlobalTime() + anim_time;
 	}else{
 		m_pCallbackItem				= NULL;
 	}
@@ -156,7 +156,7 @@ void CWeaponHUD::animPlay			(MotionID M,	BOOL bMixIn, CHudItem* W, u32 state)
 
 void CWeaponHUD::Update				()
 {
-	if(m_bStopAtEndAnimIsRunning && Device.dwTimeGlobal > m_dwAnimEndTime)
+	if(m_bStopAtEndAnimIsRunning && EngineInterface->GetRoundedGlobalTime() > m_dwAnimEndTime)
 		StopCurrentAnim				();
 	if(m_bVisible)
 		smart_cast<IKinematicsAnimated*>(Visual())->UpdateTracks		();

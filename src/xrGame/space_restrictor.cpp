@@ -258,7 +258,7 @@ void CSpaceRestrictor::OnRender	()
 //DRAW name
 
 		Fmatrix		res;
-		res.mul		(Device.mFullTransform, XFORM());
+		res.mul		(EngineInterface->GetCameraState().FullTransform, XFORM());
 
 		Fvector4	v_res;
 
@@ -277,8 +277,8 @@ void CSpaceRestrictor::OnRender	()
 		if (v_res.x < -1.f || v_res.x > 1.f || v_res.y<-1.f || v_res.y>1.f) return;
 
 		// get real (x,y)
-		float x = (1.f + v_res.x)/2.f * (Device.TargetWidth);
-		float y = (1.f - v_res.y)/2.f * (Device.TargetHeight) - delta_height;
+		float x = (1.f + v_res.x)/2.f * (EngineInterface->GetWidth());
+		float y = (1.f - v_res.y)/2.f * (EngineInterface->GetHeight()) - delta_height;
 
 		UI().Font().pFontMedium->SetColor	(0xffff0000);
 		UI().Font().pFontMedium->OutSet	(x, y-=delta_height);

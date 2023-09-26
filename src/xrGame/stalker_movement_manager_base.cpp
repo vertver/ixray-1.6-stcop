@@ -198,7 +198,7 @@ void stalker_movement_manager_base::initialize()
 
 	restrictions().remove_all_restrictions();
 	set_nearest_accessible_position();
-//	Msg						("[%6d] m_failed_to_build_path = %s (stalker_movement_manager_base::initialize)",Device.dwTimeGlobal,m_failed_to_build_path ? "true" : "false");
+//	Msg						("[%6d] m_failed_to_build_path = %s (stalker_movement_manager_base::initialize)",EngineInterface->GetRoundedGlobalTime(),m_failed_to_build_path ? "true" : "false");
 }
 
 void stalker_movement_manager_base::set_desired_position(const Fvector *position)
@@ -407,7 +407,7 @@ void stalker_movement_manager_base::parse_velocity_mask	(stalker_movement_params
 		if (movement_params.m_mental_state == eMentalStateFree) {
 			setup_body_orientation	();
 			guard.enable			(false);
-//			Msg						("%d FALSE",Device.dwTimeGlobal);
+//			Msg						("%d FALSE",EngineInterface->GetRoundedGlobalTime());
 		}
 		if	(
 				(movement_params.m_mental_state != eMentalStateFree) ||
@@ -418,7 +418,7 @@ void stalker_movement_manager_base::parse_velocity_mask	(stalker_movement_params
 		{
 			m_last_turn_index			= detail().curr_travel_point_index();
 			guard.enable			(true);
-//			Msg						("%d TRUE",Device.dwTimeGlobal);
+//			Msg						("%d TRUE",EngineInterface->GetRoundedGlobalTime());
 			if (detail().curr_travel_point_index() + 1 < path().size()) {
 				point				= path()[detail().curr_travel_point_index() + 1];
 				current_velocity	= detail().velocity(point.velocity);

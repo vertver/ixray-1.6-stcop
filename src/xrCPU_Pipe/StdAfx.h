@@ -29,6 +29,7 @@
 	#define RENDER 1
 	#include "../xrEngine/Render.h"
 	#include "../xrEngine/Device.h"
+	#include "../xrEngine/EngineApplication.h"
 	#include "../Layers/xrRender/light.h"
 #endif
 #endif // _EDITOR

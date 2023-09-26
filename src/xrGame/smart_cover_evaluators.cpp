@@ -132,7 +132,7 @@ loophole_hit_long_ago_evaluator::loophole_hit_long_ago_evaluator(animation_plann
 
 _value_type loophole_hit_long_ago_evaluator::evaluate()
 {
-	return						((m_object->time_object_hit() + m_time_to_wait) < Device.dwTimeGlobal);
+	return						((m_object->time_object_hit() + m_time_to_wait) < EngineInterface->GetRoundedGlobalTime());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -296,7 +296,7 @@ _value_type idle_time_interval_passed_evaluator::evaluate		()
 	if (!m_object->stay_idle())
 		return					(false);
 
-	u32 const					&current_time = Device.dwTimeGlobal;
+	u32 const					&current_time = EngineInterface->GetRoundedGlobalTime();
 	if (current_time <= m_object->last_idle_time() + m_time_interval) {
 		m_object->stay_idle		(true);
 		
@@ -327,7 +327,7 @@ _value_type lookout_time_interval_passed_evaluator::evaluate		()
 	if (m_object->stay_idle())
 		return					(false);
 
-	u32 const					&current_time = Device.dwTimeGlobal;
+	u32 const					&current_time = EngineInterface->GetRoundedGlobalTime();
 	if (current_time <= m_object->last_lookout_time() + m_time_interval) {
 		m_object->stay_idle		(false);
 

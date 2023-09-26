@@ -18,7 +18,8 @@
 
 
 #include "../xrcdb/xrcdb.h"
-#include "../xrsound/sound.h"
+#include "../xrsound/sound.h" 
+#include "../xrAppLayer/xrAppLayer.h"
 //#include "../xrengine/IGame_Level.h"
 
 #include "xrPhysics.h"

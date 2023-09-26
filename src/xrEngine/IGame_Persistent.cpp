@@ -17,41 +17,15 @@
 	bool g_dedicated_server	= false;
 #endif
 
-#ifdef INGAME_EDITOR
-#	include "editor_environment_manager.hpp"
-#endif // INGAME_EDITOR
-
 ENGINE_API	IGame_Persistent*		g_pGamePersistent	= NULL;
 
 IGame_Persistent::IGame_Persistent	()
 {
-	RDEVICE.seqAppStart.Add			(this);
-	RDEVICE.seqAppEnd.Add			(this);
-	RDEVICE.seqFrame.Add			(this,REG_PRIORITY_HIGH+1);
-	RDEVICE.seqAppActivate.Add		(this);
-	RDEVICE.seqAppDeactivate.Add	(this);
-
 	m_pMainMenu						= NULL;
-
-#ifndef INGAME_EDITOR
-	#ifndef _EDITOR
-	pEnvironment					= xr_new<CEnvironment>();
-	#endif
-#else // #ifdef INGAME_EDITOR
-	if (RDEVICE.editor())
-		pEnvironment				= xr_new<editor::environment::manager>();
-	else
-		pEnvironment				= xr_new<CEnvironment>();
-#endif // #ifdef INGAME_EDITOR
 }
 
 IGame_Persistent::~IGame_Persistent	()
 {
-	RDEVICE.seqFrame.Remove			(this);
-	RDEVICE.seqAppStart.Remove		(this);
-	RDEVICE.seqAppEnd.Remove			(this);
-	RDEVICE.seqAppActivate.Remove	(this);
-	RDEVICE.seqAppDeactivate.Remove	(this);
 #ifndef _EDITOR
 	xr_delete						(pEnvironment);
 #endif
@@ -129,6 +103,9 @@ void IGame_Persistent::Disconnect	()
 #endif
 }
 
+ENGINE_API CTimer loading_save_timer;
+ENGINE_API bool loading_save_timer_started = false;
+
 void IGame_Persistent::OnGameStart()
 {
 #ifndef _EDITOR
@@ -146,7 +123,7 @@ void IGame_Persistent::OnGameStart()
 void IGame_Persistent::Prefetch()
 {
 	// prefetch game objects & models
-	float	p_time		=			1000.f*Device.GetTimerGlobal()->GetElapsed_sec();
+	float	p_time		=			1000.f*TheEngine.TimerGlobal.GetElapsed_sec();
 	u32	mem_0			=			Memory.mem_usage()	;
 
 	Log("Loading objects...");
@@ -154,9 +131,9 @@ void IGame_Persistent::Prefetch()
 	Log("Loading models...");
 	Render->models_Prefetch();
 	Log("Loading textures...");
-	Device.m_pRender->ResourcesDeferredUpload();
+	TheEngine.Render->ResourcesDeferredUpload();
 
-	p_time				=			1000.f*Device.GetTimerGlobal()->GetElapsed_sec() - p_time;
+	p_time				=			1000.f* TheEngine.TimerGlobal.GetElapsed_sec() - p_time;
 	u32		p_mem		=			Memory.mem_usage() - mem_0	;
 
 	Msg					("* [prefetch] time:    %d ms",	iFloor(p_time));
@@ -177,13 +154,9 @@ void IGame_Persistent::OnFrame		()
 {
 #ifndef _EDITOR
 
-	if(!Device.Paused() || Device.dwPrecacheFrame)
-		Environment().OnFrame	();
-
-
-	Device.Statistic->Particles_starting= ps_needtoplay.size	();
-	Device.Statistic->Particles_active	= ps_active.size		();
-	Device.Statistic->Particles_destroy	= ps_destroy.size		();
+	if (TheEngine.GetState() != ApplicationState::Paused) {
+		Environment().OnFrame();
+	}
 
 	// Play req particle systems
 	while (ps_needtoplay.size())
@@ -251,7 +224,5 @@ void IGame_Persistent::destroy_particles		(const bool &all_particles)
 
 void IGame_Persistent::OnAssetsChanged()
 {
-#ifndef _EDITOR
-	Device.m_pRender->OnAssetsChanged(); //Resources->m_textures_description.Load();
-#endif    
+	TheEngine.OnContentChange();
 }

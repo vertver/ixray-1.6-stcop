@@ -194,7 +194,7 @@ void CEffect_Thunderbolt::Bolt(shared_str id, float period, float lt)
     float lng	            = Random.randF(sun_h-environment.p_var_long+PI,sun_h+environment.p_var_long+PI); 
     float dist	            = Random.randF(FAR_DIST*environment.p_min_dist,FAR_DIST*.95f);
     current_direction.setHP	(lng,alt);
-    pos.mad		            (Device.vCameraPosition,current_direction,dist);
+    pos.mad		            (TheEngine.GetCameraState().CameraPosition, current_direction, dist);
     dev.x		            = Random.randF(-environment.p_tilt,environment.p_tilt);
     dev.y		            = Random.randF(0,PI_MUL_2);
     dev.z		            = Random.randF(-environment.p_tilt,environment.p_tilt);
@@ -214,9 +214,9 @@ void CEffect_Thunderbolt::Bolt(shared_str id, float period, float lt)
     float next_v			= Random.randF();
 
     if (next_v<environment.p_second_prop){
-	    next_lightning_time = Device.fTimeGlobal+lt+EPS_L;
+	    next_lightning_time = TheEngine.GetGlobalTime() +lt+EPS_L;
     }else{
-	    next_lightning_time = Device.fTimeGlobal+period+Random.randF(-period*0.3f,period*0.3f);
+	    next_lightning_time = TheEngine.GetGlobalTime() +period+Random.randF(-period*0.3f,period*0.3f);
 		current->snd.play_no_feedback		(0,0,dist/300.f,&pos,0,0,&Fvector2().set(dist/2,dist*2.f));
     }
 
@@ -229,13 +229,13 @@ void CEffect_Thunderbolt::OnFrame(shared_str id, float period, float duration)
 	BOOL enabled			= !!(id.size());
 	if (bEnabled!=enabled){
     	bEnabled			= enabled;
-	    next_lightning_time = Device.fTimeGlobal+period+Random.randF(-period*0.5f,period*0.5f);
-    }else if (bEnabled&&(Device.fTimeGlobal>next_lightning_time)){ 
+	    next_lightning_time = TheEngine.GetGlobalTime() + period + Random.randF(-period * 0.5f, period * 0.5f);
+    }else if (bEnabled&&(TheEngine.GetGlobalTime() >next_lightning_time)){
     	if (state==stIdle && !!(id.size())) Bolt(id,period,duration);
     }
 	if (state==stWorking){
     	if (current_time>life_time) state = stIdle;
-    	current_time	+= Device.fTimeDelta;
+    	current_time	+= TheEngine.GetDeltaTime();
 		Fvector fClr;		
 		int frame;
 		u32 uClr		= current->color_anim->CalculateRGB(current_time/life_time,frame);

@@ -16,15 +16,15 @@ void CRenderTarget::draw_rain( light &RainSetup )
 
 	// Common constants (light-related)
 	Fvector		L_dir;
-	Device.mView.transform_dir	(L_dir,RainSetup.direction);
+	EngineInterface->GetCameraState().View.transform_dir	(L_dir,RainSetup.direction);
 	L_dir.normalize				();
 
 	Fvector		W_dirX;
-	Device.mView.transform_dir	(W_dirX,Fvector().set(1.0f, 0.0f, 0.0f));
+	EngineInterface->GetCameraState().View.transform_dir	(W_dirX,Fvector().set(1.0f, 0.0f, 0.0f));
 	W_dirX.normalize				();
 
 	Fvector		W_dirZ;
-	Device.mView.transform_dir	(W_dirZ,Fvector().set(0.0f, 0.0f, 1.0f));
+	EngineInterface->GetCameraState().View.transform_dir	(W_dirZ,Fvector().set(0.0f, 0.0f, 1.0f));
 	W_dirZ.normalize				();
 
 	// Perform masking (only once - on the first/near phase)
@@ -57,8 +57,8 @@ void CRenderTarget::draw_rain( light &RainSetup )
 	// recalculate d_Z, to perform depth-clipping
 	const float fRainFar = ps_r3_dyn_wet_surf_far;
 
-	Fvector	center_pt;			center_pt.mad	(Device.vCameraPosition,Device.vCameraDirection,fRainFar);
-	Device.mFullTransform.transform(center_pt)	;
+	Fvector	center_pt;			center_pt.mad	(EngineInterface->GetCameraState().CameraPosition,EngineInterface->GetCameraState().CameraDirection,fRainFar);
+	EngineInterface->GetCameraState().FullTransform.transform(center_pt)	;
 	d_Z							= center_pt.z	;
 
 	// nv-stencil recompression
@@ -97,7 +97,7 @@ void CRenderTarget::draw_rain( light &RainSetup )
 
 		// compute xforms
 		FPU::m64r			();
-		Fmatrix				xf_invview;		xf_invview.invert	(Device.mView)	;
+		Fmatrix				xf_invview;		xf_invview.invert	(EngineInterface->GetCameraState().View)	;
 
 		// shadow xform
 		Fmatrix				m_shadow;
@@ -125,7 +125,7 @@ void CRenderTarget::draw_rain( light &RainSetup )
 
 		// compute xforms
 		FPU::m64r			();
-		Fmatrix				xf_invview;		xf_invview.invert	(Device.mView)	;
+		Fmatrix				xf_invview;		xf_invview.invert	(EngineInterface->GetCameraState().View)	;
 
 		// shadow xform
 		Fmatrix				m_shadow;
@@ -144,7 +144,7 @@ void CRenderTarget::draw_rain( light &RainSetup )
 			Fmatrix			m_xform;
 			//Fvector			direction	= RainSetup.direction	;
 			Fvector			normal	;	normal.setHP(1,0);
-			//w_shift		+=	0.003f*Device.fTimeDelta;
+			//w_shift		+=	0.003f*EngineInterface->GetDeltaTime();
 			//Fvector			position;	position.set(0,0,0);
 			//m_xform.build_camera_dir	(position,direction,normal)	;
 			m_xform.identity();

@@ -12,7 +12,7 @@ void CRenderTarget::phase_dlss_combine()
     phase_copy_depth();
 
     DLSSWrapper::DrawParameters dlssParams;
-    dlssParams.deviceContext = HW.pContext;
+    dlssParams.deviceContext = RCache.get_Context();
     dlssParams.exposureResource = nullptr;
     dlssParams.unresolvedColorResource = rt_Target->pSurface;
     dlssParams.motionvectorResource = rt_MotionVectors->pSurface;
@@ -25,11 +25,11 @@ void CRenderTarget::phase_dlss_combine()
     dlssParams.cameraReset = false;
     dlssParams.cameraJitterX = g_CameraJitterX;
     dlssParams.cameraJitterY = g_CameraJitterY;
-    dlssParams.frameTimeDelta = Device.fTrueTimeDelta * 1000.0f;
+    dlssParams.frameTimeDelta = EngineInterface->GetTrueDeltaTime() * 1000.0f;
     dlssParams.nearPlane = VIEWPORT_NEAR;
     dlssParams.farPlane = g_pGamePersistent->Environment().CurrentEnv->far_plane;
-    dlssParams.fovH = deg2rad(Device.fFOV);
+    dlssParams.fovH = deg2rad(EngineInterface->GetCameraState().FOV);
 
     g_DLSSWrapper.Draw(dlssParams);
-    HW.pContext->CopyResource(rt_Output->pSurface, rt_UpscaleOutput->pSurface);
+    RCache.get_Context()->CopyResource(rt_Output->pSurface, rt_UpscaleOutput->pSurface);
 }

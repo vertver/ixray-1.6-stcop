@@ -455,37 +455,37 @@ void CEnvironment::SelectEnvs(float gt)
     }
 }
 
-void CEnvironment::lerp		(float& current_weight)
+void CEnvironment::lerp(float& current_weight)
 {
-	if (bWFX&&(wfx_time<=0.f)) StopWFX();
+	if (bWFX && (wfx_time <= 0.f)) StopWFX();
 
-	SelectEnvs				(fGameTime);
-    VERIFY					(Current[0]&&Current[1]);
+	SelectEnvs(fGameTime);
+	VERIFY(Current[0] && Current[1]);
 
-	current_weight			= TimeWeight(fGameTime,Current[0]->exec_time,Current[1]->exec_time);
+	current_weight = TimeWeight(fGameTime, Current[0]->exec_time, Current[1]->exec_time);
 	// modifiers
 	CEnvModifier			EM;
-	EM.far_plane			= 0;
-	EM.fog_color.set		( 0,0,0 );
-	EM.fog_density			= 0;
-	EM.ambient.set			( 0,0,0 );
-	EM.sky_color.set		( 0,0,0 );
-	EM.hemi_color.set		( 0,0,0 );
-	EM.use_flags.zero		();
+	EM.far_plane = 0;
+	EM.fog_color.set(0, 0, 0);
+	EM.fog_density = 0;
+	EM.ambient.set(0, 0, 0);
+	EM.sky_color.set(0, 0, 0);
+	EM.hemi_color.set(0, 0, 0);
+	EM.use_flags.zero();
 
-	Fvector	view			= Device.vCameraPosition;
-	float	mpower			= 0;
-	for (xr_vector<CEnvModifier>::iterator mit=Modifiers.begin(); mit!=Modifiers.end(); mit++)
-		mpower				+= EM.sum(*mit,view);
+	Fvector	view = TheEngine.GetCameraState().CameraPosition;
+	float	mpower = 0;
+	for (xr_vector<CEnvModifier>::iterator mit = Modifiers.begin(); mit != Modifiers.end(); mit++)
+		mpower += EM.sum(*mit, view);
 
 	// final lerp
-	CurrentEnv->lerp		(this,*Current[0],*Current[1],current_weight,EM,mpower);
+	CurrentEnv->lerp(this, *Current[0], *Current[1], current_weight, EM, mpower);
 }
 
 void CEnvironment::OnFrame()
 {
 #ifdef _EDITOR
-	SetGameTime				(fGameTime+Device.fTimeDelta*fTimeFactor,fTimeFactor);
+	SetGameTime				(fGameTime+TheEngine.GetDeltaTime()*fTimeFactor,fTimeFactor);
     if (fsimilar(ed_to_time,DAY_LENGTH)&&fsimilar(ed_from_time,0.f)){
 	    if (fGameTime>DAY_LENGTH)	fGameTime-=DAY_LENGTH;
     }else{
@@ -528,7 +528,7 @@ void CEnvironment::OnFrame()
 #endif // #ifndef MASTER_GOLD
 
 	PerlinNoise1D->SetFrequency		(wind_gust_factor*MAX_NOISE_FREQ);
-	wind_strength_factor			= clampr(PerlinNoise1D->GetContinious(Device.fTimeGlobal)+0.5f,0.f,1.f); 
+	wind_strength_factor			= clampr(PerlinNoise1D->GetContinious(TheEngine.GetGlobalTime())+0.5f,0.f,1.f); 
 
     shared_str l_id						=	(current_weight<0.5f)?Current[0]->lens_flare_id:Current[1]->lens_flare_id;
 	eff_LensFlare->OnFrame				(l_id);

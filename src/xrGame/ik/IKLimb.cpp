@@ -48,7 +48,7 @@ const IVektor	gpos_vector		={1,0,0};
 
 IC bool null_frame()
 {
-	return !!Device.Paused();
+	return EngineInterface->GetState() == ApplicationState::Paused;
 }
 
 IC const Fmatrix& cvm( const Matrix &IM ){ return *((Fmatrix*)(&IM)); }
@@ -186,7 +186,7 @@ void CIKLimb::SetGoal( SCalculateData &cd )
 #if	0
 	if(!state_valide(sv_state))
 	{
-		Msg( "st ! valide:-: time: %d ;time delta: %d ; sv_state.calc_time: %d", Device.dwTimeGlobal, Device.dwTimeDelta,  sv_state.calc_time );
+		Msg( "st ! valide:-: time: %d ;time delta: %d ; sv_state.calc_time: %d", EngineInterface->GetRoundedGlobalTime(), EngineInterface->GetRoundedDeltaTime(),  sv_state.calc_time );
 	}
 #endif
 	SetNewGoal(cld,cd);
@@ -507,9 +507,9 @@ IC void reset_blend_speed( SCalculateData& cd )
 			cd.state.speed_blend_a = 0.f;
 			return;
 		}
-		VERIFY( Device.fTimeDelta > 0.f );
-		cd.state.speed_blend_l = cd.l / Device.fTimeDelta;
-		cd.state.speed_blend_a = cd.a / Device.fTimeDelta;
+		VERIFY( EngineInterface->GetDeltaTime() > 0.f );
+		cd.state.speed_blend_l = cd.l / EngineInterface->GetDeltaTime();
+		cd.state.speed_blend_a = cd.a / EngineInterface->GetDeltaTime();
 }
 
 static const float blend_accel_l = 10.f, blend_accel_a = 40.f;
@@ -522,10 +522,10 @@ IC void blend_speed_accel( SCalculateData& cd )
 			return;
 		}
 
-		cd.state.speed_blend_l	+= blend_accel_l * Device.fTimeDelta;// / Device.fTimeDelta;
-		cd.state.speed_blend_a	+= blend_accel_a * Device.fTimeDelta;// / Device.fTimeDelta;
-		cd.l = cd.state.speed_blend_l * Device.fTimeDelta;
-		cd.a = cd.state.speed_blend_a * Device.fTimeDelta;
+		cd.state.speed_blend_l	+= blend_accel_l * EngineInterface->GetDeltaTime();// / EngineInterface->GetDeltaTime();
+		cd.state.speed_blend_a	+= blend_accel_a * EngineInterface->GetDeltaTime();// / EngineInterface->GetDeltaTime();
+		cd.l = cd.state.speed_blend_l * EngineInterface->GetDeltaTime();
+		cd.a = cd.state.speed_blend_a * EngineInterface->GetDeltaTime();
 }
 
 
@@ -755,7 +755,7 @@ static const s32 unstuck_time_delta_max = 1200;
 IC void new_foot_matrix( const ik_goal_matrix &m, SCalculateData &cd )
 {
 	cd.state.collide_pos = m;
-	cd.state.unstuck_time = Device.dwTimeGlobal + Random.randI( unstuck_time_delta_min, unstuck_time_delta_max );
+	cd.state.unstuck_time = EngineInterface->GetRoundedGlobalTime() + Random.randI( unstuck_time_delta_min, unstuck_time_delta_max );
 	reset_blend_speed( cd );
 }
 static const float unstuck_tolerance_linear		=	0.3f;
@@ -798,7 +798,7 @@ void	CIKLimb::SetNewStepGoal	( const SIKCollideData &cld, SCalculateData& cd )
 		const Fmatrix cl_pos = cd.state.collide_pos.get();
 		//||
 		if(  !clamp_change( Fmatrix().set(cl_pos), foot.get(), unstuck_tolerance_linear, unstuck_tolerance_angular, unstuck_tolerance_linear, unstuck_tolerance_angular ) ||
-			 ( Device.dwTimeGlobal > cd.state.unstuck_time && !clamp_change( Fmatrix().set(cl_pos), foot.get(), 10.f*EPS_L, EPS_L, 10.f*EPS_L, EPS_L ) )
+			 ( EngineInterface->GetRoundedGlobalTime() > cd.state.unstuck_time && !clamp_change( Fmatrix().set(cl_pos), foot.get(), 10.f*EPS_L, EPS_L, 10.f*EPS_L, EPS_L ) )
 			)
 		{
 			new_foot_matrix( foot, cd );
@@ -871,14 +871,14 @@ void	CIKLimb::ToeTimeDiff( Fvector &v, const SCalculateData &cd ) const
 		v.set(0,0,0);
 		return;
 	}
-	VERIFY( Device.fTimeDelta > 0.f );
+	VERIFY( EngineInterface->GetDeltaTime() > 0.f );
 	VERIFY( state_valide( sv_state ) );
 	Fvector p0, p1, l_toe; m_foot.ToePosition( l_toe );
 	Fmatrix mtr;
 	sv_state.anim_pos( mtr ).transform_tiny( p0, l_toe );
 	cd.state.anim_pos.transform_tiny( p1, l_toe );
 	Fvector dir; dir.sub( p1, p0 );
-	dir.mul( dir, 1.f/Device.fTimeDelta );
+	dir.mul( dir, 1.f/EngineInterface->GetDeltaTime() );
 	v = dir;
 }
 
@@ -1087,7 +1087,7 @@ void	CIKLimb::step_predict( CGameObject *O, const CBlend *b, ik_limb_state_predi
 	state.time_to_footstep = get_time_to_step_begin( *b );
 	if( state.time_to_footstep == phInfinity )
 		return;
-	float footstep_time = Device.fTimeGlobal + state.time_to_footstep;
+	float footstep_time = EngineInterface->GetGlobalTime() + state.time_to_footstep;
 	
 	Fmatrix footstep_object; object_pose_extrapolation.extrapolate( footstep_object, footstep_time );
 	

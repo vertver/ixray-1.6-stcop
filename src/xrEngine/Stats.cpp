@@ -12,9 +12,6 @@
 int		g_ErrorLineCount	= 15;
 Flags32 g_stats_flags		= {0};
 
-// stats
-DECLARE_RP(Stats);
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -27,12 +24,10 @@ CStats::CStats	()
 	pFont				= 0;
 	fMem_calls			= 0;
 	RenderDUMP_DT_Count = 0;
-	Device.seqRender.Add		(this,REG_PRIORITY_LOW-1000);
 }
 
 CStats::~CStats()
 {
-	Device.seqRender.Remove		(this);
 	xr_delete		(pFont);
 }
 
@@ -41,7 +36,7 @@ void _draw_cam_pos(CGameFont* pFont)
 	float sz		= pFont->GetHeight();
 	pFont->SetHeightI(0.02f);
 	pFont->SetColor	(0xffffffff);
-	pFont->Out		(10, 600, "CAMERA POSITION:  [%3.2f,%3.2f,%3.2f]",VPUSH(Device.vCameraPosition));
+	pFont->Out		(10, 600, "CAMERA POSITION:  [%3.2f,%3.2f,%3.2f]", TheEngine.GetCameraState().CameraPosition);
 	pFont->SetHeight(sz);
 	pFont->OnRender	();
 }
@@ -109,19 +104,12 @@ void CStats::Show()
 	}
 
 	// calc FPS & TPS
-	if (Device.fTimeDelta>EPS_S) {
-		float fps  = 1.f/Device.fTimeDelta;
+	if (TheEngine.GetDeltaTime() >EPS_S) {
+		float fps  = 1.f/ TheEngine.GetDeltaTime();
 		//if (Engine.External.tune_enabled)	vtune.update	(fps);
 		float fOne = 0.3f;
 		float fInv = 1.f-fOne;
 		fFPS = fInv*fFPS + fOne*fps;
-
-		if (RenderTOTAL.result>EPS_S) {
-			u32	rendered_polies = Device.m_pRender->GetCacheStatPolys();
-			fTPS = fInv*fTPS + fOne*float(rendered_polies)/(RenderTOTAL.result*1000.f);
-			//fTPS = fInv*fTPS + fOne*float(RCache.stat.polys)/(RenderTOTAL.result*1000.f);
-			fRFPS= fInv*fRFPS+ fOne*1000.f/RenderTOTAL.result;
-		}
 	}
 	{
 		float mem_count		= float	(Memory.stat_calls);
@@ -134,7 +122,7 @@ void CStats::Show()
 	if (g_dedicated_server) return;
 	////////////////////////////////////////////////
 	int frm = 2000;
-	div_t ddd = div(Device.dwFrame,frm);
+	div_t ddd = div(TheEngine.GetFrame(), frm);
 	if( ddd.rem < frm/2.0f ){
 		pFont->SetColor	(0xFFFFFFFF	);
 		pFont->OutSet	(0,0);
@@ -285,7 +273,7 @@ void CStats::Show()
 		//////////////////////////////////////////////////////////////////////////
 		// process PURE STATS
 		F.SetHeightI						(f_base_size);
-		seqStats.Process				(rp_Stats);
+		// #SHIT:
 		pFont->OnRender					();
 	};
 
@@ -403,8 +391,9 @@ void CStats::Show()
 
 void	_LogCallback				(LPCSTR string)
 {
-	if (string && '!'==string[0] && ' '==string[1])
-		Device.Statistic->errors.push_back	(shared_str(string));
+	// #SHIT: 
+	//if (string && '!'==string[0] && ' '==string[1])
+	//	Device.Statistic->errors.push_back	(shared_str(string));
 }
 
 void CStats::OnDeviceCreate			()
@@ -450,7 +439,7 @@ void CStats::OnRender				()
 			const CSound_stats_ext::SItem& item = *_I;
 			if (item._3D)
 			{
-				m_pRender->SetDrawParams(&*Device.m_pRender);
+				m_pRender->SetDrawParams(&*TheEngine.Render);
 				DU->DrawCross			(item.params.position, 0.5f, 0xFF0000FF, true );
 				if (g_stats_flags.is(st_sound_min_dist))
 					DU->DrawSphere		(Fidentity, item.params.position, item.params.min_distance, 0x400000FF,	0xFF0000FF, true, true);

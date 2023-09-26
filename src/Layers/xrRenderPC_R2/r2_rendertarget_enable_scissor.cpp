@@ -12,12 +12,12 @@ BOOL	tri_vs_sphere_intersect			(Fvector& SC, float R, Fvector& v0, Fvector& v1, 
 
 BOOL CRenderTarget::enable_scissor		(light* L)		// true if intersects near plane
 {
-	// Msg	("%d: %x type(%d), pos(%f,%f,%f)",Device.dwFrame,u32(L),u32(L->flags.type),VPUSH(L->position));
+	// Msg	("%d: %x type(%d), pos(%f,%f,%f)",EngineInterface->GetFrame(),u32(L),u32(L->flags.type),VPUSH(L->position));
 
 	// Near plane intersection
 	BOOL	near_intersect				= FALSE;
 	{
-		Fmatrix& M						= Device.mFullTransform;
+		Fmatrix& M						= EngineInterface->GetCameraState().FullTransform;
 		Fvector4 plane;
 		plane.x							= -(M._14 + M._13);
 		plane.y							= -(M._24 + M._23);

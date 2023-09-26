@@ -330,8 +330,6 @@ void CResourceManager::Delete(const Shader* S)
 
 void CResourceManager::DeferredUpload()
 {
-	if (!RDEVICE.b_is_Ready) return;
-
 	if (ps_r__common_flags.test(RFLAG_MT_TEX_LOAD)) {
 		std::for_each(
 #ifndef DEBUG
@@ -348,9 +346,6 @@ void CResourceManager::DeferredUpload()
 }
 
 void CResourceManager::DeferredUnload() {
-	if (!RDEVICE.b_is_Ready)
-		return;
-
 	Msg("%s, texture unloading -> START, size = [%d]", __FUNCTION__, m_textures.size());
 
 	for (auto& texture : m_textures)
@@ -427,7 +422,7 @@ void	CResourceManager::Evict()
 {
 	//	TODO: DX10: check if we really need this method
 #ifndef USE_DX11
-	CHK_DX	(HW.pDevice->EvictManagedResources());
+	CHK_DX	(RCache.get_Device()->EvictManagedResources());
 #endif //USE_DX11
 }
 /*

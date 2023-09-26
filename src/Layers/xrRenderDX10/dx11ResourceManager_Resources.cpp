@@ -180,8 +180,6 @@ SVS*	CResourceManager::_CreateVS		(LPCSTR _name)
 		// Select target
 		LPCSTR						c_target	= "vs_2_0";
 		LPCSTR						c_entry		= "main";
-		if (HW.Caps.geometry_major>=2)	c_target="vs_2_0";
-		else 							c_target="vs_1_1";
 
 		if (strstr(data, "main_vs_1_1"))	{ c_target = "vs_1_1"; c_entry = "main_vs_1_1";	}
 		if (strstr(data, "main_vs_2_0"))	{ c_target = "vs_2_0"; c_entry = "main_vs_2_0";	}
@@ -431,7 +429,7 @@ SDeclaration*	CResourceManager::_CreateDecl	(D3DVERTEXELEMENT9* dcl)
 	SDeclaration* D			= xr_new<SDeclaration>();
 	u32 dcl_size = GetDeclLength(dcl) + 1;
 	//	Don't need it for DirectX 10 here
-	//CHK_DX					(HW.pDevice->CreateVertexDeclaration(dcl,&D->dcl));
+	//CHK_DX					(RCache.get_Device()->CreateVertexDeclaration(dcl,&D->dcl));
 	D->dcl_code.assign		(dcl,dcl+dcl_size);
 	dx10BufferUtils::ConvertVertexDeclaration(D->dcl_code, D->dx10_dcl_code);
 	D->dwFlags				|= xr_resource_flagged::RF_REGISTERED;
@@ -478,7 +476,7 @@ CRT*	CResourceManager::_CreateRT		(LPCSTR Name, u32 w, u32 h, DxgiFormat f, u32 
 		CRT *RT					=	xr_new<CRT>();
 		RT->dwFlags				|=	xr_resource_flagged::RF_REGISTERED;
 		m_rtargets.insert		(std::make_pair(RT->set_name(Name),RT));
-		if (Device.b_is_Ready)	RT->create	(Name,w,h,f, SampleCount, useUAV );
+		RT->create	(Name,w,h,f, SampleCount, useUAV );
 		return					RT;
 	}
 }
@@ -600,7 +598,7 @@ CTexture* CResourceManager::_CreateTexture	(LPCSTR _Name)
 		T->dwFlags			|=	xr_resource_flagged::RF_REGISTERED;
 		m_textures.insert	(std::make_pair(T->set_name(Name),T));
 		T->Preload			();
-		if (Device.b_is_Ready && !bDeferredLoad) T->Load();
+		if (!bDeferredLoad) T->Load();
 		return		T;
 	}
 }

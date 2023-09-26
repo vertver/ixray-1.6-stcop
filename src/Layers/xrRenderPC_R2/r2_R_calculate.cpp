@@ -14,7 +14,7 @@ void CRender::Calculate		()
 {
 	// Transfer to global space to avoid deep pointer access
 	IRender_Target* T				=	getTarget	();
-	float	fov_factor				=	_sqr		(90.f / Device.fFOV);
+	float	fov_factor				=	_sqr		(90.f / EngineInterface->GetCameraState().FOV);
 	g_fSCREEN						=	float(T->get_width()*T->get_height())*fov_factor*(EPS_S+ps_r__LOD);
 	r_ssaDISCARD					=	_sqr(ps_r__ssaDISCARD)		/g_fSCREEN;
 	r_ssaDONTSORT					=	_sqr(ps_r__ssaDONTSORT/3)	/g_fSCREEN;
@@ -26,15 +26,15 @@ void CRender::Calculate		()
 	r_dtex_range					=	ps_r2_df_parallax_range * g_fSCREEN / (1024.f * 768.f);
 	
 	// Detect camera-sector
-	if (!vLastCameraPos.similar(Device.vCameraPosition,EPS_S)) 
+	if (!vLastCameraPos.similar(EngineInterface->GetCameraState().CameraPosition,EPS_S)) 
 	{
-		CSector* pSector		= (CSector*)detectSector(Device.vCameraPosition);
+		CSector* pSector		= (CSector*)detectSector(EngineInterface->GetCameraState().CameraPosition);
 		if (pSector && (pSector!=pLastSector))
 			g_pGamePersistent->OnSectorChanged( translateSector(pSector) );
 
 		if (0==pSector) pSector = pLastSector;
 		pLastSector = pSector;
-		vLastCameraPos.set(Device.vCameraPosition);
+		vLastCameraPos.set(EngineInterface->GetCameraState().CameraPosition);
 	}
 
 	// Check if camera is too near to some portal - if so force DualRender
@@ -43,7 +43,7 @@ void CRender::Calculate		()
 		float	eps			= VIEWPORT_NEAR+EPS_L;
 		Fvector box_radius; box_radius.set(eps,eps,eps);
 		Sectors_xrc.box_options	(CDB::OPT_FULL_TEST);
-		Sectors_xrc.box_query	(rmPortals,Device.vCameraPosition,box_radius);
+		Sectors_xrc.box_query	(rmPortals,EngineInterface->GetCameraState().CameraPosition,box_radius);
 		for (int K=0; K<Sectors_xrc.r_count(); K++)	{
 			CPortal*	pPortal		= (CPortal*) Portals[rmPortals->get_tris()[Sectors_xrc.r_begin()[K].id].dummy];
 			pPortal->bDualRender	= TRUE;
@@ -55,7 +55,7 @@ void CRender::Calculate		()
 
 	// Check if we touch some light even trough portal
 	lstRenderables.clear();
-	g_SpatialSpace->q_sphere(lstRenderables,0,STYPE_LIGHTSOURCE,Device.vCameraPosition,EPS_L);
+	g_SpatialSpace->q_sphere(lstRenderables,0,STYPE_LIGHTSOURCE,EngineInterface->GetCameraState().CameraPosition,EPS_L);
 	for (u32 _it=0; _it<lstRenderables.size(); _it++)	{
 		ISpatial*	spatial		= lstRenderables[_it];		spatial->spatial_updatesector	();
 		CSector*	sector		= (CSector*)spatial->spatial.sector;

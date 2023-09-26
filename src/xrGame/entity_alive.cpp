@@ -64,7 +64,7 @@ CEntityAlive::CEntityAlive() :
 	m_is_agresive			= false;
 	m_is_start_attack		= false;
 	m_use_timeout			= 5000;
-	m_used_time				= Device.dwTimeGlobal;
+	m_used_time				= EngineInterface->GetRoundedGlobalTime();
 	m_squad_index			= u8(-1);
 
 	m_material_manager		= 0;
@@ -221,11 +221,11 @@ void CEntityAlive::shedule_Update(u32 dt)
 	if(Local() && !g_Alive() && !AlreadyDie())
 	{
 		if(conditions().GetWhoHitLastTime()) {
-//			Msg			("%6d : KillEntity from CEntityAlive (using who hit last time) for object %s",Device.dwTimeGlobal,*cName());
+//			Msg			("%6d : KillEntity from CEntityAlive (using who hit last time) for object %s",EngineInterface->GetRoundedGlobalTime(),*cName());
 			KillEntity	(conditions().GetWhoHitLastTimeID());
 		}
 		else {
-//			Msg			("%6d : KillEntity from CEntityAlive for object %s",Device.dwTimeGlobal,*cName());
+//			Msg			("%6d : KillEntity from CEntityAlive for object %s",EngineInterface->GetRoundedGlobalTime(),*cName());
 			KillEntity	(ID());
 		}
 	}
@@ -564,11 +564,11 @@ void CEntityAlive::UpdateBloodDrops()
 			continue;
 		}
 
-		if(pWound->m_fDropTime<Device.fTimeGlobal)
+		if(pWound->m_fDropTime<EngineInterface->GetGlobalTime())
 		{
 			float size_k = blood_size - m_fStopBloodWoundSize;
 			size_k = size_k<1.f?size_k:1.f;
-			pWound->m_fDropTime = Device.fTimeGlobal + (m_fBloodDropTimeMax - (m_fBloodDropTimeMax-m_fBloodDropTimeMin)*size_k)*Random.randF(0.8f, 1.2f);
+			pWound->m_fDropTime = EngineInterface->GetGlobalTime() + (m_fBloodDropTimeMax - (m_fBloodDropTimeMax-m_fBloodDropTimeMin)*size_k)*Random.randF(0.8f, 1.2f);
 			VERIFY(m_pBloodDropsVector);
 			if(pWound->GetBoneNum() != BI_NONE)
 			{
@@ -685,7 +685,7 @@ void CEntityAlive::set_lock_corpse(bool b_l_corpse)
 {
 	if ( b_eating && !b_l_corpse)
 	{
-		m_used_time = Device.dwTimeGlobal;
+		m_used_time = EngineInterface->GetRoundedGlobalTime();
 	}
 	b_eating = b_l_corpse;
 }
@@ -694,7 +694,7 @@ bool CEntityAlive::is_locked_corpse()
 {
 	if (!b_eating)
 	{
-		if ( m_used_time + m_use_timeout > Device.dwTimeGlobal)
+		if ( m_used_time + m_use_timeout > EngineInterface->GetRoundedGlobalTime())
 		{
 			return true;
 		}

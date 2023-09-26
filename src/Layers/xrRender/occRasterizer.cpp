@@ -145,16 +145,16 @@ void occRasterizer::on_dbg_render()
 				Fvector quad,left_top,right_bottom,box_center,box_r;
 				quad.set( (float)j-occ_dim_0/2.f, -((float)i-occ_dim_0/2.f), (float)bufDepth_0[i][j]/occQ_s32);
 
-				float z = -Device.mProject._43/(float)(Device.mProject._33-quad.z);
-				left_top.set		( quad.x*z/Device.mProject._11/(occ_dim_0/2.f),		quad.y*z/Device.mProject._22/(occ_dim_0/2.f), z);
-				right_bottom.set	( (quad.x+1)*z/Device.mProject._11/(occ_dim_0/2.f), (quad.y+1)*z/Device.mProject._22/(occ_dim_0/2.f), z);
+				float z = -EngineInterface->GetCameraState().Project._43/(float)(EngineInterface->GetCameraState().Project._33-quad.z);
+				left_top.set		( quad.x*z/EngineInterface->GetCameraState().Project._11/(occ_dim_0/2.f),		quad.y*z/EngineInterface->GetCameraState().Project._22/(occ_dim_0/2.f), z);
+				right_bottom.set	( (quad.x+1)*z/EngineInterface->GetCameraState().Project._11/(occ_dim_0/2.f), (quad.y+1)*z/EngineInterface->GetCameraState().Project._22/(occ_dim_0/2.f), z);
 
 				box_center.set		((right_bottom.x + left_top.x)/2, (right_bottom.y + left_top.y)/2, z);
 				box_r = right_bottom;
 				box_r.sub(box_center);
 
 				Fmatrix inv;
-				inv.invert(Device.mView);
+				inv.invert(EngineInterface->GetCameraState().View);
 				inv.transform( box_center );
 				inv.transform_dir( box_r );
 
@@ -174,11 +174,11 @@ void occRasterizer::on_dbg_render()
 			Transform.translate(tmp.center);
 
 			// draw wire
-			Device.SetNearer(TRUE);
-
+			//Device.SetNearer(TRUE);
+			// #TODO: 
 			RCache.set_Shader	(dxRenderDeviceRender::Instance().m_SelectionShader);
 			RCache.dbg_DrawOBB(Transform, tmp.radius, color_xrgb(u32(255 * pow(tmp.z, 20.f)), u32(255 * (1 - pow(tmp.z, 20.f))), 0));
-			Device.SetNearer(FALSE);
+			//Device.SetNearer(FALSE);
 		}
 	}
 #endif

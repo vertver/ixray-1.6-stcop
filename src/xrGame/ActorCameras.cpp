@@ -105,8 +105,8 @@ float CActor::CameraHeight()
 
 IC float viewport_near(float& w, float& h)
 {
-	w = 2.f*VIEWPORT_NEAR*tan(deg2rad(Device.fFOV)/2.f);
-	h = w*Device.fASPECT;
+	w = 2.f*VIEWPORT_NEAR*tan(deg2rad(EngineInterface->GetCameraState().FOV)/2.f);
+	h = w*EngineInterface->GetCameraState().ASPECT;
 	float	c	= _sqrt					(w*w + h*h);
 	return	_max(_max(VIEWPORT_NEAR,_max(w,h)),c);
 }
@@ -154,7 +154,7 @@ IC bool test_point( const Fvector	&pt, const Fmatrix33& mat, const Fvector& ext,
 template<typename T>
 void	dbg_draw_viewport( const T &cam_info, float _viewport_near )
 {
-	
+#if 0
 	VERIFY( _viewport_near > 0.f );
 	const Fvector near_plane_center = Fvector().mad( cam_info.Position(), cam_info.Direction(), _viewport_near );
 	float h_w, h_h;
@@ -177,6 +177,7 @@ void	dbg_draw_viewport( const T &cam_info, float _viewport_near )
 	DBG_DrawLine(bottom_right, top_right, color_xrgb(255, 0, 0));
 	DBG_DrawLine(top_left, bottom_left, color_xrgb(255, 0, 0));
 	DBG_DrawLine(bottom_left, bottom_right, color_xrgb(255, 0, 0));
+#endif
 
 }
 #endif
@@ -395,7 +396,7 @@ void CActor::cam_Update(float dt, float fFOV)
 		Cameras().UpdateFromCamera			(cameras[eacFirstEye]);
 	}
 
-	fCurAVelocity			= vPrevCamDir.sub(cameras[eacFirstEye]->vDirection).magnitude()/Device.fTimeDelta;
+	fCurAVelocity			= vPrevCamDir.sub(cameras[eacFirstEye]->vDirection).magnitude()/EngineInterface->GetDeltaTime();
 	vPrevCamDir				= cameras[eacFirstEye]->vDirection;
 
 #ifdef DEBUG

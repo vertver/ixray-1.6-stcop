@@ -122,7 +122,7 @@ void CPHElement::			build	(){
 void CPHElement::RunSimulation()
 {
 	//if(push_untill)
-		//push_untill+=Device.dwTimeGlobal;
+		//push_untill+=EngineInterface->GetRoundedGlobalTime();
 
 	if(group_space())
 			dSpaceAdd(m_shell->dSpace(),(dGeomID)group_space());

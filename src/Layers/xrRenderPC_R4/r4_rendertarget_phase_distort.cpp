@@ -15,7 +15,7 @@ void CRenderTarget::phase_distort()
 			FLOAT ColorRGBA_[4] = { 127.0f / 255.0f, 127.0f / 255.0f, 0.0f, 127.0f / 255.0f };
 
 			u_setrt(rt_Distort, 0, 0, rt_HWDepth->pZRT);		// Now RT is a distortion mask
-			HW.pContext->ClearRenderTargetView(rt_Distort->pRT, ColorRGBA_);
+			RCache.get_Context()->ClearRenderTargetView(rt_Distort->pRT, ColorRGBA_);
 
 			RCache.set_CullMode(CULL_CCW);
 			RCache.set_Stencil(FALSE);

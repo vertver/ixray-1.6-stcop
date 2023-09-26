@@ -12,12 +12,12 @@ void set_viewport(ID3DDeviceContext* dev, float w, float h);
 
 IC	bool	pred_sp_sort	(ISpatial*	_1, ISpatial* _2)
 {
-	float	d1		= _1->spatial.sphere.P.distance_to_sqr	(Device.vCameraPosition);
-	float	d2		= _2->spatial.sphere.P.distance_to_sqr	(Device.vCameraPosition);
+	float	d1		= _1->spatial.sphere.P.distance_to_sqr	(EngineInterface->GetCameraState().CameraPosition);
+	float	d2		= _2->spatial.sphere.P.distance_to_sqr	(EngineInterface->GetCameraState().CameraPosition);
 	return	d1<d2	;
 }
 
-void CRender::render_main	(Fmatrix&	m_ViewProjection, bool _fportals)
+void CRender::render_main	(const Fmatrix&	m_ViewProjection, bool _fportals)
 {
 	PIX_EVENT(render_main);
 //	Msg						("---begin");
@@ -68,15 +68,14 @@ void CRender::render_main	(Fmatrix&	m_ViewProjection, bool _fportals)
 		}
 
 		// Traverse sector/portal structure
-		PortalTraverser.traverse	
-			(
+		PortalTraverser.traverse(
 			pLastSector,
 			ViewBase,
-			Device.vCameraPosition,
+			EngineInterface->GetCameraState().CameraPosition,
 			m_ViewProjection,
 			CPortalTraverser::VQ_HOM + CPortalTraverser::VQ_SSA + CPortalTraverser::VQ_FADE
 			//. disabled scissoring (HW.Caps.bScissor?CPortalTraverser::VQ_SCISSOR:0)	// generate scissoring info
-			);
+		);
 
 		// Determine visibility for static geometry hierrarhy
 		for (u32 s_it=0; s_it<PortalTraverser.r_sectors.size(); s_it++)
@@ -166,12 +165,12 @@ void CRender::render_menu	()
 	{
 		FLOAT ColorRGBA[4] = {127.0f/255.0f, 127.0f/255.0f, 0.0f, 127.0f/255.0f};
 		Target->u_setrt(Target->rt_Distort,0,0, Target->rt_HWDepth->pZRT);		// Now RT is a distortion mask
-		HW.pContext->ClearRenderTargetView(Target->rt_Distort->pRT, ColorRGBA);
+		RCache.get_Context()->ClearRenderTargetView(Target->rt_Distort->pRT, ColorRGBA);
 		g_pGamePersistent->OnRenderPPUI_PP	()	;	// PP-UI
 	}
 
 	// Actual Display
-	Target->u_setrt					( RCache.get_target_width(), RCache.get_target_height(), HW.pBaseRT, NULL, NULL, Target->rt_HWDepth->pZRT);
+	Target->u_setrt					( RCache.get_target_width(), RCache.get_target_height(), ((ID3D11RenderTargetView*)EngineInterface->GetParent()->GetRenderTarget()), NULL, NULL, Target->rt_HWDepth->pZRT);
 	RCache.set_Shader				( Target->s_menu	);
 	RCache.set_Geometry				( Target->g_menu	);
 
@@ -218,7 +217,7 @@ void CRender::Render		()
 	if( !(g_pGameLevel && g_hud)
 		|| bMenu)	
 	{
-		Target->u_setrt				(RCache.get_target_width(), RCache.get_target_height(),HW.pBaseRT,NULL,NULL, Target->rt_HWDepth->pZRT);
+		Target->u_setrt				(RCache.get_target_width(), RCache.get_target_height(),((ID3D11RenderTargetView*)EngineInterface->GetParent()->GetRenderTarget()),NULL,NULL, Target->rt_HWDepth->pZRT);
 		return;
 	}
 
@@ -243,7 +242,7 @@ void CRender::Render		()
 	// Msg						("sstatic: %s, sun: %s",o.sunstatic?;"true":"false", bSUN?"true":"false");
 
 	// HOM
-	ViewBase.CreateFromMatrix					(Device.mFullTransform, FRUSTUM_P_LRTB + FRUSTUM_P_FAR);
+	ViewBase.CreateFromMatrix					(EngineInterface->GetCameraState().FullTransform, FRUSTUM_P_LRTB + FRUSTUM_P_FAR);
 	View										= 0;
 	if (!ps_r2_ls_flags.test(R2FLAG_EXP_MT_CALC))	{
 		HOM.Enable									();
@@ -254,20 +253,18 @@ void CRender::Render		()
 	if (ps_r2_ls_flags.test(R2FLAG_ZFILL))		
 	{
 		PIX_EVENT(DEFER_Z_FILL);
-		Device.Statistic->RenderCALC.Begin			();
 		float		z_distance	= ps_r2_zfill		;
 		Fmatrix		m_zfill, m_project				;
 		m_project.build_projection	(
-			deg2rad(Device.fFOV/* *Device.fASPECT*/),
-			Device.fASPECT, VIEWPORT_NEAR,
+			deg2rad(EngineInterface->GetCameraState().FOV/* *EngineInterface->GetCameraState().ASPECT*/),
+			EngineInterface->GetCameraState().ASPECT, VIEWPORT_NEAR,
 			z_distance * g_pGamePersistent->Environment().CurrentEnv->far_plane);
-		m_zfill.mul	(m_project,Device.mView);
+		m_zfill.mul	(m_project,EngineInterface->GetCameraState().View);
 		r_pmask										(true,false);	// enable priority "0"
 		set_Recorder								(NULL)		;
 		phase										= PHASE_SMAP;
 		render_main									(m_zfill,false)	;
 		r_pmask										(true,false);	// disable priority "1"
-		Device.Statistic->RenderCALC.End				( )			;
 
 		// flush
 		Target->phase_scene_prepare					();
@@ -282,7 +279,6 @@ void CRender::Render		()
 
 	//*******
 	// Sync point
-	Device.Statistic->RenderDUMP_Wait_S.Begin	();
 	if (1)
 	{
 		CTimer	T;							T.Start	();
@@ -298,26 +294,23 @@ void CRender::Render		()
 			}
 		}
 	}
-	Device.Statistic->RenderDUMP_Wait_S.End		();
-	q_sync_count								= (q_sync_count+1)%HW.Caps.iGPUNum;
+	q_sync_count								=  0;
 	//CHK_DX										(q_sync_point[q_sync_count]->Issue(D3DISSUE_END));
 	CHK_DX										(EndQuery(q_sync_point[q_sync_count]));
 
 	// Don't forget to clear motion vectors before rendering
 	FLOAT ColorRGBA[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	HW.pContext->ClearRenderTargetView(Target->rt_Motion->pRT, ColorRGBA);
+	RCache.get_Context()->ClearRenderTargetView(Target->rt_Motion->pRT, ColorRGBA);
 
 	//******* Main calc - DEFERRER RENDERER
 	// Main calc
-	Device.Statistic->RenderCALC.Begin			();
 	r_pmask										(true,false,true);	// enable priority "0",+ capture wmarks
 	if (bSUN)									set_Recorder	(&main_coarse_structure);
 	else										set_Recorder	(NULL);
 	phase										= PHASE_NORMAL;
-	render_main									(Device.mFullTransform,true);
+	render_main									(EngineInterface->GetCameraState().FullTransform,true);
 	set_Recorder								(NULL);
 	r_pmask										(true,false);	// disable priority "1"
-	Device.Statistic->RenderCALC.End			();
 
 	BOOL	split_the_scene_to_minimize_wait		= FALSE;
 	if (ps_r2_ls_flags.test(R2FLAG_EXP_SPLIT_SCENE))	split_the_scene_to_minimize_wait=TRUE;
@@ -464,10 +457,10 @@ void CRender::Render		()
 		PIX_EVENT(DEFER_SELF_ILLUM);
 		Target->phase_accumulator();
 		// Render emissive geometry, stencil - write 0x0 at pixel pos
-		RCache.set_prev_xform_project(Device.mPrevProject);
-		RCache.set_prev_xform_view(Device.mPrevView);
-		RCache.set_xform_project(Device.mProject); 
-		RCache.set_xform_view(Device.mView);
+		RCache.set_prev_xform_project(EngineInterface->GetPrevCameraState().Project);
+		RCache.set_prev_xform_view(EngineInterface->GetPrevCameraState().View);
+		RCache.set_xform_project(EngineInterface->GetCameraState().Project); 
+		RCache.set_xform_view(EngineInterface->GetCameraState().View);
 		RCache.set_Stencil(TRUE,D3DCMP_ALWAYS,0x01,0xff,0xff,D3DSTENCILOP_KEEP,D3DSTENCILOP_REPLACE,D3DSTENCILOP_KEEP);
 		RCache.set_CullMode(CULL_CCW);
 		RCache.set_ColorWriteEnable();
@@ -511,7 +504,7 @@ void CRender::render_forward				()
 		// level
 		r_pmask									(false,true);			// enable priority "1"
 		phase									= PHASE_NORMAL;
-		render_main								(Device.mFullTransform,false);//
+		render_main								(EngineInterface->GetCameraState().FullTransform,false);//
 
 		//	Igor: we don't want to render old lods on next frame.
 		mapLOD.clear							();

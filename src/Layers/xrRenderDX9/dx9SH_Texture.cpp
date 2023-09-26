@@ -134,7 +134,7 @@ void CTexture::apply_avi	(u32 dwStage)
 };
 void CTexture::apply_seq	(u32 dwStage)	{
 	// SEQ
-	u32	frame		=RDEVICE.dwTimeContinual/seqMSPF; //RDEVICE.dwTimeGlobal
+	u32	frame		=RDEVICE.dwTimeContinual/seqMSPF; //EngineInterface->GetRoundedGlobalTime()
 	u32	frame_data	= seqDATA.size();
 	if (flags.seqCycles)		{
 		u32	frame_id	= frame%(frame_data*2);

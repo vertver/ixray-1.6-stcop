@@ -474,4 +474,14 @@ extern BOOL						g_bDebugEvents;
 
 // -------------------------------------------------------------------------------------------------
 
+struct _NetworkProcessor
+{
+	virtual void	_BCL OnFrame()
+	{
+		if (g_pGameLevel && EngineInterface->GetState() != ApplicationState::Paused)	g_pGameLevel->net_Update();
+	}
+};
+
+extern _NetworkProcessor NET_processor;
+
 #endif // !defined(AFX_LEVEL_H__38F63863_DB0C_494B_AFAB_C495876EC671__INCLUDED_)

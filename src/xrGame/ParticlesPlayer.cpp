@@ -261,7 +261,7 @@ void CParticlesPlayer::UpdateParticles()
 			//обновить время существования
 			if(p_info.life_time!=u32(-1))
 			{
-				if(p_info.life_time>Device.dwTimeDelta)	p_info.life_time-=Device.dwTimeDelta;
+				if(p_info.life_time>EngineInterface->GetRoundedDeltaTime())	p_info.life_time-=EngineInterface->GetRoundedDeltaTime();
 				else 
 				{
 					p_info.ps->Stop();

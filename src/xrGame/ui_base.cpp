@@ -99,12 +99,12 @@ sPoly2D* C2DFrustum::ClipPoly	(sPoly2D& S, sPoly2D& D) const
 
 void ui_core::OnDeviceReset()
 {
-	m_scale_.set		( float(Device.TargetWidth)/UI_BASE_WIDTH, float(Device.TargetHeight)/UI_BASE_HEIGHT );
+	m_scale_.set		( float(EngineInterface->GetWidth())/UI_BASE_WIDTH, float(EngineInterface->GetHeight())/UI_BASE_HEIGHT );
 
 	m_2DFrustum.CreateFromRect	(Frect().set(	0.0f,
 												0.0f,
-												float(Device.TargetWidth),
-												float(Device.TargetHeight)
+												float(EngineInterface->GetWidth()),
+												float(EngineInterface->GetHeight())
 												));
 }
 
@@ -235,8 +235,8 @@ void ui_core::pp_start()
 
 	m_current_scale			= &m_pp_scale_;
 	
-	g_current_font_scale.set(	float(::Render->getTarget()->get_target_width())/float(Device.TargetWidth),	
-								float(::Render->getTarget()->get_target_height())/float(Device.TargetHeight) );
+	g_current_font_scale.set(	float(::Render->getTarget()->get_target_width())/float(EngineInterface->GetWidth()),	
+								float(::Render->getTarget()->get_target_height())/float(EngineInterface->GetHeight()) );
 
 }
 
@@ -254,13 +254,13 @@ void ui_core::RenderFont()
 
 bool ui_core::is_widescreen()
 {
-	return (Device.TargetWidth)/float(Device.TargetHeight) > (UI_BASE_WIDTH/UI_BASE_HEIGHT +0.01f);
+	return (EngineInterface->GetWidth())/float(EngineInterface->GetHeight()) > (UI_BASE_WIDTH/UI_BASE_HEIGHT +0.01f);
 }
 
 float ui_core::get_current_kx()
 {
-	float h		= float(Device.TargetHeight);
-	float w		= float(Device.TargetWidth);
+	float h		= float(EngineInterface->GetHeight());
+	float w		= float(EngineInterface->GetWidth());
 
 	float res = (h/w)/(UI_BASE_HEIGHT/UI_BASE_WIDTH);
 	return res;

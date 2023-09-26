@@ -8,6 +8,7 @@
 #define REG_PRIORITY_CAPTURE	0x7ffffffful
 #define REG_PRIORITY_INVALID	0xfffffffful
 
+#if 0
 typedef void __fastcall RP_FUNC		(void *obj);
 #define DECLARE_MESSAGE_CL(name,calling)		extern ENGINE_API RP_FUNC rp_##name; class ENGINE_API pure##name { public: virtual void calling On##name(void)=0;	}
 	
@@ -22,8 +23,6 @@ DECLARE_MESSAGE(AppStart);
 DECLARE_MESSAGE(AppEnd);
 DECLARE_MESSAGE(DeviceReset);
 DECLARE_MESSAGE(ScreenResolutionChanged);
-
-
 
 //-----------------------------------------------------------------------------
 struct _REG_INFO {
@@ -99,5 +98,6 @@ public:
 		changed				= false;
 	};
 };
+#endif
 
 #endif

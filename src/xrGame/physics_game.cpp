@@ -72,7 +72,7 @@ public:
 	  CPHParticlesPlayCall( contact, invert_n, psn ), b_called ( false )
 	{
 		static const u32 time_to_call_remove  = 3000;
-		remove_time = Device.dwTimeGlobal + time_to_call_remove;
+		remove_time = EngineInterface->GetRoundedGlobalTime() + time_to_call_remove;
 	}
 	const Fvector 	&position() const
 	{
@@ -88,7 +88,7 @@ private:
 		b_called = true;
 		CPHParticlesPlayCall::run();
 	}
-	virtual bool 			obsolete						()const{return Device.dwTimeGlobal > remove_time ;}
+	virtual bool 			obsolete						()const{return EngineInterface->GetRoundedGlobalTime() > remove_time ;}
 };
 
 
@@ -253,7 +253,7 @@ void  TContactShotMark(CDB::TRI* T,dContactGeom* c)
 		return;
 	//float vel_cret= GetVelCret(c);
 
-	Fvector to_camera;to_camera.sub(cast_fv(c->pos),Device.vCameraPosition);
+	Fvector to_camera;to_camera.sub(cast_fv(c->pos),EngineInterface->GetCameraState().CameraPosition);
 	float square_cam_dist=to_camera.square_magnitude();
 	if(data)
 	{

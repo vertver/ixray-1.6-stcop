@@ -248,13 +248,13 @@ bool CInventory::DropItem(CGameObject *pObj, bool just_before_destroy, bool dont
 					if (just_before_destroy)
 					{
 #ifdef DEBUG
-						Msg("---DropItem activating slot [-1], forced, Frame[%d]", Device.dwFrame);
+						Msg("---DropItem activating slot [-1], forced, Frame[%d]", EngineInterface->GetFrame());
 #endif // #ifdef DEBUG
 						Activate		(NO_ACTIVE_SLOT, true);
 					} else 
 					{
 #ifdef DEBUG
-						Msg("---DropItem activating slot [-1], Frame[%d]", Device.dwFrame);
+						Msg("---DropItem activating slot [-1], Frame[%d]", EngineInterface->GetFrame());
 #endif // #ifdef DEBUG
 						Activate		(NO_ACTIVE_SLOT);
 					}
@@ -377,7 +377,7 @@ bool CInventory::Slot(u16 slot_id, PIItem pIItem, bool bNotActivate, bool strict
 	if (((m_iActiveSlot==slot_id) ||(m_iActiveSlot==NO_ACTIVE_SLOT) && m_iNextActiveSlot==NO_ACTIVE_SLOT) && (!bNotActivate))
 	{
 #ifdef DEBUG
-		Msg("---To Slot: activating slot [%d], Frame[%d]", slot_id, Device.dwFrame);
+		Msg("---To Slot: activating slot [%d], Frame[%d]", slot_id, EngineInterface->GetFrame());
 #endif // #ifdef DEBUG
 		Activate				(slot_id);
 	}
@@ -1296,7 +1296,7 @@ void CInventory::TryActivatePrevSlot()
 			m_slots[PrevActiveSlot].CanBeActivated())
 		{
 #ifndef MASTER_GOLD
-			Msg("Set slots blocked: activating prev slot [%d], Frame[%d]", PrevActiveSlot, Device.dwFrame);
+			Msg("Set slots blocked: activating prev slot [%d], Frame[%d]", PrevActiveSlot, EngineInterface->GetFrame());
 #endif // #ifndef MASTER_GOLD
 			Activate(PrevActiveSlot);
 			SetPrevActiveSlot(NO_ACTIVE_SLOT);
@@ -1322,7 +1322,7 @@ void CInventory::TryDeactivateActiveSlot	()
 		)
 	{
 #ifndef MASTER_GOLD
-		Msg("Set slots blocked: activating slot [-1], Frame[%d]", Device.dwFrame);
+		Msg("Set slots blocked: activating slot [-1], Frame[%d]", EngineInterface->GetFrame());
 #endif // #ifndef MASTER_GOLD
 		ItemFromSlot(ActiveSlot)->DiscardState();
 		Activate			(NO_ACTIVE_SLOT);

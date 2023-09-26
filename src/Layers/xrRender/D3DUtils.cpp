@@ -106,7 +106,7 @@ void SPrimitiveBuffer::CreateFromData(D3DPRIMITIVETYPE _pt, u32 _p_cnt, u32 FVF,
 	v_cnt				= _v_cnt;
 	i_cnt				= _i_cnt;
 	u32 stride = FVF::ComputeVertexSize(FVF);
-	R_CHK(HW.pDevice->CreateVertexBuffer(v_cnt*stride, D3DUSAGE_WRITEONLY, 0, D3DPOOL_MANAGED, &pVB, 0));
+	R_CHK(RCache.get_Device()->CreateVertexBuffer(v_cnt*stride, D3DUSAGE_WRITEONLY, 0, D3DPOOL_MANAGED, &pVB, 0));
 	HW.stats_manager.increment_stats_vb	(pVB);
 	u8* 				bytes;
 	R_CHK				(pVB->Lock(0,0,(LPVOID*)&bytes,0));
@@ -116,7 +116,7 @@ void SPrimitiveBuffer::CreateFromData(D3DPRIMITIVETYPE _pt, u32 _p_cnt, u32 FVF,
 	Memory.mem_copy		(bytes,&*verts.begin(),v_cnt*stride);
 	R_CHK				(pVB->Unlock());
 	if (i_cnt){ 
-		R_CHK(HW.pDevice->CreateIndexBuffer	(i_cnt*sizeof(u16),D3DUSAGE_WRITEONLY,D3DFMT_INDEX16,D3DPOOL_MANAGED,&pIB,NULL));
+		R_CHK(RCache.get_Device()->CreateIndexBuffer	(i_cnt*sizeof(u16),D3DUSAGE_WRITEONLY,D3DFMT_INDEX16,D3DPOOL_MANAGED,&pIB,NULL));
 		HW.stats_manager.increment_stats_ib	(pIB);
 		R_CHK			(pIB->Lock(0,0,(LPVOID*)&bytes,0));
 		Memory.mem_copy	(bytes,indices,i_cnt*sizeof(u16));
@@ -131,8 +131,6 @@ void SPrimitiveBuffer::CreateFromData(D3DPRIMITIVETYPE _pt, u32 _p_cnt, u32 FVF,
 void SPrimitiveBuffer::Destroy()
 {                       
 	if (pGeom){
-		HW.stats_manager.decrement_stats_vb	(pGeom->vb);
-		HW.stats_manager.decrement_stats_ib	(pGeom->ib);
 		_RELEASE		(pGeom->vb);
 		_RELEASE		(pGeom->ib);
 		pGeom.destroy	();
@@ -185,8 +183,6 @@ void CDrawUtilities::UpdateGrid(int number_of_cell, float square_size, int subdi
 
 void CDrawUtilities::OnDeviceCreate()
 {
-	Device.seqRender.Add			(this,REG_PRIORITY_LOW-1000);
-
 	m_SolidBox.CreateFromData		(D3DPT_TRIANGLELIST,DU_BOX_NUMFACES,		D3DFVF_XYZ|D3DFVF_DIFFUSE,du_box_vertices,			DU_BOX_NUMVERTEX,			du_box_faces,			DU_BOX_NUMFACES*3);
 	m_SolidCone.CreateFromData		(D3DPT_TRIANGLELIST,DU_CONE_NUMFACES,		D3DFVF_XYZ|D3DFVF_DIFFUSE,du_cone_vertices,		DU_CONE_NUMVERTEX,			du_cone_faces,			DU_CONE_NUMFACES*3);
 	m_SolidSphere.CreateFromData	(D3DPT_TRIANGLELIST,DU_SPHERE_NUMFACES,		D3DFVF_XYZ|D3DFVF_DIFFUSE,du_sphere_vertices,		DU_SPHERE_NUMVERTEX,		du_sphere_faces,		DU_SPHERE_NUMFACES*3);
@@ -236,7 +232,6 @@ void CDrawUtilities::OnDeviceCreate()
 
 void CDrawUtilities::OnDeviceDestroy()
 {
-	Device.seqRender.Remove		(this);
 	xr_delete					(m_Font);
     m_SolidBox.Destroy			();
 	m_SolidCone.Destroy			();
@@ -564,20 +559,19 @@ IC float 				_y2real			(float y)
 { return (y+1)*Device.m_RenderHeight_2;}
 #else
 IC float 				_x2real			(float x)
-{ return (x+1)*Device.TargetWidth * Device.RenderScale *0.5f;	}
+{ return (x+1)*RCache.get_width() *0.5f;	}
 IC float 				_y2real			(float y)
-{ return (y+1)*Device.TargetHeight * Device.RenderScale *0.5f;}
+{ return (y+1)* RCache.get_height() *0.5f;}
 #endif
 
 void CDrawUtilities::dbgDrawPlacement(const Fvector& p, int sz, u32 clr, LPCSTR caption, u32 clr_font)
 {
-	VERIFY( Device.b_is_Ready );
     Fvector c;
-	float w	= p.x*Device.mFullTransform._14 + p.y*Device.mFullTransform._24 + p.z*Device.mFullTransform._34 + Device.mFullTransform._44;
+	float w	= p.x* EngineInterface->GetCameraState().FullTransform._14 + p.y* EngineInterface->GetCameraState().FullTransform._24 + p.z* EngineInterface->GetCameraState().FullTransform._34 + EngineInterface->GetCameraState().FullTransform._44;
     if (w<0) return; // culling
 
 	float s = (float)sz;
-	Device.mFullTransform.transform(c,p);
+    EngineInterface->GetCameraState().FullTransform.transform(c,p);
 	c.x = (float)iFloor(_x2real(c.x)); c.y = (float)iFloor(_y2real(-c.y));
 
 	_VertexStream*	Stream	= &RCache.Vertex;
@@ -1021,11 +1015,11 @@ void CDrawUtilities::DrawAxis(const Fmatrix& T)
     u32 vBase;
 	FVF::TL* pv	= (FVF::TL*)Stream->Lock(6,vs_TL->vb_stride,vBase);
     // transform to screen
-    float dx=-float(Device.TargetWidth)/2.2f;
-    float dy=float(Device.TargetHeight)/2.25f;
+    float dx=-RCache.get_target_width()/2.2f;
+    float dy=RCache.get_target_height()/2.25f;
 
     for (int i=0; i<6; i++,pv++){
-	    pv->color = c[i]; pv->transform(p[i],Device.mFullTransform);
+	    pv->color = c[i]; pv->transform(p[i], EngineInterface->GetCameraState().FullTransform);
 	    pv->p.set((float)iFloor(_x2real(pv->p.x)+dx),(float)iFloor(_y2real(pv->p.y)+dy),0,1);
         p[i].set(pv->p.x,pv->p.y,0);
     }
@@ -1049,17 +1043,16 @@ void CDrawUtilities::DrawAxis(const Fmatrix& T)
 
 void CDrawUtilities::DrawObjectAxis(const Fmatrix& T, float sz, BOOL sel)
 {
-	VERIFY( Device.b_is_Ready );
 	_VertexStream*	Stream	= &RCache.Vertex;
     Fvector c,r,n,d;
-	float w	= T.c.x*Device.mFullTransform._14 + T.c.y*Device.mFullTransform._24 + T.c.z*Device.mFullTransform._34 + Device.mFullTransform._44;
+	float w	= T.c.x* EngineInterface->GetCameraState().FullTransform._14 + T.c.y* EngineInterface->GetCameraState().FullTransform._24 + T.c.z* EngineInterface->GetCameraState().FullTransform._34 + EngineInterface->GetCameraState().FullTransform._44;
     if (w<0) return; // culling
 
 	float s = w*sz;
-								Device.mFullTransform.transform(c,T.c);
-    r.mul(T.i,s); r.add(T.c); 	Device.mFullTransform.transform(r);
-    n.mul(T.j,s); n.add(T.c); 	Device.mFullTransform.transform(n);
-    d.mul(T.k,s); d.add(T.c); 	Device.mFullTransform.transform(d);
+								EngineInterface->GetCameraState().FullTransform.transform(c,T.c);
+    r.mul(T.i,s); r.add(T.c); 	EngineInterface->GetCameraState().FullTransform.transform(r);
+    n.mul(T.j,s); n.add(T.c); 	EngineInterface->GetCameraState().FullTransform.transform(n);
+    d.mul(T.k,s); d.add(T.c); 	EngineInterface->GetCameraState().FullTransform.transform(d);
 	c.x = (float)iFloor(_x2real(c.x)); c.y = (float)iFloor(_y2real(-c.y));
     r.x = (float)iFloor(_x2real(r.x)); r.y = (float)iFloor(_y2real(-r.y));
     n.x = (float)iFloor(_x2real(n.x)); n.y = (float)iFloor(_y2real(-n.y));
@@ -1093,7 +1086,6 @@ void CDrawUtilities::DrawObjectAxis(const Fmatrix& T, float sz, BOOL sel)
 
 void CDrawUtilities::DrawGrid()
 {
-	VERIFY( Device.b_is_Ready );
 	_VertexStream*	Stream	= &RCache.Vertex;
     u32 vBase;
 	// fill VB
@@ -1109,8 +1101,8 @@ void CDrawUtilities::DrawGrid()
     DU_DRAW_DP(D3DPT_LINELIST,vs_L,vBase,m_GridPoints.size()/2);
 }
 
-void CDrawUtilities::DrawSelectionRect(const Ivector2& m_SelStart, const Ivector2& m_SelEnd){
-	VERIFY( Device.b_is_Ready );
+void CDrawUtilities::DrawSelectionRect(const Ivector2& m_SelStart, const Ivector2& m_SelEnd)
+{
 	// fill VB
 	_VertexStream*	Stream	= &RCache.Vertex;
     u32 vBase;
@@ -1208,9 +1200,9 @@ void CDrawUtilities::OnRender()
 void CDrawUtilities::OutText(const Fvector& pos, LPCSTR text, u32 color, u32 shadow_color)
 {
 	Fvector p;
-	float w	= pos.x*Device.mFullTransform._14 + pos.y*Device.mFullTransform._24 + pos.z*Device.mFullTransform._34 + Device.mFullTransform._44;
+	float w	= pos.x* EngineInterface->GetCameraState().FullTransform._14 + pos.y* EngineInterface->GetCameraState().FullTransform._24 + pos.z* EngineInterface->GetCameraState().FullTransform._34 + EngineInterface->GetCameraState().FullTransform._44;
 	if (w>=0){
-		Device.mFullTransform.transform(p,pos);
+        EngineInterface->GetCameraState().FullTransform.transform(p,pos);
 		p.x = (float)iFloor(_x2real(p.x)); p.y = (float)iFloor(_y2real(-p.y));
 
 		m_Font->SetColor(shadow_color);

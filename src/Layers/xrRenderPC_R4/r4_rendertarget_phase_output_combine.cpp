@@ -16,7 +16,7 @@ void CRenderTarget::phase_output_scale(bool linear)
 
 	u_setrt(w, h, rt_Output->pRT, nullptr, nullptr, rt_HWDepth->pZRT);
 
-    set_viewport(HW.pContext, RCache.get_target_width(), RCache.get_target_height());
+    set_viewport(RCache.get_Context(), RCache.get_target_width(), RCache.get_target_height());
     RCache.set_CullMode(CULL_NONE);
     RCache.set_Stencil(false);
 

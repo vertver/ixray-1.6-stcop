@@ -25,11 +25,11 @@ BOOL	AAA_test		()
 
 void	CConstant::Calculate()
 {
-	if (dwFrame==RDEVICE.dwFrame)	return;
-	dwFrame		= RDEVICE.dwFrame;
+	if (dwFrame==EngineInterface->GetFrame())	return;
+	dwFrame		= EngineInterface->GetFrame();
 	if (modeProgrammable==dwMode)	return;
 
-	float	t	= RDEVICE.fTimeGlobal;
+	float	t	= EngineInterface->GetGlobalTime();
 	set_float	(_R.Calculate(t),_G.Calculate(t),_B.Calculate(t),_A.Calculate(t));
 }
 

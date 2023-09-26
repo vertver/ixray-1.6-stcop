@@ -96,8 +96,6 @@ void CEngineAPI::Initialize(void)
 		g_current_renderer	= 1;
 	}
 
-	Device.ConnectToRender();
-
 	// game	
 	{
 		LPCSTR			g_name	= "xrGame.dll";

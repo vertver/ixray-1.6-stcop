@@ -7,7 +7,7 @@
 
 class CUIListBoxItem;
 
-class CUIComboBox : public CUIWindow, public CUIOptionsItem, public pureRender
+class CUIComboBox : public CUIWindow, public CUIOptionsItem
 {
 	friend class CUIXmlInit;
 	typedef enum{

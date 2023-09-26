@@ -52,12 +52,12 @@ void CDetailManager::hw_Render()
 {
 	// Render-prepare
 	//	Update timer
-	//	Can't use Device.fTimeDelta since it is smoothed! Don't know why, but smoothed value looks more choppy!
+	//	Can't use EngineInterface->GetDeltaTime() since it is smoothed! Don't know why, but smoothed value looks more choppy!
 
-	float fDelta = Device.fTimeGlobal-m_global_time_old;
+	float fDelta = EngineInterface->GetGlobalTime()-m_global_time_old;
 	if ( (fDelta<0) || (fDelta>1))	fDelta = 0.03;
 
-	m_global_time_old = Device.fTimeGlobal;
+	m_global_time_old = EngineInterface->GetGlobalTime();
 	m_time_rot_1 += (PI_MUL_2 * fDelta / swing_current.rot1);
 	m_time_rot_2 += (PI_MUL_2 * fDelta / swing_current.rot2);
 	m_time_pos += fDelta * swing_current.speed;
@@ -122,8 +122,6 @@ void CDetailManager::hw_Render_dump(
 	static shared_str strXForm("xform");
 	static shared_str strWV("wv");
 
-	Device.Statistic->RenderDUMP_DT_Count	= 0;
-
 	// Matrices and offsets
 	u32		vOffset	=	0;
 	u32		iOffset	=	0;
@@ -157,7 +155,7 @@ void CDetailManager::hw_Render_dump(
 				RCache.set_c(strPrevWave, prev_wave);
 				RCache.set_c(strDir2D, wind);
 				RCache.set_c(strPrevDir2D, prev_wind);
-				RCache.set_c(strXForm, Device.mFullTransform);
+				RCache.set_c(strXForm, EngineInterface->GetCameraState().FullTransform);
 				RCache.set_c(strWV, RCache.xforms.m_wv);
 
 				Fvector4*	c_storage=0;
@@ -200,7 +198,6 @@ void CDetailManager::hw_Render_dump(
 						dwBatch	++;
 						if (dwBatch == hw_BatchSize)	{
 							// flush
-							Device.Statistic->RenderDUMP_DT_Count					+=	dwBatch;
 							u32 dwCNT_verts			= dwBatch * Object.number_vertices;
 							u32 dwCNT_prims			= (dwBatch * Object.number_indices)/3;
 							//RCache.get_ConstantCache_Vertex().b_dirty				=	TRUE;
@@ -226,7 +223,6 @@ void CDetailManager::hw_Render_dump(
 				// flush if nessecary
 				if (dwBatch)
 				{
-					Device.Statistic->RenderDUMP_DT_Count	+= dwBatch;
 					u32 dwCNT_verts			= dwBatch * Object.number_vertices;
 					u32 dwCNT_prims			= (dwBatch * Object.number_indices)/3;
 					RCache.Render				(D3DPT_TRIANGLELIST,vOffset,0,dwCNT_verts,iOffset,dwCNT_prims);

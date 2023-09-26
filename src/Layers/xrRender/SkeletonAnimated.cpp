@@ -464,9 +464,9 @@ void CKinematicsAnimated::LL_UpdateTracks( float dt, bool b_force, bool leave_bl
 		for (; I!=E; I++)
 		{
 			CBlend& B = *(*I);
-			if ( !b_force && B.dwFrame == RDEVICE.dwFrame )
+			if ( !b_force && B.dwFrame == EngineInterface->GetFrame() )
 					continue;
-			B.dwFrame =	RDEVICE.dwFrame;
+			B.dwFrame =	EngineInterface->GetFrame();
 			if( B.update( dt, B.Callback ) && !leave_blends )
 			{
 				DestroyCycle( B );
@@ -535,18 +535,18 @@ void	CKinematicsAnimated::LL_UpdateFxTracks( float dt )
 void CKinematicsAnimated::UpdateTracks	()
 {
 	_DBG_SINGLE_USE_MARKER;
-	if (Update_LastTime==RDEVICE.dwTimeGlobal) return;
-	u32 DT	= RDEVICE.dwTimeGlobal-Update_LastTime;
+	if (Update_LastTime==EngineInterface->GetRoundedGlobalTime()) return;
+	u32 DT	= EngineInterface->GetRoundedGlobalTime()-Update_LastTime;
 	if (DT>66) DT=66;
 	float dt = float(DT)/1000.f;
 	
 	if( GetUpdateTracksCalback()  )
 	{
-		if( ( *GetUpdateTracksCalback() )( float(RDEVICE.dwTimeGlobal-Update_LastTime)/1000.f, *this ) )
-					Update_LastTime = RDEVICE.dwTimeGlobal;
+		if( ( *GetUpdateTracksCalback() )( float(EngineInterface->GetRoundedGlobalTime()-Update_LastTime)/1000.f, *this ) )
+					Update_LastTime = EngineInterface->GetRoundedGlobalTime();
 		return;
 	}
-	Update_LastTime 	= RDEVICE.dwTimeGlobal;
+	Update_LastTime 	= EngineInterface->GetRoundedGlobalTime();
 	LL_UpdateTracks	( dt, false, false );
 }
 

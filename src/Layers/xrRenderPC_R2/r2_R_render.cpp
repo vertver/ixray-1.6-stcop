@@ -6,8 +6,8 @@
 
 IC	bool	pred_sp_sort	(ISpatial*	_1, ISpatial* _2)
 {
-	float	d1		= _1->spatial.sphere.P.distance_to_sqr	(Device.vCameraPosition);
-	float	d2		= _2->spatial.sphere.P.distance_to_sqr	(Device.vCameraPosition);
+	float	d1		= _1->spatial.sphere.P.distance_to_sqr	(EngineInterface->GetCameraState().CameraPosition);
+	float	d2		= _2->spatial.sphere.P.distance_to_sqr	(EngineInterface->GetCameraState().CameraPosition);
 	return	d1<d2	;
 }
 
@@ -65,7 +65,7 @@ void CRender::render_main	(Fmatrix&	m_ViewProjection, bool _fportals)
 			(
 			pLastSector,
 			ViewBase,
-			Device.vCameraPosition,
+			EngineInterface->GetCameraState().CameraPosition,
 			m_ViewProjection,
 			CPortalTraverser::VQ_HOM + CPortalTraverser::VQ_SSA + CPortalTraverser::VQ_FADE
 			//. disabled scissoring (HW.Caps.bScissor?CPortalTraverser::VQ_SCISSOR:0)	// generate scissoring info
@@ -216,7 +216,7 @@ void CRender::Render		()
 	// Msg						("sstatic: %s, sun: %s",o.sunstatic?"true":"false", bSUN?"true":"false");
 
 	// HOM
-	ViewBase.CreateFromMatrix					(Device.mFullTransform, FRUSTUM_P_LRTB + FRUSTUM_P_FAR);
+	ViewBase.CreateFromMatrix					(EngineInterface->GetCameraState().FullTransform, FRUSTUM_P_LRTB + FRUSTUM_P_FAR);
 	View										= 0;
 	if (!ps_r2_ls_flags.test(R2FLAG_EXP_MT_CALC))	{
 		HOM.Enable									();
@@ -229,8 +229,8 @@ void CRender::Render		()
 		float		z_distance	= ps_r2_zfill		;
 		Fmatrix		m_zfill, m_project				;
 		m_project.build_projection	(
-			deg2rad(Device.fFOV/* *Device.fASPECT*/), 
-			Device.fASPECT, VIEWPORT_NEAR, 
+			deg2rad(EngineInterface->GetCameraState().FOV/* *EngineInterface->GetCameraState().ASPECT*/), 
+			EngineInterface->GetCameraState().ASPECT, VIEWPORT_NEAR, 
 			z_distance * g_pGamePersistent->Environment().CurrentEnv->far_plane);
 		m_zfill.mul	(m_project,Device.mView);
 		r_pmask										(true,false);	// enable priority "0"
@@ -276,7 +276,7 @@ void CRender::Render		()
 	if (bSUN)									set_Recorder	(&main_coarse_structure);
 	else										set_Recorder	(NULL);
 	phase										= PHASE_NORMAL;
-	render_main									(Device.mFullTransform,true);
+	render_main									(EngineInterface->GetCameraState().FullTransform,true);
 	set_Recorder								(NULL);
 	r_pmask										(true,false);	// disable priority "1"
 	Device.Statistic->RenderCALC.End			();
@@ -450,7 +450,7 @@ void CRender::render_forward				()
 		// level
 		r_pmask									(false,true);			// enable priority "1"
 		phase									= PHASE_NORMAL;
-		render_main								(Device.mFullTransform,false);//
+		render_main								(EngineInterface->GetCameraState().FullTransform,false);//
 		//	Igor: we don't want to render old lods on next frame.
 		mapLOD.clear							();
 		r_dsgraph_render_graph					(1)	;					// normal level, secondary priority

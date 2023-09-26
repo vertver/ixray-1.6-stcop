@@ -211,7 +211,7 @@ void CUIStatsPlayerList::Update()
 {
 
 	static string512 teaminfo;
-	if (m_prev_upd_time > Device.dwTimeContinual - 100)
+	if (m_prev_upd_time > EngineInterface->GetContinualTime() - 100)
 		return;
 
 	using ItemVec = xr_vector<game_PlayerState*>;
@@ -219,7 +219,7 @@ void CUIStatsPlayerList::Update()
 
 	ItemVec			items;
 
-	m_prev_upd_time = Device.dwTimeContinual;
+	m_prev_upd_time = EngineInterface->GetContinualTime();
 	game_cl_GameState::PLAYERS_MAP_IT I=Game().players.begin();
 	game_cl_GameState::PLAYERS_MAP_IT E=Game().players.end();
 

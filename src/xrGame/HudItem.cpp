@@ -200,7 +200,7 @@ void CHudItem::UpdateCL()
 			if(!marks.empty())
 			{
 				float motion_prev_time = ((float)m_dwMotionCurrTm - (float)m_dwMotionStartTm)/1000.0f;
-				float motion_curr_time = ((float)Device.dwTimeGlobal - (float)m_dwMotionStartTm)/1000.0f;
+				float motion_curr_time = ((float)EngineInterface->GetRoundedGlobalTime() - (float)m_dwMotionStartTm)/1000.0f;
 				
 				xr_vector<motion_marks>::const_iterator it = marks.begin();
 				xr_vector<motion_marks>::const_iterator it_e = marks.end();
@@ -220,7 +220,7 @@ void CHudItem::UpdateCL()
 			
 			}
 
-			m_dwMotionCurrTm					= Device.dwTimeGlobal;
+			m_dwMotionCurrTm					= EngineInterface->GetRoundedGlobalTime();
 			if(m_dwMotionCurrTm > m_dwMotionEndTm)
 			{
 				m_current_motion_def				= NULL;
@@ -280,7 +280,7 @@ void CHudItem::on_a_hud_attach()
 	{
 		PlayHUDMotion_noCB(m_current_motion, FALSE);
 #ifdef DEBUG
-//		Msg("continue playing [%s][%d]",m_current_motion.c_str(), Device.dwFrame);
+//		Msg("continue playing [%s][%d]",m_current_motion.c_str(), EngineInterface->GetFrame());
 #endif // #ifdef DEBUG
 	}else
 	{
@@ -296,7 +296,7 @@ u32 CHudItem::PlayHUDMotion(const shared_str& M, BOOL bMixIn, CHudItem*  W, u32 
 	if (anim_time>0)
 	{
 		m_bStopAtEndAnimIsRunning	= true;
-		m_dwMotionStartTm			= Device.dwTimeGlobal;
+		m_dwMotionStartTm			= EngineInterface->GetRoundedGlobalTime();
 		m_dwMotionCurrTm			= m_dwMotionStartTm;
 		m_dwMotionEndTm				= m_dwMotionStartTm + anim_time;
 		m_startedMotionState		= state;
@@ -318,7 +318,7 @@ u32 CHudItem::PlayHUDMotion_noCB(const shared_str& motion_name, BOOL bMixIn)
 			item().m_pInventory->GetActiveSlot(), 
 			item().object_id(),
 			motion_name.c_str(), 
-			Device.dwFrame);
+			EngineInterface->GetFrame());
 	}
 	if( HudItemData() )
 	{

@@ -14,7 +14,7 @@ void CUIDetectorWave::Update()
 {
 	Fvector2 P	= GetWndPos();
 
-	float	dp	= m_curr_v*Device.fTimeDelta;
+	float	dp	= m_curr_v*EngineInterface->GetDeltaTime();
 
 	P.x			+= dp;
 	if(P.x > 0)

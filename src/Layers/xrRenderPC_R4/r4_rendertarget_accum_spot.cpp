@@ -31,8 +31,8 @@ void CRenderTarget::accum_spot	(light* L)
 		// setup xform
 		L->xform_calc					();
 		RCache.set_xform_world			(L->m_xform			);
-		RCache.set_xform_view			(Device.mView		);
-		RCache.set_xform_project		(Device.mProject	);
+		RCache.set_xform_view			(EngineInterface->GetCameraState().View		);
+		RCache.set_xform_project		(EngineInterface->GetCameraState().Project	);
 		bIntersect						= enable_scissor	(L);
 
 		// *** similar to "Carmack's reverse", but assumes convex, non intersecting objects,
@@ -83,7 +83,7 @@ void CRenderTarget::accum_spot	(light* L)
 		};
 
 		// compute xforms
-		Fmatrix			xf_world;		xf_world.invert	(Device.mView);
+		Fmatrix			xf_world;		xf_world.invert	(EngineInterface->GetCameraState().View);
 		Fmatrix			xf_view			= L->X.S.view;
 		Fmatrix			xf_project;		xf_project.mul	(m_TexelAdjust,L->X.S.project);
 		m_Shadow.mul					(xf_view, xf_world);
@@ -111,8 +111,8 @@ void CRenderTarget::accum_spot	(light* L)
 	L_clr.set					(L->color.r,L->color.g,L->color.b);
 	L_clr.mul					(L->get_LOD());
 	L_spec						= u_diffuse2s	(L_clr);
-	Device.mView.transform_tiny	(L_pos,L->position);
-	Device.mView.transform_dir	(L_dir,L->direction);
+	EngineInterface->GetCameraState().View.transform_tiny	(L_pos,L->position);
+	EngineInterface->GetCameraState().View.transform_dir	(L_dir,L->direction);
 	L_dir.normalize				();
 
 	// Draw volume with projective texgen
@@ -156,7 +156,7 @@ void CRenderTarget::accum_spot	(light* L)
 	}	
 	
 	RCache.set_Scissor(0);
-	//CHK_DX		(HW.pDevice->SetRenderState(D3DRS_SCISSORTESTENABLE,FALSE));
+	//CHK_DX		(RCache.get_Device()->SetRenderState(D3DRS_SCISSORTESTENABLE,FALSE));
 	//dwLightMarkerID					+=	2;	// keep lowest bit always setted up
 	increment_light_marker();
 }
@@ -184,8 +184,8 @@ void CRenderTarget::accum_volumetric(light* L)
 		// setup xform
 		L->xform_calc					();
 		RCache.set_xform_world			(L->m_xform			);
-		RCache.set_xform_view			(Device.mView		);
-		RCache.set_xform_project		(Device.mProject	);
+		RCache.set_xform_view			(EngineInterface->GetCameraState().View		);
+		RCache.set_xform_project		(EngineInterface->GetCameraState().Project	);
 		bIntersect						= enable_scissor	(L);
 
 		//enable_dbt_bounds				(L);
@@ -218,7 +218,7 @@ void CRenderTarget::accum_volumetric(light* L)
 		};
 
 		// compute xforms
-		Fmatrix			xf_world;		xf_world.invert	(Device.mView);
+		Fmatrix			xf_world;		xf_world.invert	(EngineInterface->GetCameraState().View);
 		Fmatrix			xf_view			= L->X.S.view;
 		Fmatrix			xf_project;		xf_project.mul	(m_TexelAdjust,L->X.S.project);
 		m_Shadow.mul					(xf_view, xf_world);
@@ -261,8 +261,8 @@ void CRenderTarget::accum_volumetric(light* L)
 	for (u32 i=0; i<8; i++)		{
 		Fvector		pt;
 		BB.getpoint	(i,pt);
-		//Device.mFullTransform.transform	(pt);
-		Device.mFullTransform.transform	(mView);
+		//EngineInterface->GetCameraState().FullTransform.transform	(pt);
+		EngineInterface->GetCameraState().FullTransform.transform	(mView);
 		bbp.modify	(pt);
 	}
 	*/
@@ -283,14 +283,14 @@ void CRenderTarget::accum_volumetric(light* L)
 	//float	scaledRadius = L->spatial.sphere.R;
 	//Fvector	rr = Fvector().set(scaledRadius,scaledRadius,scaledRadius);
 	//Fvector pt = L->spatial.sphere.P;
-	Device.mView.transform(pt);
+	EngineInterface->GetCameraState().View.transform(pt);
 	aabb.setb( pt, rr);
 /*	
 	//	Calculate presise AABB assuming we are drawing for the spot light
 	{
 		aabb.invalidate();
 		Fmatrix	transform;
-		transform.mul( Device.mView, L->m_xform);		 
+		transform.mul( EngineInterface->GetCameraState().View, L->m_xform);		 
 		for (u32 i=0; i<DU_CONE_NUMVERTEX; ++i)
 		{
 			Fvector		pt = du_cone_vertices[i];
@@ -314,8 +314,8 @@ void CRenderTarget::accum_volumetric(light* L)
 	L_clr.mul					(1/fQuality);
 	L_clr.mul					(L->get_LOD());
 	L_spec						= u_diffuse2s	(L_clr);
-	Device.mView.transform_tiny	(L_pos,L->position);
-	Device.mView.transform_dir	(L_dir,L->direction);
+	EngineInterface->GetCameraState().View.transform_tiny	(L_pos,L->position);
+	EngineInterface->GetCameraState().View.transform_dir	(L_dir,L->direction);
 	L_dir.normalize				();
 
 	// Draw volume with projective texgen
@@ -389,8 +389,8 @@ void CRenderTarget::accum_volumetric(light* L)
 
 			//	Transform frustum to clip space
 			Fmatrix PlaneTransform;
-			PlaneTransform.transpose(Device.mInvFullTransform);
-			//HW.pDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, 0x3F);
+			PlaneTransform.transpose(EngineInterface->GetCameraState().InvFullTransform);
+			//RCache.get_Device()->SetRenderState(D3DRS_CLIPPLANEENABLE, 0x3F);
 
 			for ( int i=0; i<6; ++i)
 			{
@@ -399,7 +399,7 @@ void CRenderTarget::accum_volumetric(light* L)
 				PlaneTransform.transform(TransformedPlane, ClipPlane);
 				TransformedPlane.mul(-1.0f);
 				RCache.set_ca(strFrustumClipPlane, i, TransformedPlane);
-				//HW.pDevice->SetClipPlane( i, &TransformedPlane.x);
+				//RCache.get_Device()->SetClipPlane( i, &TransformedPlane.x);
 			}
 			/*
 			for ( int i=0; i<6; ++i)
@@ -415,7 +415,7 @@ void CRenderTarget::accum_volumetric(light* L)
 			//	Transform frustum to clip space
 			Fmatrix PlaneTransform;
 			PlaneTransform.transpose(Device.mInvFullTransform);
-			HW.pDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, 0x3F);
+			RCache.get_Device()->SetRenderState(D3DRS_CLIPPLANEENABLE, 0x3F);
 
 			for ( int i=0; i<6; ++i)
 			{
@@ -423,7 +423,7 @@ void CRenderTarget::accum_volumetric(light* L)
 				Fvector4	TransformedPlane;
 				PlaneTransform.transform(TransformedPlane, ClipPlane);
 				TransformedPlane.mul(-1.0f);
-				HW.pDevice->SetClipPlane( i, &TransformedPlane.x);
+				RCache.get_Device()->SetClipPlane( i, &TransformedPlane.x);
 			}
 			*/
 		}
@@ -435,7 +435,7 @@ void CRenderTarget::accum_volumetric(light* L)
 		clip[1] = 
 		clip[2] = 
 		clip[3] = 0;
-		HW.pDevice->SetClipPlane( 0, clip);
+		RCache.get_Device()->SetClipPlane( 0, clip);
 		*/
 
 
@@ -443,7 +443,7 @@ void CRenderTarget::accum_volumetric(light* L)
 //		if (RImplementation.o.HW_smap_FETCH4)	{
 			//. we hacked the shader to force smap on S0
 //#			define FOURCC_GET4  MAKEFOURCC('G','E','T','4') 
-//			HW.pDevice->SetSamplerState	( 0, D3DSAMP_MIPMAPLODBIAS, FOURCC_GET4 );
+//			RCache.get_Device()->SetSamplerState	( 0, D3DSAMP_MIPMAPLODBIAS, FOURCC_GET4 );
 //		}
 
 		RCache.set_ColorWriteEnable(D3DCOLORWRITEENABLE_RED|D3DCOLORWRITEENABLE_GREEN|D3DCOLORWRITEENABLE_BLUE);
@@ -489,11 +489,11 @@ void CRenderTarget::accum_volumetric(light* L)
 //		if (RImplementation.o.HW_smap_FETCH4)	{
 			//. we hacked the shader to force smap on S0
 //#			define FOURCC_GET1  MAKEFOURCC('G','E','T','1') 
-//			HW.pDevice->SetSamplerState	( 0, D3DSAMP_MIPMAPLODBIAS, FOURCC_GET1 );
+//			RCache.get_Device()->SetSamplerState	( 0, D3DSAMP_MIPMAPLODBIAS, FOURCC_GET1 );
 //		}
 
 		//	Restore clip planes
-		//HW.pDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, 0);
+		//RCache.get_Device()->SetRenderState(D3DRS_CLIPPLANEENABLE, 0);
 		RCache.set_ClipPlanes (FALSE,(Fmatrix *)0,0);
 	}
 /*
@@ -506,6 +506,6 @@ void CRenderTarget::accum_volumetric(light* L)
 		draw_volume					(L);
 	}
 */
-	//CHK_DX		(HW.pDevice->SetRenderState(D3DRS_SCISSORTESTENABLE,FALSE));
+	//CHK_DX		(RCache.get_Device()->SetRenderState(D3DRS_SCISSORTESTENABLE,FALSE));
 	RCache.set_Scissor(0);
 }

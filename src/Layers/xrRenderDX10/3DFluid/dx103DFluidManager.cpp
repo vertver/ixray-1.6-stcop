@@ -204,7 +204,7 @@ void dx103DFluidManager::CreateRTTextureAndViews(int rtIndex, D3D_TEXTURE3D_DESC
 	ID3DTexture3D	*pRT;
 
 	// Create the texture
-	CHK_DX( HW.pDevice->CreateTexture3D(&TexDesc,NULL,&pRT));
+	CHK_DX( RCache.get_Device()->CreateTexture3D(&TexDesc,NULL,&pRT));
 	// Create the render target view
 	D3D_RENDER_TARGET_VIEW_DESC DescRT;
 	DescRT.Format = TexDesc.Format;
@@ -213,7 +213,7 @@ void dx103DFluidManager::CreateRTTextureAndViews(int rtIndex, D3D_TEXTURE3D_DESC
 	DescRT.Texture3D.MipSlice = 0;
 	DescRT.Texture3D.WSize = TexDesc.Depth;
 
-	CHK_DX( HW.pDevice->CreateRenderTargetView( pRT, &DescRT, &pRenderTargetViews[rtIndex]) );
+	CHK_DX( RCache.get_Device()->CreateRenderTargetView( pRT, &DescRT, &pRenderTargetViews[rtIndex]) );
 
 	pRTTextures[rtIndex]->surface_set(pRT);
 
@@ -233,7 +233,7 @@ void dx103DFluidManager::Reset()
 
 	for(int rtIndex=0; rtIndex<NUM_OWN_RENDER_TARGETS; rtIndex++)
 	{
-		HW.pContext->ClearRenderTargetView( pRenderTargetViews[rtIndex], color );
+		RCache.get_Context()->ClearRenderTargetView( pRenderTargetViews[rtIndex], color );
 	}
 }
 
@@ -256,7 +256,7 @@ void dx103DFluidManager::Update( dx103DFluidData &FluidData, float timestep )
 	rtViewport.Width =  (float)m_iTextureWidth;
 	rtViewport.Height = (float)m_iTextureHeight;
 
-	HW.pContext->RSSetViewports(1,&rtViewport);
+	RCache.get_Context()->RSSetViewports(1,&rtViewport);
 	RCache.set_ZB(0);
 
 	UpdateObstacles( FluidData, timestep );
@@ -352,8 +352,8 @@ void dx103DFluidManager::AdvectColorBFECC( float timestep, bool bTeperature )
 
 	float color[4] = {0, 0, 0, 0 };
 
-	HW.pContext->ClearRenderTargetView( pRenderTargetViews[RENDER_TARGET_TEMPVECTOR], color );
-	HW.pContext->ClearRenderTargetView( pRenderTargetViews[RENDER_TARGET_TEMPSCALAR], color );
+	RCache.get_Context()->ClearRenderTargetView( pRenderTargetViews[RENDER_TARGET_TEMPVECTOR], color );
+	RCache.get_Context()->ClearRenderTargetView( pRenderTargetViews[RENDER_TARGET_TEMPSCALAR], color );
 
 	RCache.set_RT(pRenderTargetViews[RENDER_TARGET_TEMPVECTOR]);
 
@@ -452,7 +452,7 @@ void dx103DFluidManager::ApplyVorticityConfinement( float timestep )
 
 	// Compute vorticity
 	float color[4] = {0, 0, 0, 0 };
-	HW.pContext->ClearRenderTargetView( pRenderTargetViews[RENDER_TARGET_TEMPVECTOR], color );
+	RCache.get_Context()->ClearRenderTargetView( pRenderTargetViews[RENDER_TARGET_TEMPVECTOR], color );
 
 	RCache.set_RT(pRenderTargetViews[RENDER_TARGET_TEMPVECTOR]);
 	RCache.set_Element(m_SimulationTechnique[SS_Vorticity]);	
@@ -483,7 +483,7 @@ void dx103DFluidManager::ComputeVelocityDivergence( float timestep )
 	PIX_EVENT(ComputeVelocityDivergence);
 
 	float color[4] = {0, 0, 0, 0 };
-	HW.pContext->ClearRenderTargetView( pRenderTargetViews[RENDER_TARGET_TEMPVECTOR], color );
+	RCache.get_Context()->ClearRenderTargetView( pRenderTargetViews[RENDER_TARGET_TEMPVECTOR], color );
 
 	RCache.set_RT(pRenderTargetViews[RENDER_TARGET_TEMPVECTOR]);
 	RCache.set_Element(m_SimulationTechnique[SS_Divergence]);
@@ -495,7 +495,7 @@ void dx103DFluidManager::ComputePressure( float timestep )
 	PIX_EVENT(ComputePressure);
 
 	float color[4] = {0, 0, 0, 0 };
-	HW.pContext->ClearRenderTargetView( pRenderTargetViews[RENDER_TARGET_TEMPSCALAR], color );
+	RCache.get_Context()->ClearRenderTargetView( pRenderTargetViews[RENDER_TARGET_TEMPSCALAR], color );
 
 	RCache.set_RT(0);
 	ref_selement	CurrentTechnique = m_SimulationTechnique[SS_Jacobi];
@@ -556,8 +556,8 @@ void dx103DFluidManager::UpdateObstacles( const dx103DFluidData &FluidData, floa
 
 	//	Reset data
 	float color[4] = {0, 0, 0, 0 };
-	HW.pContext->ClearRenderTargetView( pRenderTargetViews[RENDER_TARGET_OBSTACLES], color );
-	HW.pContext->ClearRenderTargetView( pRenderTargetViews[RENDER_TARGET_OBSTVELOCITY], color );
+	RCache.get_Context()->ClearRenderTargetView( pRenderTargetViews[RENDER_TARGET_OBSTACLES], color );
+	RCache.get_Context()->ClearRenderTargetView( pRenderTargetViews[RENDER_TARGET_OBSTVELOCITY], color );
 
 	RCache.set_RT(pRenderTargetViews[RENDER_TARGET_OBSTACLES], 0);
 	RCache.set_RT(pRenderTargetViews[RENDER_TARGET_OBSTVELOCITY], 1);

@@ -2,13 +2,14 @@
 #include "../xrRender/xr_effgamma.h"
 
 void CGammaControl::Update() {
-	if (HW.pDevice)
+	if (RCache.get_Device())
 	{
 		DXGI_GAMMA_CONTROL_CAPABILITIES GC;
 		DXGI_GAMMA_CONTROL				G;
 		IDXGIOutput* pOutput;
 
-		CHK_DX(HW.m_pSwapChain->GetContainingOutput(&pOutput));
+		auto Swapchain = (IDXGISwapChain*)(EngineInterface->GetParent()->GetSwapchain());
+		CHK_DX(Swapchain->GetContainingOutput(&pOutput));
 		HRESULT hr = pOutput->GetGammaControlCapabilities(&GC);
 		if (SUCCEEDED(hr))
 		{

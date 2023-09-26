@@ -90,7 +90,6 @@ CConsole::CConsole() : m_hShader_back(NULL) {
 	m_cmd_history_max = cmd_history_max;
 	m_disable_tips    = false;
 	Register_callbacks();
-	Device.seqResolutionChanged.Add(this);
 }
 
 void CConsole::Initialize()
@@ -128,7 +127,6 @@ CConsole::~CConsole()
 	xr_delete( m_hShader_back );
 	xr_delete( m_editor );
 	Destroy();
-	Device.seqResolutionChanged.Remove(this);
 }
 
 void CConsole::Destroy()
@@ -156,7 +154,7 @@ void CConsole::OnFrame()
 {
 	m_editor->on_frame();
 	
-	if (Device.dwFrame % 10 == 0) {
+	if (TheEngine.GetFrame() % 10 == 0) {
 		update_tips();
 	}
 }
@@ -164,7 +162,7 @@ void CConsole::OnFrame()
 void CConsole::OutFont( LPCSTR text, float& pos_y )
 {
 	float str_length = pFont->SizeOf_( text );
-	float scr_width  = 1.98f * Device.HalfTargetWidth;
+	float scr_width = 1.98f * TheEngine.GetWidth() * 0.5f;// Device.HalfTargetWidth;
 	if( str_length > scr_width ) //1024.0f
 	{
 		float f	= 0.0f;
@@ -243,7 +241,7 @@ void CConsole::OnRender()
 	DrawBackgrounds( bGame );
 
 	float fMaxY;
-	float dwMaxY = (float)Device.TargetHeight;
+	float dwMaxY = (float)TheEngine.GetHeight();
 	// float dwMaxX=float(Device.dwWidth/2);
 	if ( bGame )
 	{
@@ -256,10 +254,10 @@ void CConsole::OnRender()
 	}
 
 	float ypos  = fMaxY - LDIST * 1.1f;
-	float scr_x = 1.0f / Device.HalfTargetWidth;
+	float scr_x = 1.0f / TheEngine.GetWidth() * 0.5f;;
 
 	//---------------------------------------------------------------------------------
-	float scr_width  = 1.9f * Device.HalfTargetWidth;
+	float scr_width  = 1.9f * TheEngine.GetWidth() * 0.5f;
 	float ioc_d      = pFont->SizeOf_(ioc_prompt);
 	float d1         = pFont->SizeOf_( "_" );
 
@@ -356,7 +354,7 @@ void CConsole::DrawBackgrounds(bool bGame) {
 	float ky = (bGame)? 0.5f : 1.0f;
 
 	Frect r;
-	r.set( 0.0f, 0.0f, float(Device.TargetWidth), ky * float(Device.TargetHeight) );
+	r.set( 0.0f, 0.0f, TheEngine.GetWidth(), ky * float(TheEngine.GetHeight()) );
 
 	UIRender->SetShader( **m_hShader_back );
 	// 6 = back, 12 = tips, (VIEW_TIPS_COUNT+1)*6 = highlight_words, 12 = scroll
@@ -394,7 +392,7 @@ void CConsole::DrawBackgrounds(bool bGame) {
 	pr.x2 = pr.x1 + list_w;
 
 	pr.y1 = UI_BASE_HEIGHT * 0.5f;
-	pr.y1 *= float(Device.TargetHeight)/UI_BASE_HEIGHT;
+	pr.y1 *= float(TheEngine.GetHeight())/UI_BASE_HEIGHT;
 
 	pr.y2 = pr.y1 + tips_h;
 
@@ -598,8 +596,6 @@ void CConsole::Show()
 	update_tips();
 
 	m_editor->IR_Capture();
-	Device.seqRender.Add( this, 1 );
-	Device.seqFrame.Add( this );
 }
 
 extern CInput* pInput;
@@ -626,8 +622,6 @@ void CConsole::Hide()
 	reset_selected_tip();
 	update_tips();
 
-	Device.seqFrame.Remove( this );
-	Device.seqRender.Remove( this );
 	m_editor->IR_Release();
 }
 

@@ -233,9 +233,9 @@ void CUIHudStatesWnd::Update()
 
 void CUIHudStatesWnd::UpdateHealth( CActor* actor )
 {
-//	if ( Device.dwTimeGlobal - m_timer_1sec > 1000 ) // 1 sec
+//	if ( EngineInterface->GetRoundedGlobalTime() - m_timer_1sec > 1000 ) // 1 sec
 //	{
-//		m_timer_1sec = Device.dwTimeGlobal;
+//		m_timer_1sec = EngineInterface->GetRoundedGlobalTime();
 //	}
 	
 	float cur_health = actor->GetfHealth();
@@ -434,7 +434,7 @@ void CUIHudStatesWnd::UpdateZones()
 	}
 	m_radia_hit = m_zone_cur_power[ALife::infl_rad];
 
-/*	if ( Device.dwFrame % 20 == 0 )
+/*	if ( EngineInterface->GetFrame() % 20 == 0 )
 	{
 		Msg(" self = %.2f   hit = %.2f", m_radia_self, m_radia_hit );
 	}*/
@@ -456,9 +456,9 @@ void CUIHudStatesWnd::UpdateZones()
 
 	for ( int i = 0; i < ALife::infl_max_count; ++i )
 	{
-		if ( Device.fTimeDelta < 1.0f )
+		if ( EngineInterface->GetDeltaTime() < 1.0f )
 		{
-			m_zone_cur_power[i] *= 0.9f * (1.0f - Device.fTimeDelta);
+			m_zone_cur_power[i] *= 0.9f * (1.0f - EngineInterface->GetDeltaTime());
 		}
 		if ( m_zone_cur_power[i] < 0.01f )
 		{
@@ -467,7 +467,7 @@ void CUIHudStatesWnd::UpdateZones()
 	}
 
 	Fvector posf; 
-	posf.set( Device.vCameraPosition );
+	posf.set( EngineInterface->GetCameraState().CameraPosition );
 	Level().hud_zones_list->feel_touch_update( posf, m_zone_feel_radius_max );
 	
 	if ( Level().hud_zones_list->m_ItemInfos.size() == 0 )
@@ -491,7 +491,7 @@ void CUIHudStatesWnd::UpdateZones()
 		}
 */
 
-		Fvector P			= Device.vCameraPosition;
+		Fvector P			= EngineInterface->GetCameraState().CameraPosition;
 		P.y					-= 0.5f;
 		float dist_to_zone	= 0.0f;
 		float rad_zone		= 0.0f;
@@ -534,7 +534,7 @@ void CUIHudStatesWnd::UpdateZones()
 		} 
 		else
 		{
-			zone_info.snd_time += Device.fTimeDelta;
+			zone_info.snd_time += EngineInterface->GetDeltaTime();
 		}
 	} // for itb
 }

@@ -8,9 +8,7 @@ class ENGINE_API CGameFont;
 #include "../Include/xrRender/ApplicationRender.h"
 
 // definition
-class ENGINE_API CApplication	:
-	public pureFrame,
-	public IEventReceiver
+class ENGINE_API CApplication	:public IEventReceiver
 {
 	friend class dxApplicationRender;
 
@@ -24,8 +22,8 @@ public:
 	string2048				ls_header;
 	string2048				ls_tip_number;
 	string2048				ls_tip;
+
 private:
-	FactoryPtr<IApplicationRender>	m_pRender;
 
 	int		max_load_stage;
 

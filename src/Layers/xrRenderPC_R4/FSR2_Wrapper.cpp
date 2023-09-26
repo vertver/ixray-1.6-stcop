@@ -6,6 +6,7 @@ extern float ps_r4_motion_scale;
 
 bool Fsr2Wrapper::Create(Fsr2Wrapper::ContextParameters params)
 {
+#if 0
     VERIFY(!m_created);
 
     m_contextParams = params;
@@ -47,19 +48,24 @@ bool Fsr2Wrapper::Create(Fsr2Wrapper::ContextParameters params)
     ffxFsr2ContextCreate(&m_context, &m_contextDesc);
 
     m_created = true;
+#endif
+    return true;
 }
 
 void Fsr2Wrapper::Destroy()
 {
+#if 0
     VERIFY(m_created);
 
     ffxFsr2ContextDestroy(&m_context);
 
     m_created = false;
+#endif
 }
 
 void Fsr2Wrapper::Draw(const DrawParameters& params)
 {
+#if 0
     R_ASSERT(m_created);
 
     FfxFsr2DispatchDescription dispatchParameters = {};
@@ -103,10 +109,13 @@ void Fsr2Wrapper::Draw(const DrawParameters& params)
 
     FfxErrorCode errorCode = ffxFsr2ContextDispatch(&m_context, &dispatchParameters);
     R_ASSERT(errorCode == FFX_OK);
+#endif
 }
 
 Fsr2Wrapper::~Fsr2Wrapper()
 {
+#if 0
     if (IsCreated())
         Destroy();
+#endif
 }

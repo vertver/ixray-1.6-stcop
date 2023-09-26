@@ -38,7 +38,7 @@ void	CRenderTarget::phase_combine	()
 	Fvector2	p0,p1;
 
 	//*** exposure-pipeline
-	u32			gpu_id	= Device.dwFrame%HW.Caps.iGPUNum;
+	u32			gpu_id	= EngineInterface->GetFrame()%HW.Caps.iGPUNum;
 	{
 		t_LUM_src->surface_set		(rt_LUM_pool[gpu_id*2+0]->pSurface);
 		t_LUM_dest->surface_set		(rt_LUM_pool[gpu_id*2+1]->pSurface);
@@ -100,11 +100,11 @@ void	CRenderTarget::phase_combine	()
 
 		float		fSSAONoise = 2.0f;
 		fSSAONoise *= tan(deg2rad(67.5f/2.0f));
-		fSSAONoise /= tan(deg2rad(Device.fFOV/2.0f));
+		fSSAONoise /= tan(deg2rad(EngineInterface->GetCameraState().FOV/2.0f));
 
 		float		fSSAOKernelSize = 150.0f;
 		fSSAOKernelSize *= tan(deg2rad(67.5f/2.0f));
-		fSSAOKernelSize /= tan(deg2rad(Device.fFOV/2.0f));
+		fSSAOKernelSize /= tan(deg2rad(EngineInterface->GetCameraState().FOV/2.0f));
 
 		// sun-params
 		{

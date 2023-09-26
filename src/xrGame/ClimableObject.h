@@ -9,9 +9,6 @@ struct SGameMtl;
 class CClimableObject: 
 public CPhysicsShellHolder,
 public IClimableObject
-#ifdef DEBUG
-,public pureRender
-#endif
 {
 	typedef	CPhysicsShellHolder		inherited;
 	//CPHLeaderGeomShell* m_pStaticShell;

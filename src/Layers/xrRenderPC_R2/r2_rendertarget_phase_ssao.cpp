@@ -44,11 +44,11 @@ void CRenderTarget::phase_ssao	()
 
 		float		fSSAONoise = 2.0f;
 		fSSAONoise *= tan(deg2rad(67.5f));
-		fSSAONoise /= tan(deg2rad(Device.fFOV));
+		fSSAONoise /= tan(deg2rad(EngineInterface->GetCameraState().FOV));
 
 		float		fSSAOKernelSize = 150.0f;
 		fSSAOKernelSize *= tan(deg2rad(67.5f));
-		fSSAOKernelSize /= tan(deg2rad(Device.fFOV));
+		fSSAOKernelSize /= tan(deg2rad(EngineInterface->GetCameraState().FOV));
 
 		float	scale_X				= _w	/ float(TEX_jitter);
 		float	scale_Y				= _h / float(TEX_jitter);

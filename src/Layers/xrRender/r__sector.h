@@ -16,9 +16,6 @@ struct	_scissor					: public Fbox2
 
 // Connector
 class	CPortal						: public IRender_Portal
-#ifdef DEBUG
-	, public pureRender
-#endif
 {
 private:
 	svector<Fvector,8>				poly;
@@ -95,7 +92,7 @@ public:
 									CPortalTraverser	();
 	void							initialize			();
 	void							destroy				();
-	void							traverse			(IRender_Sector* start, CFrustum& F, Fvector& vBase, Fmatrix& mXFORM, u32 options);
+	void							traverse			(IRender_Sector* start, CFrustum& F, const Fvector& vBase, const Fmatrix& mXFORM, u32 options);
 	void							fade_portal			(CPortal* _p, float ssa);
 	void							fade_render			();
 #ifdef DEBUG

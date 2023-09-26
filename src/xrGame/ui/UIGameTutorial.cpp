@@ -14,8 +14,6 @@
 #include "UIActorMenu.h"
 #include "UIPdaWnd.h"
 
-extern ENGINE_API BOOL bShowPauseString;
-
 void CallFunction(shared_str const& func)
 {
 	luabind::functor<void>		functor_to_call;
@@ -100,7 +98,7 @@ CUISequencer::CUISequencer()
 void CUISequencer::Start(LPCSTR tutor_name)
 {
 	VERIFY						(m_sequencer_items.size()==0);
-	Device.seqFrame.Add			(this, REG_PRIORITY_LOW-10000);
+	//Device.seqFrame.Add			(this, REG_PRIORITY_LOW-10000);
 	
 	
 	m_UIWindow					= xr_new<CUIWindow>();
@@ -158,7 +156,7 @@ void CUISequencer::Start(LPCSTR tutor_name)
 		pItem->Load				(&uiXml,i);
 	}
 
-	Device.seqRender.Add		(this, render_prio /*-2*/);
+	//Device.seqRender.Add		(this, render_prio /*-2*/);
 	
 	CUISequenceItem* pCurrItem	= GetNextItem();
 	R_ASSERT3					(pCurrItem, "no item(s) to start", tutor_name);
@@ -168,16 +166,19 @@ void CUISequencer::Start(LPCSTR tutor_name)
 
 
 	m_flags.set					(etsActive, TRUE);
-	m_flags.set					(etsStoredPauseState, Device.Paused());
+	m_flags.set					(etsStoredPauseState, EngineInterface->GetState() == ApplicationState::Paused);
 	
 	if(m_flags.test(etsNeedPauseOn) && !m_flags.test(etsStoredPauseState))
 	{
-		Device.Pause			(TRUE, TRUE, TRUE, "tutorial_start");
-		bShowPauseString		= FALSE;
+		EngineInterface->UpdateState(ApplicationState::Paused);
+		//Device.Pause			(TRUE, TRUE, TRUE, "tutorial_start");
+		//bShowPauseString		= FALSE;
 	}
 
-	if(m_flags.test(etsNeedPauseOff) && m_flags.test(etsStoredPauseState))
-		Device.Pause			(FALSE, TRUE, FALSE, "tutorial_start");
+	if (m_flags.test(etsNeedPauseOff) && m_flags.test(etsStoredPauseState)) {
+		EngineInterface->UpdateState(ApplicationState::Running);
+		//Device.Pause(FALSE, TRUE, FALSE, "tutorial_start");
+	}
 
 	if (m_global_sound._handle())		
 		m_global_sound.play(NULL, sm_2D);
@@ -227,8 +228,8 @@ void CUISequencer::Destroy()
 		CallFunction(m_stop_lua_function);
 
 	m_global_sound.stop			();
-	Device.seqFrame.Remove		(this);
-	Device.seqRender.Remove		(this);
+	//Device.seqFrame.Remove		(this);
+	//Device.seqRender.Remove		(this);
 	delete_data					(m_sequencer_items);
 	delete_data					(m_UIWindow);
 	IR_Release					();
@@ -263,18 +264,21 @@ void CUISequencer::Stop()
 		}
 	}
 	{
-	if(m_flags.test(etsNeedPauseOn) && !m_flags.test(etsStoredPauseState))
-		Device.Pause			(FALSE, TRUE, TRUE, "tutorial_stop");
+		if (m_flags.test(etsNeedPauseOn) && !m_flags.test(etsStoredPauseState)) {
+			EngineInterface->UpdateState(ApplicationState::Running);
+			//Device.Pause(FALSE, TRUE, TRUE, "tutorial_stop");
+		}
 
-	if(m_flags.test(etsNeedPauseOff) && m_flags.test(etsStoredPauseState))
-		Device.Pause			(TRUE, TRUE, FALSE, "tutorial_stop");
+		if (m_flags.test(etsNeedPauseOff) && m_flags.test(etsStoredPauseState)) {
+			EngineInterface->UpdateState(ApplicationState::Paused);
+			//Device.Pause(TRUE, TRUE, FALSE, "tutorial_stop");
+		}
 	}
 	Destroy			();
 }
 
 void CUISequencer::OnFrame()
 {  
-	if(!Device.b_is_Active)		return;
 	if(!IsActive() )			return;
 
 	if(!m_sequencer_items.size())

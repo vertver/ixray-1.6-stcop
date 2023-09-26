@@ -93,7 +93,7 @@ void CMonsterEnemyManager::update()
 	// обновить флаги
 	flags.zero();
 
-	if ((prev_enemy == enemy) && (time_last_seen != Device.dwTimeGlobal))	flags.bor(FLAG_ENEMY_LOST_SIGHT);		
+	if ((prev_enemy == enemy) && (time_last_seen != EngineInterface->GetRoundedGlobalTime()))	flags.bor(FLAG_ENEMY_LOST_SIGHT);		
 	if (prev_enemy && !prev_enemy->g_Alive())									flags.bor(FLAG_ENEMY_DIE);
 	if (!enemy_see_me)															flags.bor(FLAG_ENEMY_DOESNT_SEE_ME);
 	

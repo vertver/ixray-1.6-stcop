@@ -9,7 +9,7 @@ using namespace DirectX;
 void	r_pixel_calculator::begin	()
 {
 	rt.create		("$user$test",		rt_dimensions,rt_dimensions,HW.Caps.fTarget);
-	R_CHK			(HW.pDevice->CreateDepthStencilSurface	(rt_dimensions,rt_dimensions,HW.Caps.fDepth,D3DMULTISAMPLE_NONE,0,TRUE,&zb,NULL));
+	R_CHK			(RCache.get_Device()->CreateDepthStencilSurface	(rt_dimensions,rt_dimensions,HW.Caps.fDepth,D3DMULTISAMPLE_NONE,0,TRUE,&zb,NULL));
 
 	RCache.set_RT	(rt->pRT);
 	RCache.set_ZB	(zb);
@@ -21,7 +21,7 @@ void	r_pixel_calculator::end		()
 {
 	Device.End		();
 
-	RCache.set_RT	(HW.pBaseRT);
+	RCache.set_RT	(((ID3D11RenderTargetView*)EngineInterface->GetParent()->GetRenderTarget()));
 	RCache.set_ZB	(HW.pBaseZB);
 
 	_RELEASE		(zb);

@@ -43,7 +43,7 @@
 void CUIActorMenu::SetActor(CInventoryOwner* io)
 {
 	R_ASSERT			(!IsShown());
-	m_last_time			= Device.dwTimeGlobal;
+	m_last_time			= EngineInterface->GetRoundedGlobalTime();
 	m_pActorInvOwner	= io;
 	
 	if ( IsGameTypeSingle() )
@@ -214,7 +214,7 @@ void CUIActorMenu::Draw()
 void CUIActorMenu::Update()
 {	
 	{ // all mode
-		m_last_time = Device.dwTimeGlobal;
+		m_last_time = EngineInterface->GetRoundedGlobalTime();
 		m_ActorStateInfo->UpdateActorInfo( m_pActorInvOwner );
 	}
 

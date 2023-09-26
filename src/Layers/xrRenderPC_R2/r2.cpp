@@ -63,8 +63,8 @@ static class cl_parallax		: public R_constant_setup		{	virtual void setup	(R_con
 
 static class cl_pos_decompress_params		: public R_constant_setup		{	virtual void setup	(R_constant* C)
 {
-	float VertTan =  -1.0f * tanf( deg2rad(Device.fFOV/2.0f ) );
-	float HorzTan =  - VertTan / Device.fASPECT;
+	float VertTan =  -1.0f * tanf( deg2rad(EngineInterface->GetCameraState().FOV/2.0f ) );
+	float HorzTan =  - VertTan / EngineInterface->GetCameraState().ASPECT;
 
 	RCache.set_c	( C, HorzTan, VertTan, ( 2.0f * HorzTan )/(float)RCache.get_width(), ( 2.0f * VertTan ) /(float)RCache.get_height() );
 

@@ -78,7 +78,7 @@ void	CEffect_Rain::Born		(Item& dest, float radius)
 	float	pitch		= drop_max_angle*k-PI_DIV_2;
     axis.setHP			(g_pGamePersistent->Environment().CurrentEnv->wind_direction,pitch);
     
-	Fvector&	view	= Device.vCameraPosition;
+	const Fvector& view = TheEngine.GetCameraState().CameraPosition;
 	float		angle	= ::Random.randF	(0,PI_MUL_2);
 	float		dist	= ::Random.randF	(); dist = _sqrt(dist)*radius; 
 	float		x		= dist*_cos		(angle);
@@ -110,12 +110,12 @@ void CEffect_Rain::RenewItem(Item& dest, float height, BOOL bHit)
 {
 	dest.uv_set			= Random.randI(2);
     if (bHit){
-		dest.dwTime_Life= Device.dwTimeGlobal + iFloor(1000.f*height/dest.fSpeed) - Device.dwTimeDelta;
-		dest.dwTime_Hit	= Device.dwTimeGlobal + iFloor(1000.f*height/dest.fSpeed) - Device.dwTimeDelta;
+		dest.dwTime_Life= TheEngine.GetRoundedGlobalTime() + iFloor(1000.f*height/dest.fSpeed) - TheEngine.GetRoundedDeltaTime();
+		dest.dwTime_Hit	= TheEngine.GetRoundedGlobalTime() + iFloor(1000.f*height/dest.fSpeed) - TheEngine.GetRoundedDeltaTime();
 		dest.Phit.mad	(dest.P,dest.D,height);
 	}else{
-		dest.dwTime_Life= Device.dwTimeGlobal + iFloor(1000.f*height/dest.fSpeed) - Device.dwTimeDelta;
-		dest.dwTime_Hit	= Device.dwTimeGlobal + iFloor(2*1000.f*height/dest.fSpeed)-Device.dwTimeDelta;
+		dest.dwTime_Life= TheEngine.GetRoundedGlobalTime() + iFloor(1000.f*height/dest.fSpeed) - TheEngine.GetRoundedDeltaTime();
+		dest.dwTime_Hit	= TheEngine.GetRoundedGlobalTime() + iFloor(2*1000.f*height/dest.fSpeed)- TheEngine.GetRoundedDeltaTime();
 		dest.Phit.set	(dest.P);
 	}
 }
@@ -146,7 +146,7 @@ void	CEffect_Rain::OnFrame	()
 		
 //		float f					= 0.9f*hemi_factor + 0.1f*hemi_val;
 		float f					= hemi_val;
-		float t					= Device.fTimeDelta;
+		float t					= TheEngine.GetDeltaTime();
 		clamp					(t, 0.001f, 1.0f);
 		hemi_factor				= hemi_factor*(1.0f-t) + f*t;
 	}
@@ -178,7 +178,7 @@ void	CEffect_Rain::OnFrame	()
 	if (snd_Ambient._feedback())
 	{
 //		Fvector					sndP;
-//		sndP.mad				(Device.vCameraPosition,Fvector().set(0,1,0),source_offset);
+//		sndP.mad				(EngineInterface->GetCameraState().CameraPosition,Fvector().set(0,1,0),source_offset);
 //		snd_Ambient.set_position(sndP);
 		snd_Ambient.set_volume	(_max(0.1f,factor) * hemi_factor );
 	}

@@ -715,7 +715,7 @@ void game_sv_ArtefactHunt::OnArtefactOnBase(ClientID id_who)
 	//remove artefact from player
 	NET_Packet			P;
 	P.w_begin			(M_EVENT);
-	P.w_u32				(Device.dwTimeGlobal);
+	P.w_u32				(EngineInterface->GetRoundedGlobalTime());
 	P.w_u16				(GE_DESTROY);
 	P.w_u16				(m_dwArtefactID);
 
@@ -808,7 +808,7 @@ void game_sv_ArtefactHunt::Update()
 	case GAME_PHASE_TEAM1_ELIMINATED :
 	case GAME_PHASE_TEAM2_ELIMINATED :
 		{
-			if ( m_delayedTeamEliminated && m_TeamEliminatedDelay < Device.TimerAsync() )
+			if ( m_delayedTeamEliminated && m_TeamEliminatedDelay < EngineInterface->GetRoundedGlobalTime() )
 			{
 				switch_Phase	(GAME_PHASE_INPROGRESS);
 				if (Get_ReturnPlayers()) 
@@ -980,7 +980,7 @@ void game_sv_ArtefactHunt::Artefact_PrepareForSpawn()
 
 	m_eAState = NOARTEFACT;
 
-	m_dwArtefactSpawnTime = Device.dwTimeGlobal + Get_ArtefactsRespawnDelta()*1000;
+	m_dwArtefactSpawnTime = EngineInterface->GetRoundedGlobalTime() + Get_ArtefactsRespawnDelta()*1000;
 
 	artefactBearerID	= 0;
 	m_iAfBearerMenaceID = 0;
@@ -991,7 +991,7 @@ void game_sv_ArtefactHunt::Artefact_PrepareForSpawn()
 
 void game_sv_ArtefactHunt::Artefact_PrepareForRemove()
 {
-	m_dwArtefactRemoveTime = Device.dwTimeGlobal + Get_ArtefactsStayTime()*60000;
+	m_dwArtefactRemoveTime = EngineInterface->GetRoundedGlobalTime() + Get_ArtefactsStayTime()*60000;
 	m_dwArtefactSpawnTime = 0;
 };
 
@@ -1003,7 +1003,7 @@ bool				game_sv_ArtefactHunt::Artefact_NeedToSpawn	()
 	
 	VERIFY(m_dwArtefactID == 0);
 	
-	if (m_dwArtefactSpawnTime < Device.dwTimeGlobal)
+	if (m_dwArtefactSpawnTime < EngineInterface->GetRoundedGlobalTime())
 	{
 		if (ArtefactSpawn_Allowed() || 0 != m_ArtefactsSpawnedTotal  )
 		{
@@ -1024,7 +1024,7 @@ bool game_sv_ArtefactHunt::Artefact_NeedToRemove()
 
 	if (Get_ArtefactsStayTime() == 0) return false;
 
-	if (m_dwArtefactRemoveTime < Device.dwTimeGlobal)
+	if (m_dwArtefactRemoveTime < EngineInterface->GetRoundedGlobalTime())
 	{
 //		VERIFY (m_eAState == ON_FIELD);
 		RemoveArtefact();

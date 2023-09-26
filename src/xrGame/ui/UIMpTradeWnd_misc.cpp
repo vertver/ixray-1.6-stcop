@@ -98,7 +98,7 @@ void CUIMpTradeWnd::UpdateMoneyIndicator()
 		}
 	}
 
-	if( !(Device.dwFrame%30) )
+	if( !(EngineInterface->GetFrame()%30) )
 	{
 		u32 _cost;
 		string128							buff;

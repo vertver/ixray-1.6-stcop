@@ -284,12 +284,12 @@ bool CUIWindow::OnMouseAction(float x, float y, EUIMessages mouse_action)
 	if( WINDOW_LBUTTON_DOWN == mouse_action )
 	{
 		static u32 _last_db_click_frame		= 0;
-		u32 dwCurTime						= Device.dwTimeContinual;
+		u32 dwCurTime						= EngineInterface->GetContinualTime();
 
-		if( (_last_db_click_frame!=Device.dwFrame) && (dwCurTime-m_dwLastClickTime < DOUBLE_CLICK_TIME) )
+		if( (_last_db_click_frame!=EngineInterface->GetFrame()) && (dwCurTime-m_dwLastClickTime < DOUBLE_CLICK_TIME) )
 		{
             mouse_action			= WINDOW_LBUTTON_DB_CLICK;
-			_last_db_click_frame	= Device.dwFrame;
+			_last_db_click_frame	= EngineInterface->GetFrame();
 		}
 
 		m_dwLastClickTime = dwCurTime;
@@ -385,7 +385,7 @@ void CUIWindow::OnMouseUp(int mouse_btn){
 
 void CUIWindow::OnFocusReceive()
 {
-	m_dwFocusReceiveTime	= Device.dwTimeGlobal;
+	m_dwFocusReceiveTime	= EngineInterface->GetRoundedGlobalTime();
 	m_bCursorOverWindow		= true;	
 
 	if (GetMessageTarget())

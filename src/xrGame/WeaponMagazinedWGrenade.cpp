@@ -290,7 +290,7 @@ void CWeaponMagazinedWGrenade::OnEvent(NET_Packet& P, u16 type)
 
 void CWeaponMagazinedWGrenade::LaunchGrenade_Correct(Fvector3* v)
 {
-	Fvector3 camdir = Device.vCameraDirection;
+	Fvector3 camdir = EngineInterface->GetCameraState().CameraDirection;
 
 	camdir.y = 0;
 	camdir.normalize();
@@ -730,17 +730,17 @@ void CWeaponMagazinedWGrenade::PlayAnimBore()
 
 void CWeaponMagazinedWGrenade::UpdateSounds	()
 {
-	if (Device.dwFrame == dwUpdateSounds_Frame)
+	if (EngineInterface->GetFrame() == dwUpdateSounds_Frame)
 		return;
 
 	inherited::UpdateSounds			();
 
 	Fvector P						= get_LastFP();
-	if (Device.dwFrame % 3 == 0)
+	if (EngineInterface->GetFrame() % 3 == 0)
 		m_sounds.SetPosition("sndShotG", P);
-	else if (Device.dwFrame % 3 == 1)
+	else if (EngineInterface->GetFrame() % 3 == 1)
 		m_sounds.SetPosition("sndReloadG", P);
-	else if (Device.dwFrame % 3 == 2)
+	else if (EngineInterface->GetFrame() % 3 == 2)
 		m_sounds.SetPosition("sndSwitch", P);
 }
 

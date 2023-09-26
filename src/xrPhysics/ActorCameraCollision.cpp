@@ -96,11 +96,30 @@ static void cammera_shell_character_collide_callback( bool& do_collide, bool bo1
 	cammera_shell_collide_callback_common(do_collide,bo1,c,material_1,material_2);
 }
 
+template<typename T>
+IC void tviewport_size(float _viewport_near, const T& cam_info, float& h_w, float& h_h)
+{
+	h_h = _viewport_near * tan(deg2rad(cam_info.Fov()) / 2.f);
+	VERIFY2(_valid(h_h), make_string("invalide viewporrt params fov: %f ", cam_info.Fov()));
+	float aspect = EngineInterface->GetCameraState().ASPECT;//cam_info.Aspect();
+	VERIFY(aspect > EPS);
+	h_w = h_h / aspect;
+}
+
 
 static void get_viewport_geom(Fvector &box, Fmatrix &form, const CCameraBase &camera , float _viewport_near )
 {
+	/*
+
+template<typename T>
+IC void viewport_size(  float _viewport_near, const T &cam_info, float& h_w, float& h_h)
+{
+	tviewport_size<T>( Device, _viewport_near, cam_info, h_w, h_h );
+}
+	*/
+
 	box.z = _viewport_near / 2.f;
-	tviewport_size ( inl_ph_world().Device(), _viewport_near, camera, box.x, box.y );
+	tviewport_size (_viewport_near, camera, box.x, box.y );
 	form.identity();
 	form.i.set( camera.Right() );
 	form.j.set( camera.Up() );

@@ -44,13 +44,13 @@ IPHWorld * __stdcall physics_world()
 	return ph_world;
 }
 
-void	__stdcall create_physics_world( bool mt, CObjectSpace *os, CObjectList *lo, CRenderDeviceBase *dv ) //IPHWorldUpdateCallbck &commander, 
+void	__stdcall create_physics_world( bool mt, CObjectSpace *os, CObjectList *lo) //IPHWorldUpdateCallbck &commander, 
 {
 		ph_world							= xr_new<CPHWorld>(); //&commander
 		VERIFY( os );
 //		VERIFY( lo );
-		VERIFY( dv );
-		ph_world->Create					(mt, os, lo, dv);
+//		VERIFY( dv );
+		ph_world->Create					(mt, os, lo);
 }
 
 void	__stdcall	destroy_physics_world()
@@ -136,8 +136,7 @@ CPHWorld::CPHWorld( ): // IPHWorldUpdateCallbck		*_update_callback
 	m_default_character_contact_shotmark(0),
 	physics_step_time_callback(0),
 	m_object_space( 0 ),
-	m_level_objects( 0 ),
-	m_device( 0 )
+	m_level_objects( 0 )
 {
 	
 	disable_count=0;
@@ -165,20 +164,20 @@ void CPHWorld::SetStep(float s)
 	world_damping										=	1.0f*DAMPING(world_cfm,world_erp);
 	if(ph_world&&ph_world->Exist())
 	{
-		float	frame_time					=	Device().fTimeDelta;
+		float	frame_time					=	EngineInterface->GetDeltaTime();// Device().fTimeDelta;
 		u32		it_number					=	iFloor	(frame_time /fixed_step);
 		frame_time							-=	it_number*fixed_step;
 		ph_world->m_previous_frame_time		=	frame_time;
 		ph_world->m_frame_time				=	frame_time;
 	}
 }
-void CPHWorld::Create( bool mt, CObjectSpace * os, CObjectList *lo, CRenderDeviceBase *dv )
+void CPHWorld::Create( bool mt, CObjectSpace * os, CObjectList *lo )
 {
 	LoadParams				();
 	dWorldID phWorld=0;
 	m_object_space = os;
 	m_level_objects = lo;
-	m_device = dv;
+	//m_device = dv;
 	//if (psDeviceFlags.test(mtPhysics))	Device.seqFrameMT.Add	(this,REG_PRIORITY_HIGH);
 	//else								Device.seqFrame.Add		(this,REG_PRIORITY_LOW);
 
@@ -187,7 +186,7 @@ void CPHWorld::Create( bool mt, CObjectSpace * os, CObjectList *lo, CRenderDevic
 	//else								
 	//	Device().seqFrame.Add		(this,REG_PRIORITY_LOW);
 
-	Device().AddSeqFrame( this, mt );
+	// Device().AddSeqFrame( this, mt );
 
 	//m_commander							=xr_new<CPHCommander>();
 	//dVector3 extensions={2048,256,2048};
@@ -256,7 +255,7 @@ void CPHWorld::Destroy()
 
 //	Device().seqFrameMT.Remove	(this);
 //	Device().seqFrame.Remove		(this);
-	Device().RemoveSeqFrame( this );
+//	Device().RemoveSeqFrame( this );
 	b_exist=false;
 }
 void CPHWorld::SetGravity(float g)
@@ -269,7 +268,7 @@ void CPHWorld::SetGravity(float g)
 
 void CPHWorld::OnFrame()
 {
-	// Msg									("------------- physics: %d / %d",u32(Device.dwFrame),u32(m_steps_num));
+	// Msg									("------------- physics: %d / %d",u32(EngineInterface->GetFrame()),u32(m_steps_num));
 	//просчитать полет пуль
 	/*
 	Device.Statistic->TEST0.Begin		();
@@ -280,9 +279,7 @@ void CPHWorld::OnFrame()
 	//DBG_DrawFrameStart();
 	//DBG_DrawStatBeforeFrameStep();
 #endif
-	Device().StatPhysics()->Physics.Begin		();
-	FrameStep							(Device().fTimeDelta);
-	Device().StatPhysics()->Physics.End		();
+	FrameStep							(EngineInterface->GetDeltaTime());
 #ifdef DEBUG
 	//DBG_DrawStatAfterFrameStep();
 
@@ -319,8 +316,6 @@ void CPHWorld::Step()
 
 	++m_steps_num;
 	++m_steps_short_num;
-	Device().StatPhysics()->ph_collision.Begin	();
-
 
 	for(i_object=m_objects.begin();m_objects.end() != i_object;)
 	{
@@ -334,10 +329,6 @@ void CPHWorld::Step()
 #endif
 		++i_object;
 	}
-
-
-
-	Device().StatPhysics()->ph_collision.End	();
 
 #ifdef DEBUG
 	for(i_object=m_objects.begin();m_objects.end() != i_object;)
@@ -371,8 +362,6 @@ void CPHWorld::Step()
 		++i_update_object;
 		obj->PhTune(fixed_step);
 	}
-
-	Device().StatPhysics()->ph_core.Begin		();
 
 #ifdef DEBUG
 	debug_output().dbg_bodies_num()=0;
@@ -409,10 +398,6 @@ void CPHWorld::Step()
 		debug_output().DBG_ObjAfterStep( obj );
 #endif
 	}
-
-	Device().StatPhysics()->ph_core.End		();
-
-
 
 	for(i_object=m_objects.begin();m_objects.end() != i_object;)
 	{
@@ -542,7 +527,7 @@ void CPHWorld::FrameStep(dReal step)
 #endif
 	b_processing=true;
 
-	start_time = Device().dwTimeGlobal;// - u32(m_frame_time*1000);
+	start_time = EngineInterface->GetRoundedGlobalTime();// - u32(m_frame_time*1000);
 	if( ph_console::g_bDebugDumpPhysicsStep && it_number > 20 )
 		Msg("!!!TOO MANY PHYSICS STEPS PER FRAME = %d !!!",it_number);
 	for( UINT i=0; i < it_number;++i )	

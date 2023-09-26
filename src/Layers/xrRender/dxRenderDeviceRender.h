@@ -18,7 +18,7 @@ class CResourceManager;
 class dxRenderDeviceRender : public IRenderDeviceRender
 {
 public:
-	static dxRenderDeviceRender& Instance() {  return *((dxRenderDeviceRender*)(&*Device.m_pRender));}
+	static dxRenderDeviceRender& Instance() {  return *((dxRenderDeviceRender*)(&*EngineInterface->GetRender()));}
 
 	dxRenderDeviceRender();
 
@@ -36,11 +36,11 @@ public:
 	virtual void	OnDeviceDestroy( BOOL bKeepTextures);
 	virtual void	ValidateHW();
 	virtual void	DestroyHW();
-	virtual void	Reset( HWND hWnd, u32 &dwWidth, u32 &dwHeight);
+	virtual void	Reset();
 	//	Init
 	virtual void	SetupStates();
 	virtual void	OnDeviceCreate(LPCSTR shName);
-	virtual void	Create( HWND hWnd, u32 &dwWidth, u32 &dwHeight, bool);
+	virtual void	Create(bool);
 	virtual void	SetupGPU( BOOL bForceGPU_SW, BOOL bForceGPU_NonPure, BOOL bForceGPU_REF);
 	//	Overdraw
 	virtual void	overdrawBegin();

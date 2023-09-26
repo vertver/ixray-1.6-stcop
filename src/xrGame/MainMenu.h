@@ -46,7 +46,6 @@ struct  Patch_Dawnload_Progress{
 class CMainMenu :
 	public IMainMenu,
 	public IInputReceiver,
-	public pureRender,
 	public CDialogHolder,
 	public CUIWndCallback,
 	public CDeviceResetNotifier

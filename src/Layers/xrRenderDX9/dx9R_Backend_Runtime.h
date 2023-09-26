@@ -1,3 +1,4 @@
+#include "R_Backend.h"
 #ifndef	dx9R_Backend_Runtime_included
 #define	dx9R_Backend_Runtime_included
 #pragma once
@@ -236,22 +237,22 @@ IC void CBackend::set_Constants			(R_constant_table* C_)
 
 inline IC float CBackend::get_width()
 {
-	return RDEVICE.TargetWidth;
+	return REngineInterface->GetWidth();
 }
 
 inline IC float CBackend::get_height()
 {
-	return RDEVICE.TargetHeight;
+	return REngineInterface->GetHeight();
 }
 
 inline IC float CBackend::get_target_width()
 {
-	return RDEVICE.TargetWidth;
+	return REngineInterface->GetWidth();
 }
 
 inline IC float CBackend::get_target_height()
 {
-	return RDEVICE.TargetHeight;
+	return REngineInterface->GetHeight();
 }
 
 

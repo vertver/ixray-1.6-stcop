@@ -45,7 +45,7 @@ CUIMapWnd::CUIMapWnd()
 
 //	UIMainMapHeader			= NULL;
 	m_scroll_mode			= false;
-	m_nav_timing			= Device.dwTimeGlobal;
+	m_nav_timing			= EngineInterface->GetRoundedGlobalTime();
 	hint_wnd				= NULL;
 	g_map_wnd				= this;
 }

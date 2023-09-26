@@ -56,7 +56,7 @@ void CRenderTarget::accum_direct_cascade(u32 sub_phase, Fmatrix& xform, Fmatrix&
 	Fvector		L_dir, L_clr;	float L_spec;
 	L_clr.set(fuckingsun->color.r, fuckingsun->color.g, fuckingsun->color.b);
 	L_spec = u_diffuse2s(L_clr);
-	Device.mView.transform_dir(L_dir, fuckingsun->direction);
+	EngineInterface->GetCameraState().View.transform_dir(L_dir, fuckingsun->direction);
 	L_dir.normalize();
 
 	// Perform masking (only once - on the first/near phase)
@@ -84,8 +84,8 @@ void CRenderTarget::accum_direct_cascade(u32 sub_phase, Fmatrix& xform, Fmatrix&
 	}
 
 	// recalculate d_Z, to perform depth-clipping
-	Fvector	center_pt;			center_pt.mad(Device.vCameraPosition, Device.vCameraDirection, ps_r2_sun_near);
-	Device.mFullTransform.transform(center_pt);
+	Fvector	center_pt;			center_pt.mad(EngineInterface->GetCameraState().CameraPosition, EngineInterface->GetCameraState().CameraDirection, ps_r2_sun_near);
+	EngineInterface->GetCameraState().FullTransform.transform(center_pt);
 	d_Z = center_pt.z;
 
 	// nv-stencil recompression
@@ -110,7 +110,7 @@ void CRenderTarget::accum_direct_cascade(u32 sub_phase, Fmatrix& xform, Fmatrix&
 
 		// compute xforms
 		FPU::m64r();
-		Fmatrix				xf_invview;		xf_invview.invert(Device.mView);
+		Fmatrix				xf_invview;		xf_invview.invert(EngineInterface->GetCameraState().View);
 
 		// shadow xform
 		Fmatrix				m_shadow;
@@ -137,7 +137,7 @@ void CRenderTarget::accum_direct_cascade(u32 sub_phase, Fmatrix& xform, Fmatrix&
 			float	w_dir = g_pGamePersistent->Environment().CurrentEnv->wind_direction;
 			//float	w_speed				= g_pGamePersistent->Environment().CurrentEnv->wind_velocity	;
 			Fvector			normal;	normal.setHP(w_dir, 0);
-			w_shift += 0.003f * Device.fTimeDelta;
+			w_shift += 0.003f * EngineInterface->GetDeltaTime();
 			Fvector			position;	position.set(0, 0, 0);
 			m_xform.build_camera_dir(position, direction, normal);
 			Fvector			localnormal; m_xform.transform_dir(localnormal, normal); localnormal.normalize();
@@ -152,8 +152,8 @@ void CRenderTarget::accum_direct_cascade(u32 sub_phase, Fmatrix& xform, Fmatrix&
 		Fmatrix			m_Texgen;
 		m_Texgen.identity();
 		RCache.set_xform_world(m_Texgen);
-		RCache.set_xform_view(Device.mView);
-		RCache.set_xform_project(Device.mProject);
+		RCache.set_xform_view(EngineInterface->GetCameraState().View);
+		RCache.set_xform_project(EngineInterface->GetCameraState().Project);
 		u_compute_texgen_screen(m_Texgen);
 
 		// Fill vertex buffer
@@ -220,12 +220,12 @@ void CRenderTarget::accum_direct_cascade(u32 sub_phase, Fmatrix& xform, Fmatrix&
 			zMax = OLES_SUN_LIMIT_27_01_07;
 		}
 
-		center_pt.mad(Device.vCameraPosition, Device.vCameraDirection, zMin);	
-		Device.mFullTransform.transform(center_pt);
+		center_pt.mad(EngineInterface->GetCameraState().CameraPosition, EngineInterface->GetCameraState().CameraDirection, zMin);	
+		EngineInterface->GetCameraState().FullTransform.transform(center_pt);
 		zMin = center_pt.z;
 
-		center_pt.mad(Device.vCameraPosition, Device.vCameraDirection, zMax);	
-		Device.mFullTransform.transform(center_pt);
+		center_pt.mad(EngineInterface->GetCameraState().CameraPosition, EngineInterface->GetCameraState().CameraDirection, zMax);	
+		EngineInterface->GetCameraState().FullTransform.transform(center_pt);
 		zMax = center_pt.z;
 
 		// Enable Z function only for near and middle cascades, the far one is restricted by only stencil.
@@ -317,7 +317,7 @@ void CRenderTarget::accum_direct_volumetric(u32 sub_phase, const u32 Offset, con
 
 		Fvector		L_dir;
 		L_clr.set(fuckingsun->color.r, fuckingsun->color.g, fuckingsun->color.b);
-		Device.mView.transform_dir(L_dir, fuckingsun->direction);
+		EngineInterface->GetCameraState().View.transform_dir(L_dir, fuckingsun->direction);
 		L_dir.normalize();
 
 		// setup
@@ -329,8 +329,8 @@ void CRenderTarget::accum_direct_volumetric(u32 sub_phase, const u32 Offset, con
 		Fmatrix			m_Texgen;
 		m_Texgen.identity();
 		RCache.xforms.set_W(m_Texgen);
-		RCache.xforms.set_V(Device.mView);
-		RCache.xforms.set_P(Device.mProject);
+		RCache.xforms.set_V(EngineInterface->GetCameraState().View);
+		RCache.xforms.set_P(EngineInterface->GetCameraState().Project);
 		u_compute_texgen_screen(m_Texgen);
 
 		RCache.set_c("m_texgen", m_Texgen);
@@ -350,12 +350,12 @@ void CRenderTarget::accum_direct_volumetric(u32 sub_phase, const u32 Offset, con
 		RCache.set_c("volume_range", zMin, zMax, 0, 0);
 
 		Fvector	center_pt;
-		center_pt.mad(Device.vCameraPosition, Device.vCameraDirection, zMin);
-		Device.mFullTransform.transform(center_pt);
+		center_pt.mad(EngineInterface->GetCameraState().CameraPosition, EngineInterface->GetCameraState().CameraDirection, zMin);
+		EngineInterface->GetCameraState().FullTransform.transform(center_pt);
 		zMin = center_pt.z;
 
-		center_pt.mad(Device.vCameraPosition, Device.vCameraDirection, zMax);
-		Device.mFullTransform.transform(center_pt);
+		center_pt.mad(EngineInterface->GetCameraState().CameraPosition, EngineInterface->GetCameraState().CameraDirection, zMax);
+		EngineInterface->GetCameraState().FullTransform.transform(center_pt);
 		zMax = center_pt.z;
 
 		{

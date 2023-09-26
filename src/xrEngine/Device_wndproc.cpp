@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#if 0
 bool CRenderDevice::on_message	(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT &result)
 {
 	switch (uMsg) {
@@ -57,3 +58,4 @@ bool CRenderDevice::on_message	(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 	return					(false);
 }
+#endif

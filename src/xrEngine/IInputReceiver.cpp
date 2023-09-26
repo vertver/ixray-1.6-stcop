@@ -64,15 +64,15 @@ void	IInputReceiver::IR_GetMousePosReal				(HWND hwnd, Ivector2 &p)
 }
 void	IInputReceiver::IR_GetMousePosReal				(Ivector2 &p)
 {
-	IR_GetMousePosReal(RDEVICE.m_hWnd,p);
+	IR_GetMousePosReal((HWND)TheEngine.GetParent()->GetNativeWindow(), p);
 }
 void	IInputReceiver::IR_GetMousePosIndependent		(Fvector2 &f)
 {
 	Ivector2 p;
 	IR_GetMousePosReal(p);
 	f.set(
-		2.f*float(p.x)/float(RDEVICE.TargetWidth)-1.f,
-		2.f*float(p.y)/float(RDEVICE.TargetHeight)-1.f
+		2.f*float(p.x)/float(TheEngine.GetWidth())-1.f,
+		2.f*float(p.y)/float(TheEngine.GetHeight())-1.f
 		);
 }
 void	IInputReceiver::IR_GetMousePosIndependentCrop	(Fvector2 &f)

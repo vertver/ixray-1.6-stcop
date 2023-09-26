@@ -34,7 +34,6 @@ void dxApplicationRender::setLevelLogo(LPCSTR pszLogoName)
 
 void dxApplicationRender::KillHW()
 {
-	ZeroMemory(&HW,sizeof(CHW));
 }
 
 u32 calc_progress_color(u32, u32, int, int);
@@ -44,14 +43,14 @@ void dxApplicationRender::load_draw_internal(CApplication &owner)
 	//	TODO: DX10: remove this???
 #ifdef USE_DX11
 	RImplementation.rmNormal();
-	RCache.set_RT(HW.pBaseRT);
+	RCache.set_RT(((ID3D11RenderTargetView*)EngineInterface->GetParent()->GetRenderTarget()));
 	RCache.set_ZB(RImplementation.Target->rt_HWDepth->pZRT);
 
 	FLOAT ColorRGBA[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	HW.pContext->ClearRenderTargetView(RCache.get_RT(), ColorRGBA);
+	RCache.get_Context()->ClearRenderTargetView(RCache.get_RT(), ColorRGBA);
 
 #else
-	CHK_DX(HW.pDevice->Clear(0, 0, D3DCLEAR_TARGET, color_argb(0, 0, 0, 0), 1, 0));
+	CHK_DX(RCache.get_Device()->Clear(0, 0, D3DCLEAR_TARGET, color_argb(0, 0, 0, 0), 1, 0));
 #endif
 
 	if (!sh_progress)

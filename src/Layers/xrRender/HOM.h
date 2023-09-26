@@ -7,10 +7,7 @@
 
 class occTri;
 
-class CHOM  
-#ifdef DEBUG
-	: public pureRender
-#endif
+class CHOM 
 {
 private:
 	xrXRC					xrc;

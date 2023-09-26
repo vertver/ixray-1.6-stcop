@@ -70,8 +70,8 @@ static class cl_LOD		: public R_constant_setup
 
 static class cl_pos_decompress_params		: public R_constant_setup		{	virtual void setup	(R_constant* C)
 {
-	float VertTan =  -1.0f * tanf( deg2rad(Device.fFOV/2.0f ) );
-	float HorzTan =  - VertTan / Device	.fASPECT;
+	float VertTan =  -1.0f * tanf( deg2rad(EngineInterface->GetCameraState().FOV/2.0f ) );
+	float HorzTan =  - VertTan / EngineInterface->GetCameraState().ASPECT;
 
 	RCache.set_c	( C, HorzTan, VertTan, ( 2.0f * HorzTan )/ RCache.get_width(), (2.0f * VertTan) / RCache.get_height());
 
@@ -116,77 +116,15 @@ extern ENGINE_API BOOL r2_advanced_pp;	//	advanced post process and effects
 // Just two static storage
 void					CRender::create					()
 {
-	Device.seqFrame.Add	(this,REG_PRIORITY_HIGH+0x12345678);
-
 	m_skinning			= -1;
 	m_MSAASample		= -1;
 
 	// hardware
 	o.smapsize			= 2048;
-	o.mrt				= (HW.Caps.raster.dwMRT_count >= 3);
-	o.mrtmixdepth		= (HW.Caps.raster.b_MRT_mixdepth);
+	o.mrt				= true;
+	o.mrtmixdepth		= true;
 
-	// Check for NULL render target support
-	//	DX10 disabled
-	//D3DFORMAT	nullrt	= (D3DFORMAT)MAKEFOURCC('N','U','L','L');
-	//o.nullrt			= HW.support	(nullrt,			D3DRTYPE_SURFACE, D3DUSAGE_RENDERTARGET);
 	o.nullrt = false;
-	/*
-	if (o.nullrt)		{
-	Msg				("* NULLRT supported and used");
-	};
-	*/
-	if (o.nullrt)		{
-		Msg				("* NULLRT supported");
-
-		//.	    _tzset			();
-		//.		??? _strdate	( date, 128 );	???
-		//.		??? if (date < 22-march-07)		
-		if (0)
-		{
-			u32 device_id	= HW.Caps.id_device;
-			bool disable_nullrt = false;
-			switch (device_id)	
-			{
-			case 0x190:
-			case 0x191:
-			case 0x192:
-			case 0x193:
-			case 0x194:
-			case 0x197:
-			case 0x19D:
-			case 0x19E:{
-				disable_nullrt = true;	//G80
-				break;
-					   }
-			case 0x400:
-			case 0x401:
-			case 0x402:
-			case 0x403:
-			case 0x404:
-			case 0x405:
-			case 0x40E:
-			case 0x40F:{
-				disable_nullrt = true;	//G84
-				break;
-					   }
-			case 0x420:
-			case 0x421:
-			case 0x422:
-			case 0x423:
-			case 0x424:
-			case 0x42D:
-			case 0x42E:
-			case 0x42F:{
-				disable_nullrt = true;	// G86
-				break;
-					   }
-			}
-			if (disable_nullrt)	o.nullrt=false;
-		};
-		if (o.nullrt)	Msg				("* ...and used");
-	};
-
 
 	// SMAP / DST
 	o.HW_smap_FETCH4	= FALSE;
@@ -203,8 +141,6 @@ void					CRender::create					()
 		o.fp16_filter	= FALSE;
 		o.fp16_blend	= FALSE;
 	}
-
-	VERIFY2				(o.mrt && (HW.Caps.raster.dwInstructions>=256),"Hardware doesn't meet minimum feature-level");
 
 	// nvstencil on NV40 and up
 	o.nvstencil			= FALSE;
@@ -256,8 +192,6 @@ void					CRender::create					()
 	o.hbao_vectorized = false;
 	if (o.ssao_hbao )
 	{
-		if (HW.Caps.id_vendor==0x1002)
-			o.hbao_vectorized = true;
 		o.ssao_opt_data = true;
 	}
 
@@ -267,35 +201,13 @@ void					CRender::create					()
 	o.dx10_gbuffer_opt= ps_r2_ls_flags.test(R3FLAG_GBUFFER_OPT);
 	o.dx10_minmax_sm = ps_r3_minmax_sm;
 	o.dx10_minmax_sm_screenarea_threshold = 1600*1200;
-	o.dx11_enable_tessellation = HW.FeatureLevel>=D3D_FEATURE_LEVEL_11_0 && ps_r2_ls_flags_ext.test(R2FLAGEXT_ENABLE_TESSELLATION);
+	o.dx11_enable_tessellation = (int)EngineInterface->GetParent()->GetFeatureLevel() >= (int)FeatureLevel::SM_5_0 && ps_r2_ls_flags_ext.test(R2FLAGEXT_ENABLE_TESSELLATION);
 
 	if (o.dx10_minmax_sm==MMSM_AUTODETECT)
 	{
-		o.dx10_minmax_sm = MMSM_OFF;
-
-		//	AMD device
-		if (HW.Caps.id_vendor==0x1002)
-		{
-			if (ps_r_sun_quality>=3)
-				o.dx10_minmax_sm=MMSM_AUTO;
-			else if (ps_r_sun_shafts>=2)
-			{
-				o.dx10_minmax_sm=MMSM_AUTODETECT;
-				//	Check resolution in runtime in use_minmax_sm_this_frame
-				o.dx10_minmax_sm_screenarea_threshold = 1600*1200;
-			}
-		}
-
-		//	NVidia boards
-		if (HW.Caps.id_vendor==0x10DE)
-		{
-			if ((ps_r_sun_shafts>=2))
-			{
-				o.dx10_minmax_sm=MMSM_AUTODETECT;
-				//	Check resolution in runtime in use_minmax_sm_this_frame
-				o.dx10_minmax_sm_screenarea_threshold = 1280*1024;
-			}
-		}
+		o.dx10_minmax_sm = MMSM_AUTODETECT;
+		//	Check resolution in runtime in use_minmax_sm_this_frame
+		o.dx10_minmax_sm_screenarea_threshold = 1280 * 1024;
 	}
 
 	// constants
@@ -324,16 +236,16 @@ void					CRender::create					()
 	qdesc.MiscFlags				= 0;
 	qdesc.Query					= D3D_QUERY_EVENT;
 	ZeroMemory(q_sync_point, sizeof(q_sync_point));
-	//R_CHK						(HW.pDevice->CreateQuery(&qdesc,&q_sync_point[0]));
-	//R_CHK						(HW.pDevice->CreateQuery(&qdesc,&q_sync_point[1]));
+	//R_CHK						(RCache.get_Device()->CreateQuery(&qdesc,&q_sync_point[0]));
+	//R_CHK						(RCache.get_Device()->CreateQuery(&qdesc,&q_sync_point[1]));
 	//	Prevent error on first get data
 	//q_sync_point[0]->End();
 	//q_sync_point[1]->End();
-	//R_CHK						(HW.pDevice->CreateQuery(D3DQUERYTYPE_EVENT,&q_sync_point[0]));
-	//R_CHK						(HW.pDevice->CreateQuery(D3DQUERYTYPE_EVENT,&q_sync_point[1]));
-	for (u32 i=0; i<HW.Caps.iGPUNum; ++i)
-		R_CHK(HW.pDevice->CreateQuery(&qdesc,&q_sync_point[i]));
-	HW.pContext->End(q_sync_point[0]);
+	//R_CHK						(RCache.get_Device()->CreateQuery(D3DQUERYTYPE_EVENT,&q_sync_point[0]));
+	//R_CHK						(RCache.get_Device()->CreateQuery(D3DQUERYTYPE_EVENT,&q_sync_point[1]));
+	for (u32 i=0; i<1; ++i)
+		R_CHK(RCache.get_Device()->CreateQuery(&qdesc,&q_sync_point[i]));
+	RCache.get_Context()->End(q_sync_point[0]);
 
 	xrRender_apply_tf			();
 	::PortalTraverser.initialize();
@@ -349,14 +261,13 @@ void					CRender::destroy				()
 	::PortalTraverser.destroy	();
 	//_RELEASE					(q_sync_point[1]);
 	//_RELEASE					(q_sync_point[0]);
-	for (u32 i=0; i<HW.Caps.iGPUNum; ++i)
+	for (u32 i=0; i<1; ++i)
 		_RELEASE				(q_sync_point[i]);
 	
 	HWOCC.occq_destroy			();
 	xr_delete					(Models);
 	xr_delete					(Target);
 	PSLibrary.OnDestroy			();
-	Device.seqFrame.Remove		(this);
 	r_dsgraph_destroy			();
 }
 
@@ -382,7 +293,7 @@ void CRender::reset_begin()
 	HWOCC.occq_destroy			();
 	//_RELEASE					(q_sync_point[1]);
 	//_RELEASE					(q_sync_point[0]);
-	for (u32 i=0; i<HW.Caps.iGPUNum; ++i)
+	for (u32 i=0; i<1; ++i)
 		_RELEASE				(q_sync_point[i]);
 }
 
@@ -391,15 +302,15 @@ void CRender::reset_end()
 	D3D_QUERY_DESC			qdesc;
 	qdesc.MiscFlags				= 0;
 	qdesc.Query					= D3D_QUERY_EVENT;
-	//R_CHK						(HW.pDevice->CreateQuery(&qdesc,&q_sync_point[0]));
-	//R_CHK						(HW.pDevice->CreateQuery(&qdesc,&q_sync_point[1]));
-	for (u32 i=0; i<HW.Caps.iGPUNum; ++i)
-		R_CHK(HW.pDevice->CreateQuery(&qdesc,&q_sync_point[i]));
+	//R_CHK						(RCache.get_Device()->CreateQuery(&qdesc,&q_sync_point[0]));
+	//R_CHK						(RCache.get_Device()->CreateQuery(&qdesc,&q_sync_point[1]));
+	for (u32 i=0; i<1; ++i)
+		R_CHK(RCache.get_Device()->CreateQuery(&qdesc,&q_sync_point[i]));
 	//	Prevent error on first get data
-	HW.pContext->End(q_sync_point[0]);
+	RCache.get_Context()->End(q_sync_point[0]);
 	//q_sync_point[1]->End();
-	//R_CHK						(HW.pDevice->CreateQuery(D3DQUERYTYPE_EVENT,&q_sync_point[0]));
-	//R_CHK						(HW.pDevice->CreateQuery(D3DQUERYTYPE_EVENT,&q_sync_point[1]));
+	//R_CHK						(RCache.get_Device()->CreateQuery(D3DQUERYTYPE_EVENT,&q_sync_point[0]));
+	//R_CHK						(RCache.get_Device()->CreateQuery(D3DQUERYTYPE_EVENT,&q_sync_point[1]));
 	HWOCC.occq_create			(occq_size);
 
 	Target						=	xr_new<CRenderTarget>	();
@@ -423,15 +334,6 @@ void CRender::OnFrame()
 void CRender::OnFrame()
 {
 	Models->DeleteQueue			();
-	if (ps_r2_ls_flags.test(R2FLAG_EXP_MT_CALC))	{
-		// MT-details (@front)
-		Device.seqParallel.insert	(Device.seqParallel.begin(),
-			fastdelegate::FastDelegate0<>(Details,&CDetailManager::MT_CALC));
-
-		// MT-HOM (@front)
-		Device.seqParallel.insert	(Device.seqParallel.begin(),
-			fastdelegate::FastDelegate0<>(&HOM,&CHOM::MT_RENDER));
-	}
 }
 
 
@@ -563,24 +465,24 @@ void					CRender::rmNear				()
 	IRender_Target* T	=	getTarget	();
 	D3D_VIEWPORT VP		=	{0,0,(float)T->get_width(),(float)T->get_height(),0,0.02f };
 
-	HW.pContext->RSSetViewports(1, &VP);
-	//CHK_DX				(HW.pDevice->SetViewport(&VP));
+	RCache.get_Context()->RSSetViewports(1, &VP);
+	//CHK_DX				(RCache.get_Device()->SetViewport(&VP));
 }
 void					CRender::rmFar				()
 {
 	IRender_Target* T	=	getTarget	();
 	D3D_VIEWPORT VP		=	{0,0,(float)T->get_width(),(float)T->get_height(),0.99999f,1.f };
 
-	HW.pContext->RSSetViewports(1, &VP);
-	//CHK_DX				(HW.pDevice->SetViewport(&VP));
+	RCache.get_Context()->RSSetViewports(1, &VP);
+	//CHK_DX				(RCache.get_Device()->SetViewport(&VP));
 }
 void					CRender::rmNormal			()
 {
 	IRender_Target* T	=	getTarget	();
 	D3D_VIEWPORT VP		= {0,0,(float)T->get_width(),(float)T->get_height(),0,1.f };
 
-	HW.pContext->RSSetViewports(1, &VP);
-	//CHK_DX				(HW.pDevice->SetViewport(&VP));
+	RCache.get_Context()->RSSetViewports(1, &VP);
+	//CHK_DX				(RCache.get_Device()->SetViewport(&VP));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -672,7 +574,7 @@ static HRESULT create_shader				(
 	HRESULT		_result = E_FAIL;
 	if (pTarget[0] == 'p') {
 		SPS* sps_result = (SPS*)result;
-		_result			= HW.pDevice->CreatePixelShader(buffer, buffer_size, 0, &sps_result->ps);
+		_result			= RCache.get_Device()->CreatePixelShader(buffer, buffer_size, 0, &sps_result->ps);
 		if ( !SUCCEEDED(_result) ) {
 			Log			("! PS: ", file_name);
 			Msg			("! CreatePixelShader hr == 0x%08x", _result);
@@ -700,7 +602,7 @@ static HRESULT create_shader				(
 	}
 	else if (pTarget[0] == 'v') {
 		SVS* svs_result = (SVS*)result;
-		_result			= HW.pDevice->CreateVertexShader(buffer, buffer_size, 0, &svs_result->vs);
+		_result			= RCache.get_Device()->CreateVertexShader(buffer, buffer_size, 0, &svs_result->vs);
 
 		if ( !SUCCEEDED(_result) ) {
 			Log			("! VS: ", file_name);
@@ -740,7 +642,7 @@ static HRESULT create_shader				(
 	}
 	else if (pTarget[0] == 'g') {
 		SGS* sgs_result = (SGS*)result;
-		_result			= HW.pDevice->CreateGeometryShader(buffer, buffer_size, 0, &sgs_result->gs);
+		_result			= RCache.get_Device()->CreateGeometryShader(buffer, buffer_size, 0, &sgs_result->gs);
 		if ( !SUCCEEDED(_result) ) {
 			Log			("! GS: ", file_name);
 			Msg			("! CreateGeometryShaderhr == 0x%08x", _result);
@@ -915,16 +817,9 @@ HRESULT	CRender::shader_compile			(
 		++len;
 	}
 
-	if (HW.Caps.raster_major >= 3)	{
-		defines[def_it].Name		=	"USE_BRANCHING";
-		defines[def_it].Definition	=	"1";
-		def_it						++	;
-	}
-	else
-	{
-		sh_name[len] = '0' + static_cast<char>(HW.Caps.raster_major >= 3); 
-		++len;
-	}
+	defines[def_it].Name = "USE_BRANCHING";
+	defines[def_it].Definition = "1";
+	def_it++;
 
 	if (ps_r2_ls_flags.test(RFLAG_CLOUD_SHADOWS)) {
 		defines[def_it].Name = "USE_SUNMASK";
@@ -933,16 +828,9 @@ HRESULT	CRender::shader_compile			(
 	}
 	sh_name[len] = '0' + char(ps_r2_ls_flags.test(RFLAG_CLOUD_SHADOWS)); ++len;
 
-	if (HW.Caps.geometry.bVTF)	{
-		defines[def_it].Name		=	"USE_VTF";
-		defines[def_it].Definition	=	"1";
-		def_it						++	;
-	}
-	else
-	{
-		sh_name[len] = '0' + static_cast<char>(HW.Caps.geometry.bVTF); 
-		++len;
-	}
+	defines[def_it].Name = "USE_VTF";
+	defines[def_it].Definition = "1";
+	def_it++;
 
 	if (o.Tshadows)			{
 		defines[def_it].Name		=	"USE_TSHADOWS";
@@ -1218,28 +1106,31 @@ HRESULT	CRender::shader_compile			(
 	   ++len;
    }
 
-   if(HW.FeatureLevel == D3D_FEATURE_LEVEL_10_1)
+   switch (EngineInterface->GetParent()->GetFeatureLevel())
    {
-	   defines[def_it].Name		=	"SM_4_1";
-	   defines[def_it].Definition	=	"1";
-	   def_it++;
-   }
-   else
-   {
-	   sh_name[len] = '0' + 0 * static_cast<char>(HW.FeatureLevel == D3D_FEATURE_LEVEL_10_1); 
+   case FeatureLevel::SM_4_0:
+	   sh_name[len] = '0';
 	   ++len;
-   }
-
-   if( HW.FeatureLevel>=D3D_FEATURE_LEVEL_11_0 )
-   {
-	   defines[def_it].Name		=	"SM_5";
-	   defines[def_it].Definition	=	"1";
-	   def_it++;
-   }
-   else
-   {
-	   sh_name[len] = '0' + static_cast<char>(HW.FeatureLevel >= D3D_FEATURE_LEVEL_11_0); 
+	   sh_name[len] = '0';
 	   ++len;
+	   break;
+   case FeatureLevel::SM_4_1:
+	   defines[def_it].Name = "SM_4_1";
+	   defines[def_it].Definition = "1";
+	   sh_name[len] = '0';
+	   ++len;
+	   def_it++;
+	   break;
+   case FeatureLevel::SM_5_1:
+   case FeatureLevel::SM_5_0:
+	   sh_name[len] = '0';
+	   ++len;
+	   defines[def_it].Name = "SM_5";
+	   defines[def_it].Definition = "1";
+	   def_it++;
+	   break;
+   default:
+	   break;
    }
 
    if (o.dx10_minmax_sm)
@@ -1264,45 +1155,58 @@ HRESULT	CRender::shader_compile			(
 	// 
 	if (0==xr_strcmp(pFunctionName,"main"))	
 	{
+		switch (EngineInterface->GetParent()->GetFeatureLevel()) {
+		case FeatureLevel::SM_4_0: pTarget = "vs_4_0"; break;
+		case FeatureLevel::SM_4_1: pTarget = "vs_4_1"; break;
+		case FeatureLevel::SM_5_1: pTarget = "vs_5_0"; break;
+		case FeatureLevel::SM_5_0: pTarget = "vs_5_0"; break;
+		default:
+			break;
+		}
+
 		if ('v'==pTarget[0])
 		{
-			if( HW.FeatureLevel == D3D_FEATURE_LEVEL_10_0 )
-				pTarget = "vs_4_0";
-			else if( HW.FeatureLevel == D3D_FEATURE_LEVEL_10_1 )
-				pTarget = "vs_4_1";
-			else if( HW.FeatureLevel == D3D_FEATURE_LEVEL_11_0 )
-				pTarget = "vs_5_0";
-			else if( HW.FeatureLevel == D3D_FEATURE_LEVEL_11_1 )
-				pTarget = "vs_5_0";
+			switch (EngineInterface->GetParent()->GetFeatureLevel()) {
+			case FeatureLevel::SM_4_0: pTarget = "vs_4_0"; break;
+			case FeatureLevel::SM_4_1: pTarget = "vs_4_1"; break;
+			case FeatureLevel::SM_5_1: pTarget = "vs_5_0"; break;
+			case FeatureLevel::SM_5_0: pTarget = "vs_5_0"; break;
+			default:
+				break;
+			}
 		}
 		else if ('p'==pTarget[0])
 		{
-			if( HW.FeatureLevel == D3D_FEATURE_LEVEL_10_0 )
-				pTarget = "ps_4_0";
-			else if( HW.FeatureLevel == D3D_FEATURE_LEVEL_10_1 )
-				pTarget = "ps_4_1";
-			else if( HW.FeatureLevel == D3D_FEATURE_LEVEL_11_0 )
-				pTarget = "ps_5_0";
-			else if (HW.FeatureLevel == D3D_FEATURE_LEVEL_11_1)
-				pTarget = "ps_5_0";
+			switch (EngineInterface->GetParent()->GetFeatureLevel()) {
+			case FeatureLevel::SM_4_0: pTarget = "ps_4_0"; break;
+			case FeatureLevel::SM_4_1: pTarget = "ps_4_1"; break;
+			case FeatureLevel::SM_5_1: pTarget = "ps_5_0"; break;
+			case FeatureLevel::SM_5_0: pTarget = "ps_5_0"; break;
+			default:
+				break;
+			}
 		}
 		else if ('g'==pTarget[0])		
 		{
-			if( HW.FeatureLevel == D3D_FEATURE_LEVEL_10_0 )
-				pTarget = "gs_4_0";
-			else if( HW.FeatureLevel == D3D_FEATURE_LEVEL_10_1 )
-				pTarget = "gs_4_1";
-			else if( HW.FeatureLevel == D3D_FEATURE_LEVEL_11_0 )
-				pTarget = "gs_5_0";
-			else if (HW.FeatureLevel == D3D_FEATURE_LEVEL_11_1)
-				pTarget = "gs_5_0";
+			switch (EngineInterface->GetParent()->GetFeatureLevel()) {
+			case FeatureLevel::SM_4_0: pTarget = "gs_4_0"; break;
+			case FeatureLevel::SM_4_1: pTarget = "gs_4_1"; break;
+			case FeatureLevel::SM_5_1: pTarget = "gs_5_0"; break;
+			case FeatureLevel::SM_5_0: pTarget = "gs_5_0"; break;
+			default:
+				break;
+			}
 		}
 		else if ('c'==pTarget[0])		
 		{
-			if( HW.FeatureLevel == D3D_FEATURE_LEVEL_11_0 )
-				pTarget = "cs_5_0";
-			else if (HW.FeatureLevel == D3D_FEATURE_LEVEL_11_1)
-				pTarget = "cs_5_0";
+			switch (EngineInterface->GetParent()->GetFeatureLevel()) {
+			case FeatureLevel::SM_4_0: pTarget = "cs_4_0"; break;
+			case FeatureLevel::SM_4_1: pTarget = "cs_4_1"; break;
+			case FeatureLevel::SM_5_1: pTarget = "cs_5_0"; break;
+			case FeatureLevel::SM_5_0: pTarget = "cs_5_0"; break;
+			default:
+				break;
+			}
 		}
 	}
 

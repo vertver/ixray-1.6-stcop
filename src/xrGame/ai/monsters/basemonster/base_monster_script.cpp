@@ -44,7 +44,7 @@ void CBaseMonster::GenerateNewOffsetFromLeader ()
 	Fvector		offset				=	Fvector().set(offset_magnitude, 0, 0);
 
 	m_offset_from_leader				=	rotate_point(offset, deg2rad(360.f) * Random.randF(1.f));
-	m_offset_from_leader_chosen_tick	=	Device.dwTimeGlobal;
+	m_offset_from_leader_chosen_tick	=	EngineInterface->GetRoundedGlobalTime();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -211,7 +211,7 @@ bool CBaseMonster::bfAssignMovement (CScriptEntityAction *tpEntityAction)
 			{
 				Fvector	const leader_pos	=	leader->Position();
 
-				if ( Device.dwTimeGlobal > m_offset_from_leader_chosen_tick + 5000 )
+				if ( EngineInterface->GetRoundedGlobalTime() > m_offset_from_leader_chosen_tick + 5000 )
 				{
 					GenerateNewOffsetFromLeader();
 				}
@@ -425,8 +425,6 @@ void CBaseMonster::ProcessScripts()
 	// Выполнить скриптовые actions
 	m_script_state_must_execute					= false;
 	inherited::ProcessScripts					();
-
-	Device.dwTimeGlobal							= Device.dwTimeGlobal;
 
 	// обновить мир (память, враги, объекты)
 	UpdateMemory								();
