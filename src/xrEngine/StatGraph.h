@@ -6,7 +6,7 @@
 #include "../Include/xrRender/StatGraphRender.h"
 
 //---------------------------------------------------------------------------
-class ENGINE_API CStatGraph	: public pureRender
+class ENGINE_API CStatGraph
 {
 	friend class dxStatGraphRender;
 public:

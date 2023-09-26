@@ -12,14 +12,14 @@
 
 using namespace luabind;
 
-bool is_device_paused(CRenderDevice* d)
+bool is_device_paused()
 {
-	return !!Device.Paused();
+	return EngineInterface->GetState() == ApplicationState::Paused;
 }
 
-void set_device_paused(CRenderDevice* d, bool b)
+void set_device_paused(bool b)
 {
-	Device.Pause(b, TRUE, FALSE,"set_device_paused_script");
+	EngineInterface->UpdateState(b ? ApplicationState::Paused : ApplicationState::Running);
 }
 
 extern ENGINE_API BOOL g_appLoaded;
@@ -28,10 +28,69 @@ bool is_app_ready()
 	return !!g_appLoaded;
 }
 
-u32 time_global(const CRenderDevice *self_)
+u32 time_global()
 {
-	THROW		(self_);
-	return		(self_->dwTimeGlobal);
+	return (EngineInterface->GetRoundedGlobalTime());
+}
+
+u32 get_width()
+{
+	return EngineInterface->GetWidth();
+}
+
+u32 get_height()
+{
+	return EngineInterface->GetHeight();
+}
+
+float get_delta_time()
+{
+	return EngineInterface->GetDeltaTime();
+}
+
+u32 get_rounded_delta_time()
+{
+	return EngineInterface->GetRoundedDeltaTime();
+}
+
+const Fvector& get_camera_position()
+{
+	return EngineInterface->GetCameraState().CameraPosition;
+}
+
+const Fvector& get_camera_direction()
+{
+	return EngineInterface->GetCameraState().CameraDirection;
+}
+
+const Fvector& get_camera_top()
+{
+	return EngineInterface->GetCameraState().CameraTop;
+}
+
+const Fvector& get_camera_right()
+{
+	return EngineInterface->GetCameraState().CameraRight;
+}
+
+float get_camera_fov()
+{
+	return EngineInterface->GetCameraState().FOV;
+}
+
+float get_camera_aspect()
+{
+	return EngineInterface->GetCameraState().ASPECT;
+}
+
+u32 get_precache_frame()
+{
+	return EngineInterface->GetPreCacheFrame();
+}
+
+u32 get_frame()
+{
+	return EngineInterface->GetFrame();
 }
 
 #pragma optimize("s",on)
@@ -39,25 +98,22 @@ void CScriptRenderDevice::script_register(lua_State *L)
 {
 	module(L)
 	[
-		class_<CRenderDevice>("render_device")
-			.def_readonly("width",					&CRenderDevice::TargetWidth)
-			.def_readonly("height",					&CRenderDevice::TargetHeight)
-			.def_readonly("time_delta",				&CRenderDevice::dwTimeDelta)
-			.def_readonly("f_time_delta",			&CRenderDevice::fTimeDelta)
-			.def_readonly("cam_pos",				&CRenderDevice::vCameraPosition)
-			.def_readonly("cam_dir",				&CRenderDevice::vCameraDirection)
-			.def_readonly("cam_top",				&CRenderDevice::vCameraTop)
-			.def_readonly("cam_right",				&CRenderDevice::vCameraRight)
-//			.def_readonly("view",					&CRenderDevice::mView)
-//			.def_readonly("projection",				&CRenderDevice::mProject)
-//			.def_readonly("full_transform",			&CRenderDevice::mFullTransform)
-			.def_readonly("fov",					&CRenderDevice::fFOV)
-			.def_readonly("aspect_ratio",			&CRenderDevice::fASPECT)
-			.def("time_global",						&time_global)
-			.def_readonly("precache_frame",			&CRenderDevice::dwPrecacheFrame)
-			.def_readonly("frame",					&CRenderDevice::dwFrame)
-			.def("is_paused",						&is_device_paused)
-			.def("pause",							&set_device_paused),
-			def("app_ready",						&is_app_ready)
+		class_<DummyDevice>("render_device")
+			.def("width",					&get_width)
+			.def("height",					&get_height)
+			.def("time_delta",				&get_rounded_delta_time)
+			.def("f_time_delta",			&get_delta_time)
+			.def("cam_pos",					&get_camera_position)
+			.def("cam_dir",					&get_camera_direction)
+			.def("cam_top",					&get_camera_top)
+			.def("cam_right",				&get_camera_right)
+			.def("fov",						&get_camera_fov)
+			.def("aspect_ratio",			&get_camera_aspect)
+			.def("time_global",				&time_global)
+			.def("precache_frame",			&get_precache_frame)
+			.def("frame",					&get_frame)
+			.def("is_paused",				&is_device_paused)
+			.def("pause",					&set_device_paused)
+			.def("app_ready",				&is_app_ready)
 	];
 }

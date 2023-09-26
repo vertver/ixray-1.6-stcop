@@ -135,9 +135,6 @@ class CHelicopter : 	public CEntity,
 						public CPHDestroyable,
 						public CHitImmunity,
 						public CExplosive
-					#ifdef DEBUG
-						,public pureRender
-					#endif
 
 {
 	typedef CEntity inherited;

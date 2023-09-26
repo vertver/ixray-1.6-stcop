@@ -12,7 +12,7 @@ void CRenderTarget::phase_fsr2_combine()
     phase_copy_depth();
 
     Fsr2Wrapper::DrawParameters fsr2Params;
-    fsr2Params.deviceContext = HW.pContext;
+    fsr2Params.deviceContext = RCache.get_Context();
     fsr2Params.exposureResource = nullptr;
     fsr2Params.unresolvedColorResource = rt_Target->pSurface;
     fsr2Params.motionvectorResource = rt_MotionVectors->pSurface;
@@ -27,11 +27,11 @@ void CRenderTarget::phase_fsr2_combine()
     fsr2Params.cameraJitterY = g_CameraJitterY;
     fsr2Params.enableSharpening = !!ps_r4_sharp_enable;
     fsr2Params.sharpness = ps_r4_sharp_factor;
-    fsr2Params.frameTimeDelta = (float)Device.dwTimeDelta;
+    fsr2Params.frameTimeDelta = (float)EngineInterface->GetRoundedDeltaTime();
     fsr2Params.nearPlane = VIEWPORT_NEAR;
     fsr2Params.farPlane = g_pGamePersistent->Environment().CurrentEnv->far_plane;
-    fsr2Params.fovH = deg2rad(Device.fFOV);
+    fsr2Params.fovH = deg2rad(EngineInterface->GetCameraState().FOV);
 
     g_Fsr2Wrapper.Draw(fsr2Params);
-    HW.pContext->CopyResource(rt_Output->pSurface, rt_UpscaleOutput->pSurface);
+    RCache.get_Context()->CopyResource(rt_Output->pSurface, rt_UpscaleOutput->pSurface);
 }

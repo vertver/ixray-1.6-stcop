@@ -80,8 +80,8 @@ void CRender::render_sun_cascade ( u32 cascade_ind )
 	// calculate view-frustum bounds in world space
 	Fmatrix	ex_project, ex_full, ex_full_inverse;
 	{
-		ex_project = Device.mProject;
-		ex_full.mul					(ex_project,Device.mView);
+		ex_project = EngineInterface->GetCameraState().Project;
+		ex_full.mul					(ex_project,EngineInterface->GetCameraState().View);
 		XMStoreFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&ex_full_inverse),
 			XMMatrixInverse(nullptr, XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&ex_full))));
 	}
@@ -121,7 +121,7 @@ void CRender::render_sun_cascade ( u32 cascade_ind )
 		cull_sector	= largest_sector;
 
 		// COP - 100 km away
-		cull_COP.mad				(Device.vCameraPosition, fuckingsun->direction, -tweak_COP_initial_offs	);
+		cull_COP.mad				(EngineInterface->GetCameraState().CameraPosition, fuckingsun->direction, -tweak_COP_initial_offs	);
 
 		// Create approximate ortho-xform
 		// view: auto find 'up' and 'right' vectors
@@ -151,10 +151,10 @@ void CRender::render_sun_cascade ( u32 cascade_ind )
 				Fvector3				near_p, edge_vec;
 				for	(int p=0; p < 4; p++)	
 				{
-// 					Fvector asd = Device.vCameraDirection;
+// 					Fvector asd = EngineInterface->GetCameraState().CameraDirection;
 // 					asd.mul(-2);
-// 					asd.add(Device.vCameraPosition);
-// 					near_p		= Device.vCameraPosition;//wform		(fullxform_inv,asd); //
+// 					asd.add(EngineInterface->GetCameraState().CameraPosition);
+// 					near_p		= EngineInterface->GetCameraState().CameraPosition;//wform		(fullxform_inv,asd); //
 					near_p		= wform		(fullxform_inv,corners[facetable[4][p]]);
 
 					edge_vec	= wform		(fullxform_inv,corners[facetable[5][p]]);
@@ -167,8 +167,8 @@ void CRender::render_sun_cascade ( u32 cascade_ind )
 			else
 				light_cuboid.view_frustum_rays = m_sun_cascades[cascade_ind].rays;
 
-			light_cuboid.view_ray.P		= Device.vCameraPosition;
-			light_cuboid.view_ray.D		= Device.vCameraDirection;
+			light_cuboid.view_ray.P		= EngineInterface->GetCameraState().CameraPosition;
+			light_cuboid.view_ray.D		= EngineInterface->GetCameraState().CameraDirection;
 			light_cuboid.light_ray.P	= L_pos;
 			light_cuboid.light_ray.D	= L_dir;
 		}
@@ -176,7 +176,7 @@ void CRender::render_sun_cascade ( u32 cascade_ind )
 		// THIS NEED TO BE A CONSTATNT
 		Fplane light_top_plane;
 		light_top_plane.build_unit_normal( L_pos, L_dir );
-		float dist = light_top_plane.classify( Device.vCameraPosition );
+		float dist = light_top_plane.classify( EngineInterface->GetCameraState().CameraPosition );
 
 		float map_size = m_sun_cascades[cascade_ind].size;
 
@@ -222,7 +222,7 @@ void CRender::render_sun_cascade ( u32 cascade_ind )
 
 			Fvector lightXZshift;
 			light_cuboid.compute_caster_model_fixed( cull_planes, lightXZshift, m_sun_cascades[cascade_ind].size,  m_sun_cascades[cascade_ind].reset_chain );
-			Fvector proj_view = Device.vCameraDirection;
+			Fvector proj_view = EngineInterface->GetCameraState().CameraDirection;
 			proj_view.y = 0;
 			proj_view.normalize();
 //			lightXZshift.mad(proj_view, 20);
@@ -255,7 +255,7 @@ void CRender::render_sun_cascade ( u32 cascade_ind )
 				cull_frustum._add		(cull_planes[p]);
 
 			{
-				Fvector cam_proj = Device.vCameraPosition;
+				Fvector cam_proj = EngineInterface->GetCameraState().CameraPosition;
 				constexpr float		align_aim_step_coef = 4.f;
 				cam_proj.set(floorf(cam_proj.x/align_aim_step_coef)+align_aim_step_coef/2, floorf(cam_proj.y/align_aim_step_coef)+align_aim_step_coef/2, floorf(cam_proj.z/align_aim_step_coef)+align_aim_step_coef/2);
 				cam_proj.mul(align_aim_step_coef);
@@ -376,6 +376,6 @@ void CRender::render_sun_cascade ( u32 cascade_ind )
 
 	// Restore XForms
 	RCache.set_xform_world		(Fidentity			);
-	RCache.set_xform_view		(Device.mView		);
-	RCache.set_xform_project	(Device.mProject	);
+	RCache.set_xform_view		(EngineInterface->GetCameraState().View		);
+	RCache.set_xform_project	(EngineInterface->GetCameraState().Project	);
 }

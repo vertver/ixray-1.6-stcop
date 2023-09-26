@@ -272,11 +272,11 @@ void CUIMainIngameWnd::Draw()
 
 	// show IO icon
 	bool IOActive	= (FS.dwOpenCounter>0);
-	if	(IOActive)	UIStaticDiskIO_start_time = Device.fTimeGlobal;
+	if	(IOActive)	UIStaticDiskIO_start_time = EngineInterface->GetGlobalTime();
 
-	if ((UIStaticDiskIO_start_time+1.0f) < Device.fTimeGlobal)	UIStaticDiskIO->Show(false); 
+	if ((UIStaticDiskIO_start_time+1.0f) < EngineInterface->GetGlobalTime())	UIStaticDiskIO->Show(false); 
 	else {
-		u32		alpha			= clampr(iFloor(255.f*(1.f-(Device.fTimeGlobal-UIStaticDiskIO_start_time)/1.f)),0,255);
+		u32		alpha			= clampr(iFloor(255.f*(1.f-(EngineInterface->GetGlobalTime()-UIStaticDiskIO_start_time)/1.f)),0,255);
 		UIStaticDiskIO->Show		( true  ); 
 		UIStaticDiskIO->SetTextureColor(color_rgba(255,255,255,alpha));
 	}
@@ -337,7 +337,7 @@ void CUIMainIngameWnd::Update()
 	
 	UpdatePickUpItem			();
 
-	if( Device.dwFrame % 10 )
+	if( EngineInterface->GetFrame() % 10 )
 		return;
 
 	game_PlayerState* lookat_player = Game().local_player;

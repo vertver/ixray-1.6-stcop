@@ -258,7 +258,7 @@ void CGameFont::MasterOut(
 	BOOL bCheckDevice , BOOL bUseCoords , BOOL bScaleCoords , BOOL bUseSkip , 
 	float _x , float _y , float _skip , LPCSTR fmt , va_list p )
 {
-	if ( bCheckDevice && ( ! RDEVICE.b_is_Active ) )
+	if ( bCheckDevice && ( TheEngine.GetState() != ApplicationState::Running ) )
 		return;
 
 	String rs;
@@ -368,7 +368,7 @@ float CGameFont::CurrentHeight_	()
 void CGameFont::SetHeightI(float S)
 {
 	VERIFY			( uFlags&fsDeviceIndependent );
-	fCurrentHeight	= S*RDEVICE.TargetHeight;
+	fCurrentHeight	= S * TheEngine.GetHeight();
 };
 
 void CGameFont::SetHeight(float S)

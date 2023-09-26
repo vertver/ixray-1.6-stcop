@@ -211,7 +211,7 @@ CRenderTarget::CRenderTarget		()
 	b_combine						= xr_new<CBlender_combine>				();
 	b_fxaa = xr_new<CBlender_FXAA>();
 
-	u32 w = Device.TargetWidth, h = Device.TargetHeight;
+	u32 w = EngineInterface->GetWidth(), h = EngineInterface->GetHeight();
 
 	//	NORMAL
 	{
@@ -367,7 +367,7 @@ CRenderTarget::CRenderTarget		()
 
 	// SMAA
 	{
-		u32 w = Device.TargetWidth, h = Device.TargetHeight;
+		u32 w = EngineInterface->GetWidth(), h = EngineInterface->GetHeight();
 
 		b_smaa = xr_new<CBlender_SMAA>();
 		s_smaa.create(b_smaa);

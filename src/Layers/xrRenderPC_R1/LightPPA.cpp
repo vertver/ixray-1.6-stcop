@@ -66,7 +66,7 @@ void CLightR_Manager::render_point	()
 		// Culling
 		if (PPL.range<0.05f)														continue;
 		if (PPL.color.magnitude_sqr_rgb()<EPS)										continue;
-		float	alpha		= Device.vCameraPosition.distance_to(PPL.position)/MAX_DISTANCE;
+		float	alpha		= EngineInterface->GetCameraState().CameraPosition.distance_to(PPL.position)/MAX_DISTANCE;
 		if (alpha>=1)																continue;
 		if (!RImplementation.ViewBase.testSphere_dirty (PPL.position,PPL.range))	continue;
 
@@ -96,7 +96,7 @@ void CLightR_Manager::render_point	()
 			CLightR_Vertex* VB		= (CLightR_Vertex*)RCache.Vertex.Lock(triLock*3,hGeom->vb_stride,vOffset);
 
 			// Cull and triangulate polygons
-			Fvector	cam		= Device.vCameraPosition;
+			Fvector	cam		= EngineInterface->GetCameraState().CameraPosition;
 			float	r2		= PPL.range*2;
 			u32		actual	= 0;
 			for (u32 t=0; t<triCount; t++)
@@ -144,7 +144,7 @@ void CLightR_Manager::render_point	()
 void CLightR_Manager::render_point	(u32 _priority)
 {
 	// for each light
-	Fvector		lc_COP		= Device.vCameraPosition	;
+	Fvector		lc_COP		= EngineInterface->GetCameraState().CameraPosition	;
 	float		lc_limit	= ps_r1_dlights_clip		;
 	for (xr_vector<light*>::iterator it=selected_point.begin(); it!=selected_point.end(); it++)
 	{
@@ -209,7 +209,7 @@ void CLightR_Manager::render_point	(u32 _priority)
 		BOOL				bHUD	= FALSE;
 		CFrustum			F;
 		F.CreateFromMatrix	(L_combine,FRUSTUM_P_ALL);
-		bHUD				= F.testSphere_dirty	(Device.vCameraPosition,2.f);
+		bHUD				= F.testSphere_dirty	(EngineInterface->GetCameraState().CameraPosition,2.f);
 
 		//		5. Dump sorting tree
 		RCache.set_Constants((R_constant_table*)0);
@@ -224,7 +224,7 @@ void CLightR_Manager::render_spot	(u32 _priority)
 {
 	// for each light
 	//	Msg	("l=%d",selected_spot.size());
-	Fvector		lc_COP		= Device.vCameraPosition	;
+	Fvector		lc_COP		= EngineInterface->GetCameraState().CameraPosition	;
 	float		lc_limit	= ps_r1_dlights_clip		;
 
 	for (xr_vector<light*>::iterator it=selected_spot.begin(); it!=selected_spot.end(); it++)
@@ -287,7 +287,7 @@ void CLightR_Manager::render_spot	(u32 _priority)
 		BOOL				bHUD	= FALSE;
 		CFrustum			F;
 		F.CreateFromMatrix	(L_combine,FRUSTUM_P_ALL);
-		bHUD				= F.testSphere_dirty	(Device.vCameraPosition,2.f);
+		bHUD				= F.testSphere_dirty	(EngineInterface->GetCameraState().CameraPosition,2.f);
 		// if (bHUD)		Msg	("HUD");
 
 		//		4. Dump sorting tree

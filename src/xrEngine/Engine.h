@@ -10,6 +10,7 @@
 #include "eventAPI.h"
 #include "../xrCPU_Pipe/xrCPU_Pipe.h"
 #include "xrSheduler.h"
+#include "EngineApplication.h"
 
 class ENGINE_API CEngine
 {

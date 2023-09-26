@@ -260,8 +260,8 @@ void CRenderTarget::accum_volumetric(light* L)
 	for (u32 i=0; i<8; i++)		{
 		Fvector		pt;
 		BB.getpoint	(i,pt);
-		//Device.mFullTransform.transform	(pt);
-		Device.mFullTransform.transform	(mView);
+		//EngineInterface->GetCameraState().FullTransform.transform	(pt);
+		EngineInterface->GetCameraState().FullTransform.transform	(mView);
 		bbp.modify	(pt);
 	}
 	*/

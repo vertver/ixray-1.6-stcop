@@ -33,7 +33,7 @@ public:
 //----------------------------------------------------
 // Utilities
 //----------------------------------------------------
-class ECORE_API CDrawUtilities : public CDUInterface, public pureRender {
+class ECORE_API CDrawUtilities : public CDUInterface {
     SPrimitiveBuffer		m_SolidCone;
     SPrimitiveBuffer		m_WireCone;
     SPrimitiveBuffer		m_SolidSphere;
@@ -143,7 +143,7 @@ public:
 
     void OutText(const Fvector& pos, LPCSTR text, u32 color = 0xFF000000, u32 shadow_color = 0xFF909090) override;
 
-    void OnRender() override;
+    void OnRender();
 };
 extern ECORE_API CDrawUtilities DUImpl;
 //----------------------------------------------------

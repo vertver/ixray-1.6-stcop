@@ -84,7 +84,7 @@ public:
 				bool		m_has_upgrade;
 };
 
-class CUIDragItem: public CUIWindow, public pureRender, public pureFrame
+class CUIDragItem: public CUIWindow
 {
 	typedef		CUIWindow	inherited;
 	CUIStatic				m_static;

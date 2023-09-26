@@ -71,6 +71,7 @@ target_compile_definitions(xrRender_R4 PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
 # Linker list
 target_link_directories(xrRender_R4 PRIVATE ${IXRAY_SDK_LIB})
 target_link_libraries(xrRender_R4 PUBLIC xrEngine)
+target_link_libraries(xrRender_R4 PUBLIC xrAppLayer)
 target_link_libraries(xrRender_R4 PUBLIC xrParticles)
 target_link_libraries(xrRender_R4 PUBLIC "d3dcompiler.lib")
 target_link_libraries(xrRender_R4 PUBLIC "dxgi.lib")

@@ -49,8 +49,8 @@ void CRenderTarget::phase_pp()
 	// combination/postprocess
 	float	_w = RCache.get_target_width();
 	float	_h = RCache.get_target_height();
-	set_viewport(HW.pContext, _w, _h);
-	u_setrt(_w, _h, HW.pBaseRT, NULL, NULL, rt_HWDepth->pZRT);
+	set_viewport(RCache.get_Context(), _w, _h);
+	u_setrt(_w, _h, ((ID3D11RenderTargetView*)EngineInterface->GetParent()->GetRenderTarget()), NULL, NULL, rt_HWDepth->pZRT);
 
 	//	Element 0 for for normal post-process
 	//	Element 4 for color map post-process

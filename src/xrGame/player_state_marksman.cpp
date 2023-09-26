@@ -71,7 +71,7 @@ void player_state_marksman::OnPlayerSpawned(game_PlayerState const * ps)
 {
 	if (ps == m_owner->get_local_player())
 	{
-		m_spawn_time			= Device.dwTimeGlobal;
+		m_spawn_time			= EngineInterface->GetRoundedGlobalTime();
 		m_sniper_victims.clear	();
 	}
 }

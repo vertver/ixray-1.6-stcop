@@ -27,6 +27,7 @@ void	SetupGPU(IRenderDeviceRender *pRender)
 	pRender->SetupGPU(bForceGPU_SW, bForceGPU_NonPure, bForceGPU_REF);
 }
 
+#if 0 
 void CRenderDevice::_SetupStates	()
 {
 	// General Render States
@@ -107,3 +108,4 @@ void CRenderDevice::Create()
 
 	PreCache(0, false, false);
 }
+#endif

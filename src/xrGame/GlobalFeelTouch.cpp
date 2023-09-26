@@ -33,7 +33,7 @@ void GlobalFeelTouch::feel_touch_update(Fvector& P, float R)
 	auto new_end = std::remove_if(feel_touch_disable.begin(),
 		feel_touch_disable.end(),
 		[](const auto& touch) {
-			return delete_predicate_by_time()(touch, Device.dwTimeGlobal);
+			return delete_predicate_by_time()(touch, EngineInterface->GetRoundedGlobalTime());
 		});
 	feel_touch_disable.erase(new_end, feel_touch_disable.end());
 }

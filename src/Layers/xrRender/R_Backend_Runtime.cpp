@@ -10,6 +10,8 @@ using namespace DirectX;
 #include "../xrRenderDX10/StateManager/dx10ShaderResourceStateCache.h"
 #endif //USE_DX11
 
+float r4_vidscale = 1.0f;
+
 void CBackend::OnFrameEnd	()
 {
 //#ifndef DEDICATED_SERVER
@@ -18,16 +20,16 @@ void CBackend::OnFrameEnd	()
 #endif    
 	{
 #ifdef USE_DX11
-		HW.pContext->ClearState();
+		RCache.get_Context()->ClearState();
 		Invalidate			();
 #else //USE_DX11
 
 		for (u32 stage=0; stage<HW.Caps.raster.dwStages; stage++)
-			CHK_DX(HW.pDevice->SetTexture(0,0));
-		CHK_DX				(HW.pDevice->SetStreamSource	(0,0,0,0));
-		CHK_DX				(HW.pDevice->SetIndices			(0));
-		CHK_DX				(HW.pDevice->SetVertexShader	(0));
-		CHK_DX				(HW.pDevice->SetPixelShader		(0));
+			CHK_DX(RCache.get_Device()->SetTexture(0,0));
+		CHK_DX				(RCache.get_Device()->SetStreamSource	(0,0,0,0));
+		CHK_DX				(RCache.get_Device()->SetIndices			(0));
+		CHK_DX				(RCache.get_Device()->SetVertexShader	(0));
+		CHK_DX				(RCache.get_Device()->SetPixelShader		(0));
 		Invalidate			();
 #endif
 	}
@@ -41,12 +43,12 @@ void CBackend::OnFrameBegin	()
 	if (!g_dedicated_server)
 #endif    
 	{
-		PGO					(Msg("PGO:*****frame[%d]*****",RDEVICE.dwFrame));
+		PGO					(Msg("PGO:*****frame[%d]*****",EngineInterface->GetFrame()));
 #ifdef USE_DX11
 		Invalidate();
 		//	DX9 sets base rt nd base zb by default
 		RImplementation.rmNormal();
-		set_RT				(HW.pBaseRT);
+		set_RT				(((ID3D11RenderTargetView*)EngineInterface->GetParent()->GetRenderTarget()));
 		set_ZB				(RImplementation.Target->rt_HWDepth->pZRT);
 #endif //USE_DX11
 		Memory.mem_fill		(&stat,0,sizeof(stat));
@@ -55,6 +57,11 @@ void CBackend::OnFrameBegin	()
 		set_Stencil			(FALSE);
 	}
 //#endif
+}
+
+float CBackend::get_scale()
+{
+	return r4_vidscale;
 }
 
 void CBackend::Invalidate	()
@@ -138,6 +145,7 @@ DX10_ONLY(gs					= NULL);
 #endif
 }
 
+
 void	CBackend::set_ClipPlanes	(u32 _enable, Fplane*	_planes /*=NULL */, u32 count/* =0*/)
 {
 #ifdef USE_DX11
@@ -148,7 +156,7 @@ void	CBackend::set_ClipPlanes	(u32 _enable, Fplane*	_planes /*=NULL */, u32 coun
 #else //USE_DX11
 	if (0==HW.Caps.geometry.dwClipPlanes)	return;
 	if (!_enable)	{
-		CHK_DX	(HW.pDevice->SetRenderState(D3DRS_CLIPPLANEENABLE,FALSE));
+		CHK_DX	(RCache.get_Device()->SetRenderState(D3DRS_CLIPPLANEENABLE,FALSE));
 		return;
 	}
 
@@ -156,7 +164,7 @@ void	CBackend::set_ClipPlanes	(u32 _enable, Fplane*	_planes /*=NULL */, u32 coun
 	VERIFY	(_planes && count);
 	if		(count>HW.Caps.geometry.dwClipPlanes)	count=HW.Caps.geometry.dwClipPlanes;
 
-	auto worldToClipMatrixIT = XMMatrixInverse(nullptr, XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&Device.mFullTransform)));
+	auto worldToClipMatrixIT = XMMatrixInverse(nullptr, XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&EngineInterface->GetCameraState().FullTransform)));
 	worldToClipMatrixIT = XMMatrixTranspose(worldToClipMatrixIT);
 	XMFLOAT4 planeClip{};
 	XMVECTOR planeWorld{};
@@ -165,26 +173,25 @@ void	CBackend::set_ClipPlanes	(u32 _enable, Fplane*	_planes /*=NULL */, u32 coun
 		Fplane& P = _planes[it];
 		planeWorld = XMPlaneNormalize(XMVectorSet(-P.n.x, -P.n.y, -P.n.z, -P.d));
 		XMStoreFloat4(&planeClip, XMPlaneTransform(planeWorld, worldToClipMatrixIT));
-		CHK_DX(HW.pDevice->SetClipPlane(it, reinterpret_cast<float*>(&planeClip)));
+		CHK_DX(RCache.get_Device()->SetClipPlane(it, reinterpret_cast<float*>(&planeClip)));
 	}
 
 	// Enable them
 	u32		e_mask	= (1<<count)-1;
-	CHK_DX	(HW.pDevice->SetRenderState(D3DRS_CLIPPLANEENABLE,e_mask));
+	CHK_DX	(RCache.get_Device()->SetRenderState(D3DRS_CLIPPLANEENABLE,e_mask));
 #endif
 }
 
 #ifndef DEDICATED_SREVER
 void	CBackend::set_ClipPlanes	(u32 _enable, Fmatrix*	_xform  /*=NULL */, u32 fmask/* =0xff */)
 {
-	if (0==HW.Caps.geometry.dwClipPlanes)	return;
 	if (!_enable)	{
 #ifdef USE_DX11
 		//	TODO: DX10: Implement in the corresponding vertex shaders
 		//	Use this to set up location, were shader setup code will get data
 		//VERIFY(!"CBackend::set_ClipPlanes not implemented!");
 #else //USE_DX11
-		CHK_DX	(HW.pDevice->SetRenderState(D3DRS_CLIPPLANEENABLE,FALSE));
+		CHK_DX	(RCache.get_Device()->SetRenderState(D3DRS_CLIPPLANEENABLE,FALSE));
 #endif
 		return;
 	}
@@ -367,10 +374,10 @@ void CBackend::set_Textures			(STextureList* _T)
 #ifdef USE_DX11
 		//	TODO: DX10: Optimise: set all resources at once
 		ID3DShaderResourceView	*pRes = 0;
-		//HW.pDevice->PSSetShaderResources(_last_ps, 1, &pRes);
+		//RCache.get_Device()->PSSetShaderResources(_last_ps, 1, &pRes);
 		SRVSManager.SetPSResource(_last_ps, pRes);
 #else //USE_DX11
-		CHK_DX							(HW.pDevice->SetTexture(_last_ps,NULL));
+		CHK_DX							(RCache.get_Device()->SetTexture(_last_ps,NULL));
 #endif
 	}
 	// clear remaining stages (VS)
@@ -383,10 +390,10 @@ void CBackend::set_Textures			(STextureList* _T)
 #ifdef USE_DX11
 		//	TODO: DX10: Optimise: set all resources at once
 		ID3DShaderResourceView	*pRes = 0;
-		//HW.pDevice->VSSetShaderResources(_last_vs, 1, &pRes);
+		//RCache.get_Device()->VSSetShaderResources(_last_vs, 1, &pRes);
 		SRVSManager.SetVSResource(_last_vs, pRes);
 #else //USE_DX11
-		CHK_DX							(HW.pDevice->SetTexture(_last_vs+CTexture::rstVertex,NULL));
+		CHK_DX							(RCache.get_Device()->SetTexture(_last_vs+CTexture::rstVertex,NULL));
 #endif
 	}
 
@@ -401,7 +408,7 @@ void CBackend::set_Textures			(STextureList* _T)
 
 		//	TODO: DX10: Optimise: set all resources at once
 		ID3DShaderResourceView	*pRes = 0;
-		//HW.pDevice->GSSetShaderResources(_last_gs, 1, &pRes);
+		//RCache.get_Device()->GSSetShaderResources(_last_gs, 1, &pRes);
 		SRVSManager.SetGSResource(_last_gs, pRes);
 	}
 

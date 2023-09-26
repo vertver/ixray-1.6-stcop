@@ -74,7 +74,7 @@ void CRenderTarget::phase_bloom	()
 	// Clear	- don't clear - it's stupid here :)
 	// Stencil	- disable
 	// Misc		- draw everything (no culling)
-	//CHK_DX		(HW.pDevice->SetRenderState	( D3DRS_ZENABLE,		FALSE				));
+	//CHK_DX		(RCache.get_Device()->SetRenderState	( D3DRS_ZENABLE,		FALSE				));
 	RCache.set_Z(FALSE);
 
 	// Transfer into Bloom1
@@ -114,7 +114,7 @@ void CRenderTarget::phase_bloom	()
 
 		// Perform combine (all scalers must account for 4 samples + final diffuse multiply);
 		float s						= ps_r2_ls_bloom_threshold;											// scale
-		f_bloom_factor				= .9f*f_bloom_factor + .1f*ps_r2_ls_bloom_speed*Device.fTimeDelta;	// speed
+		f_bloom_factor				= .9f*f_bloom_factor + .1f*ps_r2_ls_bloom_speed*EngineInterface->GetDeltaTime();	// speed
 		RCache.set_Element			(s_bloom->E[0]);
 		RCache.set_c				("b_params", s,s,s,	f_bloom_factor);
 		RCache.set_Geometry		(g_bloom_build		);
@@ -320,12 +320,12 @@ void CRenderTarget::phase_bloom	()
 	bool	_menu_pp		= g_pGamePersistent?g_pGamePersistent->OnRenderPPUI_query():false;
 	if (_menu_pp)			
 	{
-		//CHK_DX				(HW.pDevice->Clear( 0L, NULL, D3DCLEAR_TARGET,	0,	1.0f, 0L));
+		//CHK_DX				(RCache.get_Device()->Clear( 0L, NULL, D3DCLEAR_TARGET,	0,	1.0f, 0L));
 		FLOAT ColorRGBA[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-		HW.pContext->ClearRenderTargetView( RCache.get_RT(), ColorRGBA);
+		RCache.get_Context()->ClearRenderTargetView( RCache.get_RT(), ColorRGBA);
 	};
 
 	// re-enable z-buffer
-	//CHK_DX		(HW.pDevice->SetRenderState	( D3DRS_ZENABLE,	TRUE				));
+	//CHK_DX		(RCache.get_Device()->SetRenderState	( D3DRS_ZENABLE,	TRUE				));
 	RCache.set_Z(TRUE);
 }

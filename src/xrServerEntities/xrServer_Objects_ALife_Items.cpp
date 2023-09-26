@@ -60,7 +60,7 @@ CSE_ALifeInventoryItem::CSE_ALifeInventoryItem(LPCSTR caSection)
 	State.linear_vel.set		(0.f,0.f,0.f);
 
 #ifdef XRGAME_EXPORTS
-			m_freeze_time	= Device.dwTimeGlobal;
+			m_freeze_time	= EngineInterface->GetRoundedGlobalTime();
 #else
 			m_freeze_time	= 0;
 #endif
@@ -120,7 +120,7 @@ BOOL CSE_ALifeInventoryItem::Net_Relevant()
 		return		TRUE;
 
 #ifdef XRGAME_EXPORTS
-	if (Device.dwTimeGlobal >= (m_freeze_time + m_freeze_delta_time))
+	if (EngineInterface->GetRoundedGlobalTime() >= (m_freeze_time + m_freeze_delta_time))
 		return		FALSE;
 #endif
 
@@ -266,7 +266,7 @@ void CSE_ALifeInventoryItem::UPDATE_Read	(NET_Packet &tNetPacket)
 	else {
 		if (!freezed)
 #ifdef XRGAME_EXPORTS
-			m_freeze_time	= Device.dwTimeGlobal;
+			m_freeze_time	= EngineInterface->GetRoundedGlobalTime();
 #else
 			m_freeze_time	= 0;
 #endif
@@ -363,7 +363,7 @@ void CSE_ALifeItem::UPDATE_Write			(NET_Packet &tNetPacket)
 	inherited2::UPDATE_Write	(tNetPacket);
 
 #ifdef XRGAME_EXPORTS
-	m_last_update_time			= Device.dwTimeGlobal;
+	m_last_update_time			= EngineInterface->GetRoundedGlobalTime();
 #endif // XRGAME_EXPORTS
 };
 
@@ -398,7 +398,7 @@ BOOL CSE_ALifeItem::Net_Relevant			()
 		return					(TRUE);
 
 #ifdef XRGAME_EXPORTS
-//	if (Device.dwTimeGlobal < (m_last_update_time + update_rate()))
+//	if (EngineInterface->GetRoundedGlobalTime() < (m_last_update_time + update_rate()))
 //		return					(FALSE);
 #endif // XRGAME_EXPORTS
 

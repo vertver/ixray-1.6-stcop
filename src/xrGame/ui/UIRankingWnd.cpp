@@ -34,7 +34,7 @@
 CUIRankingWnd::CUIRankingWnd()
 {
 	m_actor_ch_info				= NULL;
-	m_previous_time				= Device.dwTimeGlobal;
+	m_previous_time				= EngineInterface->GetRoundedGlobalTime();
 	m_delay						= 3000;
 	m_last_monster_icon_back	= "";
 	m_last_monster_icon			= "";
@@ -66,9 +66,9 @@ void CUIRankingWnd::Show( bool status )
 
 void CUIRankingWnd::Update()
 {
-	if ( Device.dwTimeGlobal - m_previous_time > m_delay )
+	if ( EngineInterface->GetRoundedGlobalTime() - m_previous_time > m_delay )
 	{
-		m_previous_time = Device.dwTimeGlobal;
+		m_previous_time = EngineInterface->GetRoundedGlobalTime();
 		update_info();
 	}
 }

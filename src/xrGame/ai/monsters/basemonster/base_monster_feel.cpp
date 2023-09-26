@@ -67,7 +67,7 @@ void CBaseMonster::feel_sound_new(CObject* who, int eType, CSound_UserDataPtr us
 	
 	// register in sound memory
 	if (power >= db().m_fSoundThreshold) {
-		SoundMemory.HearSound(who,eType,Position,power,Device.dwTimeGlobal);
+		SoundMemory.HearSound(who,eType,Position,power,EngineInterface->GetRoundedGlobalTime());
  	}
 }
 #define MAX_LOCK_TIME 2.f
@@ -111,7 +111,7 @@ void CBaseMonster::HitEntity(const CEntity *pEntity, float fDamage, float impuls
 			SDrawStaticStruct* s = CurrentGameUI()->AddCustomStatic("monster_claws", false);
 			
 			float h1,p1;
-			Device.vCameraDirection.getHP	(h1,p1);
+			EngineInterface->GetCameraState().CameraDirection.getHP	(h1,p1);
 			Fvector hd				= hit_dir;
 			hd.mul					(-1);
 			float d = -h1 + hd.getH	();
@@ -191,7 +191,7 @@ void CBaseMonster::HitEntity(const CEntity *pEntity, float fDamage, float impuls
 
 		Morale.on_attack_success();
 		
-		m_time_last_attack_success	= Device.dwTimeGlobal;
+		m_time_last_attack_success	= EngineInterface->GetRoundedGlobalTime();
 	}
 }
 

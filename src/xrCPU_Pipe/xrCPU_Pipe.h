@@ -10,7 +10,6 @@ struct	ENGINE_API	vertBoned3W;
 struct	ENGINE_API	vertBoned4W;
 class	ENGINE_API	CBoneInstance;
 class	light;
-class	ENGINE_API CRenderDevice;
 
 // Skinning processor specific functions
 // NOTE: Destination memory is uncacheble write-combining (AGP), so avoid non-linear writes
@@ -23,7 +22,7 @@ typedef void	__stdcall	xrSkin2W		(vertRender* D, vertBoned2W* S, u32 vCount, CBo
 typedef void	__stdcall	xrSkin3W		(vertRender* D, vertBoned3W* S, u32 vCount, CBoneInstance* Bones);
 typedef void	__stdcall	xrSkin4W		(vertRender* D, vertBoned4W* S, u32 vCount, CBoneInstance* Bones);
 
-typedef void	__stdcall	xrPLC_calc3		(int& c0, int& c1, int& c2, CRenderDevice& Device, Fvector* P, Fvector& N, light* L, float energy, Fvector& O);
+typedef void	__stdcall	xrPLC_calc3		(int& c0, int& c1, int& c2, Fvector* P, Fvector& N, light* L, float energy, Fvector& O);
 
 #pragma pack(push,8)
 struct xrDispatchTable

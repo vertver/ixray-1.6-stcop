@@ -96,7 +96,7 @@ void CActor::net_Export	(NET_Packet& P)					// export to server
 	Fvector				p = Position();
 	P.w_vec3			(p);//Position());
 
-	P.w_float /*w_angle8*/			(angle_normalize(r_model_yaw)); //Device.vCameraDirection.getH());//
+	P.w_float /*w_angle8*/			(angle_normalize(r_model_yaw)); //EngineInterface->GetCameraState().CameraDirection.getH());//
 	P.w_float /*w_angle8*/			(angle_normalize(unaffected_r_torso.yaw));//(r_torso.yaw);
 	P.w_float /*w_angle8*/			(angle_normalize(unaffected_r_torso.pitch));//(r_torso.pitch);
 	P.w_float /*w_angle8*/			(angle_normalize(unaffected_r_torso.roll));//(r_torso.roll);

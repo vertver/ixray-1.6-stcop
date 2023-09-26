@@ -22,22 +22,16 @@ using namespace DirectX;
 #define INCLUDE_FROM_ENGINE
 #include "../xrCore/FS_impl.h"
 
-#ifdef INGAME_EDITOR
-#	include "../include/editor/ide.hpp"
-#	include "engine_impl.hpp"
-#endif // #ifdef INGAME_EDITOR
-
 #include "igame_persistent.h"
 
-ENGINE_API CRenderDevice Device;
-ENGINE_API CLoadScreenRenderer load_screen_renderer;
-ENGINE_API CTimer loading_save_timer;
-ENGINE_API bool loading_save_timer_started = false;
-ENGINE_API BOOL g_bRendering = FALSE; 
-
+ENGINE_API BOOL g_bRendering = FALSE;
+int g_svDedicateServerUpdateReate = 100;
+ENGINE_API xr_list<LOADING_EVENT> g_loading_events;
 BOOL		g_bLoaded = FALSE;
 ref_light	precache_light = 0;
 
+#if 0 
+ENGINE_API CLoadScreenRenderer load_screen_renderer;
 BOOL CRenderDevice::Begin()
 {
 	if (g_dedicated_server)
@@ -146,7 +140,7 @@ void 			mt_Thread	(void *ptr)	{
 			return;
 		}
 		// we has granted permission to execute
-		mt_Thread_marker			= Device.dwFrame;
+		mt_Thread_marker			= TheEngine.GetFrame();
  
 		for (u32 pit=0; pit<Device.seqParallel.size(); pit++)
 			Device.seqParallel[pit]	();
@@ -185,11 +179,6 @@ void CRenderDevice::PreCache(u32 amount, bool b_draw_loadscreen, bool b_wait_use
 		load_screen_renderer.start(b_wait_user_input);
 	}
 }
-
-
-int g_svDedicateServerUpdateReate = 100;
-
-ENGINE_API xr_list<LOADING_EVENT> g_loading_events;
 
 void CRenderDevice::on_idle()
 {
@@ -231,8 +220,7 @@ void CRenderDevice::on_idle()
 	// Matrices
 	mFullTransform.mul(mProject,mView);
 
-	XMStoreFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&mInvFullTransform),
-		XMMatrixInverse(nullptr, XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&mFullTransform))));
+	XMStoreFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&mInvFullTransform), XMMatrixInverse(nullptr, XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&mFullTransform))));
 
 	m_pRender->ResetXform(mView, mProject);
 	m_pRender->ResetPrevXform(mPrevView, mPrevProject);
@@ -334,7 +322,7 @@ void CRenderDevice::message_loop()
 			continue;
 		}
 
-		on_idle				();
+		on_idle();
     }
 }
 
@@ -583,3 +571,4 @@ void CLoadScreenRenderer::OnRender()
 {
 	pApp->load_draw_internal();
 }
+#endif 

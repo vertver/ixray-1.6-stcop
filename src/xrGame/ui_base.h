@@ -7,16 +7,16 @@ class CUIGameCustom;
 
 
 
-class CDeviceResetNotifier :public pureDeviceReset
+class CDeviceResetNotifier
 {
 public:
-						CDeviceResetNotifier					()	{Device.seqDeviceReset.Add(this,REG_PRIORITY_NORMAL);};
-	virtual				~CDeviceResetNotifier					()	{Device.seqDeviceReset.Remove(this);};
+						CDeviceResetNotifier					()	{};
+	virtual				~CDeviceResetNotifier					()	{};
 	virtual void		OnDeviceReset							()	{};
 
 };
 
-struct CFontManager :public pureDeviceReset			{
+struct CFontManager {
 							CFontManager			();
 							~CFontManager			();
 

@@ -15,6 +15,7 @@ static struct _DF {
     {NULL,0}
 };
 
+#if 0
 void CRenderDevice::DumpFlags()
 {
 	Log("- Dumping device flags");
@@ -24,3 +25,4 @@ void CRenderDevice::DumpFlags()
 		p++;
 	}
 }
+#endif

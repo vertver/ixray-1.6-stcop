@@ -227,7 +227,7 @@ float CDangerManager::do_evaluate	(const CDangerObject &object) const
 	}
 
 	result					*= 10.f;
-	result					+= float(Device.dwTimeGlobal - object.time());
+	result					+= float(EngineInterface->GetRoundedGlobalTime() - object.time());
 
 	return					(result);
 }

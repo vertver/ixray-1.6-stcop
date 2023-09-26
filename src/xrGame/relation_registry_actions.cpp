@@ -108,10 +108,10 @@ void RELATION_REGISTRY::Action (CEntityAlive* from, CEntityAlive* to, ERelationA
 				//учитывать ATTACK и FIGHT_HELP, только если прошло время
 				//min_attack_delta_time 
 				FIGHT_DATA* fight_data_from = FindFight (from->ID(), true);
-				if(Device.dwTimeGlobal - fight_data_from->attack_time < min_attack_delta_time)
+				if(EngineInterface->GetRoundedGlobalTime() - fight_data_from->attack_time < min_attack_delta_time)
 					break;
 
-				fight_data_from->attack_time = Device.dwTimeGlobal;
+				fight_data_from->attack_time = EngineInterface->GetRoundedGlobalTime();
 
 				//если мы атаковали персонажа или монстра, который 
 				//кого-то атаковал, то мы помогли тому, кто защищался

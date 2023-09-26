@@ -28,6 +28,7 @@ add_compile_options(/fp:fast)
 target_compile_definitions(xrCPU_Pipe PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
 
 # Linker list
+target_link_libraries(xrCPU_Pipe PUBLIC xrAPI)
 target_link_libraries(xrCPU_Pipe PUBLIC xrCore)
 
 # PCH move

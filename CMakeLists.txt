@@ -55,13 +55,14 @@ set_target_properties(xrCPU_Pipe PROPERTIES ${IXRAY_FOLDER_ENGINE})
 set_target_properties(xrPhysics PROPERTIES ${IXRAY_FOLDER_ENGINE})
 set_target_properties(xrParticles PROPERTIES ${IXRAY_FOLDER_ENGINE})
 set_target_properties(xrEngine PROPERTIES ${IXRAY_FOLDER_ENGINE})
+set_target_properties(xrAppLayer PROPERTIES ${IXRAY_FOLDER_ENGINE})
 
 set_target_properties(xrGame PROPERTIES ${IXRAY_FOLDER_GAME})
 set_target_properties(xrGameSpy PROPERTIES ${IXRAY_FOLDER_GAME})
 
 set_target_properties(RenderNew PROPERTIES ${IXRAY_FOLDER_RENDER})
-set_target_properties(xrRender_R1 PROPERTIES ${IXRAY_FOLDER_RENDER})
-set_target_properties(xrRender_R2 PROPERTIES ${IXRAY_FOLDER_RENDER})
+#set_target_properties(xrRender_R1 PROPERTIES ${IXRAY_FOLDER_RENDER})
+#set_target_properties(xrRender_R2 PROPERTIES ${IXRAY_FOLDER_RENDER})
 set_target_properties(xrRender_R4 PROPERTIES ${IXRAY_FOLDER_RENDER})
 
 if (IXRAY_UTILS)

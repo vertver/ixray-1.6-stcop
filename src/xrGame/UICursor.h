@@ -3,8 +3,7 @@
 #include "ui_base.h"
 class CUIStatic;
 
-class CUICursor:	public pureRender, 
-					public pureScreenResolutionChanged
+class CUICursor
 {
 	bool			bVisible;
 	Fvector2		vPos;

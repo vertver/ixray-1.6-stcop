@@ -52,7 +52,8 @@ void CLevel::remove_objects	()
 			psNET_Flags.set			(NETFLAG_MINIMIZEUPDATES,FALSE);
 			// ugly hack for checks that update is twice on frame
 			// we need it since we do updates for checking network messages
-			++(Device.dwFrame);
+			//++(EngineInterface->GetFrame());
+			R_ASSERT(false);
 			psDeviceFlags.set		(rsDisableObjectsAsCrows,TRUE);
 			ClientReceive			();
 			ProcessGameEvents		();
@@ -225,9 +226,7 @@ void CLevel::ClientSend()
 
 		if (P.B.count>2)
 		{
-			Device.Statistic->TEST3.Begin();
-				Send	(P, net_flags(FALSE));
-			Device.Statistic->TEST3.End();
+			Send	(P, net_flags(FALSE));
 		}else
 			break;
 	}
@@ -313,27 +312,16 @@ void CLevel::net_Update	()
 {
 	if(game_configured){
 		// If we have enought bandwidth - replicate client data on to server
-		Device.Statistic->netClient2.Begin	();
 		ClientSend					();
-		Device.Statistic->netClient2.End		();
 	}
 	// If server - perform server-update
 	if (Server && OnServer())	{
-		Device.Statistic->netServer.Begin();
 		Server->Update					();
-		Device.Statistic->netServer.End	();
 	}
 }
 
-struct _NetworkProcessor	: public pureFrame
-{
-	virtual void	_BCL OnFrame	( )
-	{
-		if (g_pGameLevel && !Device.Paused() )	g_pGameLevel->net_Update();
-	}
-}	NET_processor;
-
-pureFrame*	g_pNetProcessor	= &NET_processor;
+_NetworkProcessor NET_processor;
+_NetworkProcessor*	g_pNetProcessor	= &NET_processor;
 
 const int ConnectionTimeOut = 60000; //1 min
 

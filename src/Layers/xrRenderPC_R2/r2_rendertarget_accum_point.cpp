@@ -16,13 +16,13 @@ void CRenderTarget::accum_point		(light* L)
 	{
 		extern ENGINE_API float		psHUD_FOV;
 		Pold				= Device.mProject;
-		FTold				= Device.mFullTransform;
+		FTold				= EngineInterface->GetCameraState().FullTransform;
 		Device.mProject.build_projection(
 			deg2rad(psHUD_FOV), 
-			Device.fASPECT, HUD_VIEWPORT_NEAR, 
+			EngineInterface->GetCameraState().ASPECT, HUD_VIEWPORT_NEAR, 
 			g_pGamePersistent->Environment().CurrentEnv->far_plane);
 
-		Device.mFullTransform.mul	(Device.mProject, Device.mView);
+		EngineInterface->GetCameraState().FullTransform.mul	(Device.mProject, Device.mView);
 		RCache.set_xform_project	(Device.mProject);
 		RImplementation.rmNear		();
 	}
@@ -134,7 +134,7 @@ void CRenderTarget::accum_point		(light* L)
 		RImplementation.rmNormal					();
 		// Restore projection
 		Device.mProject				= Pold;
-		Device.mFullTransform		= FTold;
+		EngineInterface->GetCameraState().FullTransform		= FTold;
 		RCache.set_xform_project	(Device.mProject);
 	}
 }

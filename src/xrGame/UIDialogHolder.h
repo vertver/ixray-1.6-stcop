@@ -20,7 +20,7 @@ public:
 	Flags8			m_flags;
 };
 
-class CDialogHolder : public pureFrame
+class CDialogHolder
 {
 	//dialogs
 	xr_vector<recvItem>										m_input_receivers;

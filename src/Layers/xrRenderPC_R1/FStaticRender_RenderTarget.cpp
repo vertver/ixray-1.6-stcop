@@ -152,7 +152,7 @@ void	CRenderTarget::calc_tc_noise		(Fvector2& p0, Fvector2& p1)
 //.	if (bDebug)	Msg			("%d,%d,%f",tw,th,param_noise_scale);
 
 	// calculate shift from FPSes
-	im_noise_time					-= Device.fTimeDelta;
+	im_noise_time					-= EngineInterface->GetDeltaTime();
 	if (im_noise_time<0)			{
 		im_noise_shift_w			= ::Random.randI(tw?tw:1);
 		im_noise_shift_h			= ::Random.randI(th?th:1);
@@ -235,7 +235,7 @@ BOOL CRenderTarget::NeedPostProcess()
 BOOL CRenderTarget::Perform		()
 {
 	return Available() &&
-		(ps_r2_aa_type > 0 || (RImplementation.m_bMakeAsyncSS) || NeedPostProcess() || (frame_distort==(Device.dwFrame-1)));
+		(ps_r2_aa_type > 0 || (RImplementation.m_bMakeAsyncSS) || NeedPostProcess() || (frame_distort==(EngineInterface->GetFrame()-1)));
 }
 
 #include <dinput.h>
@@ -246,7 +246,7 @@ void CRenderTarget::Begin		()
 	/*
 	if (g_pGameLevel->IR_GetKeyState(DIK_LSHIFT))	
 	{
-		Msg					("[%5d]------------------------",Device.dwFrame);
+		Msg					("[%5d]------------------------",EngineInterface->GetFrame());
 		SHOW				(param_blur)
 		SHOW				(param_gray)
 		SHOW				(param_duality_h)
@@ -407,7 +407,7 @@ void CRenderTarget::End		()
 
 void	CRenderTarget::phase_distortion	()
 {
-	frame_distort								= Device.dwFrame;
+	frame_distort								= EngineInterface->GetFrame();
 	RCache.set_RT								(RT_distort->pRT);
 	RCache.set_ZB								(ZB);
 	RCache.set_CullMode							(CULL_CCW);

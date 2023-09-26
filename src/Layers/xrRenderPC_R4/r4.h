@@ -167,7 +167,7 @@ private:
 
 public:
 	IRender_Sector*					rimp_detectSector			(Fvector& P, Fvector& D);
-	void							render_main					(Fmatrix& mCombined, bool _fportals);
+	void							render_main					(const Fmatrix& mCombined, bool _fportals);
 	void							render_forward				();
 	void							render_smap_direct			(Fmatrix& mCombined);
 	void							render_lights				(light_Package& LP	);
@@ -233,7 +233,7 @@ public:
 	virtual	GenerationLevel			get_generation			()	{ return IRender_interface::GENERATION_R2; }
 
 	virtual bool					is_sun_static			()	{ return o.sunstatic;}
-	virtual DWORD					get_dx_level			()	{ return HW.FeatureLevel >= D3D_FEATURE_LEVEL_10_1?0x000A0001:0x000A0000; }
+	virtual DWORD					get_dx_level			()	{ return 0x000A0001; }
 
 	// Loading / Unloading
 	virtual void					create						();

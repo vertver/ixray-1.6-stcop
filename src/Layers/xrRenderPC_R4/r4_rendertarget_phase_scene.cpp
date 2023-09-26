@@ -16,16 +16,16 @@ void	CRenderTarget::phase_scene_prepare	()
 		//	TODO: DX10: Check if we need to set RT here.
    		u_setrt(RCache.get_width(), RCache.get_height(), rt_Position->pRT, NULL, NULL, rt_HWDepth->pZRT);
       
-		//CHK_DX	( HW.pDevice->Clear	( 0L, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0x0, 1.0f, 0L) );
+		//CHK_DX	( RCache.get_Device()->Clear	( 0L, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER|D3DCLEAR_STENCIL, 0x0, 1.0f, 0L) );
 		FLOAT ColorRGBA[4] = {0.0f, 0.0f, g_pGamePersistent->Environment().CurrentEnv->far_plane, 0.0f};
-		HW.pContext->ClearRenderTargetView(rt_Position->pRT, ColorRGBA);
-        HW.pContext->ClearDepthStencilView(rt_HWDepth->pZRT, D3D_CLEAR_DEPTH|D3D_CLEAR_STENCIL, 1.0f, 0);
+		RCache.get_Context()->ClearRenderTargetView(rt_Position->pRT, ColorRGBA);
+        RCache.get_Context()->ClearDepthStencilView(rt_HWDepth->pZRT, D3D_CLEAR_DEPTH|D3D_CLEAR_STENCIL, 1.0f, 0);
    }
 	else
 	{
 		//	TODO: DX10: Check if we need to set RT here.
-        u_setrt	(RCache.get_width(), RCache.get_height(), HW.pBaseRT, NULL, NULL, rt_HWDepth->pZRT);
-        HW.pContext->ClearDepthStencilView(rt_HWDepth->pZRT, D3D_CLEAR_DEPTH|D3D_CLEAR_STENCIL, 1.0f, 0);
+        u_setrt	(RCache.get_width(), RCache.get_height(), ((ID3D11RenderTargetView*)EngineInterface->GetParent()->GetRenderTarget()), NULL, NULL, rt_HWDepth->pZRT);
+        RCache.get_Context()->ClearDepthStencilView(rt_HWDepth->pZRT, D3D_CLEAR_DEPTH|D3D_CLEAR_STENCIL, 1.0f, 0);
 	}
 
 	//	Igor: for volumetric lights

@@ -23,14 +23,10 @@ IGame_Level::IGame_Level()
 	bReady						= false;
 	pCurrentEntity				= NULL;
 	pCurrentViewEntity			= NULL;
-	Device.DumpResourcesMemoryUsage();
 }
 
 IGame_Level::~IGame_Level()
 {
-	if (strstr(Core.Params, "-nes_texture_storing"))
-		Device.m_pRender->ResourcesStoreNecessaryTextures();
-
 	xr_delete(pLevel);
 
 	// Render-level unload
@@ -38,23 +34,10 @@ IGame_Level::~IGame_Level()
 	xr_delete(m_pCameras);
 
 	// Unregister
-	if (!g_dedicated_server)
-	{
-		Device.seqRender.Remove(this);
-	}
-
-	Device.seqFrame.Remove(this);
 	CCameraManager::ResetPP();
 
 	Sound->set_geometry_occ(NULL);
 	Sound->set_handler(NULL);
-	Device.DumpResourcesMemoryUsage();
-
-	u32		m_base = 0, c_base = 0, m_lmaps = 0, c_lmaps = 0;
-	if (Device.m_pRender)
-		Device.m_pRender->ResourcesGetMemoryUsage(m_base, c_base, m_lmaps, c_lmaps);
-
-	Msg("* [ D3D ]: textures[%d K]", (m_base + m_lmaps) / 1024);
 }
 
 void IGame_Level::net_Stop			()
@@ -128,11 +111,8 @@ BOOL IGame_Level::Load			(u32 dwNum)
 	if (!g_dedicated_server)
 	{
 		IR_Capture();
-
-		Device.seqRender.Add(this);
 	}
 
-	Device.seqFrame.Add			(this);
 	return TRUE;	
 }
 
@@ -154,11 +134,11 @@ void	IGame_Level::OnFrame()
 	g_hud->OnFrame();
 
 	// Ambience
-	if (Sounds_Random.size() && (Device.dwTimeGlobal > Sounds_Random_dwNextTime))
+	if (Sounds_Random.size() && (TheEngine.GetRoundedGlobalTime() > Sounds_Random_dwNextTime))
 	{
-		Sounds_Random_dwNextTime = Device.dwTimeGlobal + ::Random.randI(10000, 20000);
+		Sounds_Random_dwNextTime = TheEngine.GetRoundedGlobalTime() + ::Random.randI(10000, 20000);
 		Fvector	pos;
-		pos.random_dir().normalize().mul(::Random.randF(30, 100)).add(Device.vCameraPosition);
+		pos.random_dir().normalize().mul(::Random.randF(30, 100)).add(TheEngine.GetCameraState().CameraPosition);
 		int		id = ::Random.randI(Sounds_Random.size());
 		if (Sounds_Random_Enabled) {
 			Sounds_Random[id].play_at_pos(0, pos, 0);
@@ -280,7 +260,7 @@ void	IGame_Level::SoundEvent_Dispatch	( )
 				D.source->g_type,
 				D.source->g_userdata,
 
-				D.source->feedback->is_2D() ? Device.vCameraPosition : 
+				D.source->feedback->is_2D() ? TheEngine.GetCameraState().CameraPosition :
 					D.source->feedback->get_params()->position,
 				D.power
 				);

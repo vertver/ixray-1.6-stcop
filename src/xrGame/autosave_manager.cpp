@@ -25,7 +25,7 @@ CAutosaveManager::CAutosaveManager			()
 
 	sscanf						(pSettings->r_string(section,"autosave_interval"),"%d:%d:%d",&hours,&minutes,&seconds);
 	m_autosave_interval			= (u32)generate_time(1,1,1,hours,minutes,seconds);
-	m_last_autosave_time		= Device.dwTimeGlobal;
+	m_last_autosave_time		= EngineInterface->GetRoundedGlobalTime();
 
 	sscanf						(pSettings->r_string(section,"delay_autosave_interval"),"%d:%d:%d",&hours,&minutes,&seconds);
 	m_delay_autosave_interval	= (u32)generate_time(1,1,1,hours,minutes,seconds);
@@ -54,10 +54,10 @@ void CAutosaveManager::shedule_Update		(u32 dt)
 	if (!ai().get_alife())
 		return;
 
-	if (last_autosave_time() + autosave_interval() >= Device.dwTimeGlobal)
+	if (last_autosave_time() + autosave_interval() >= EngineInterface->GetRoundedGlobalTime())
 		return;
 
-	if (Device.dwPrecacheFrame || !g_actor || !ready_for_autosave() || !Actor()->g_Alive()) {
+	if (EngineInterface->GetPreCacheFrame() || !g_actor || !ready_for_autosave() || !Actor()->g_Alive()) {
 		delay_autosave			();
 		return;
 	}
@@ -85,5 +85,5 @@ void CAutosaveManager::shedule_Update		(u32 dt)
 
 void CAutosaveManager::on_game_loaded	()
 {
-	m_last_autosave_time		= Device.dwTimeGlobal;
+	m_last_autosave_time		= EngineInterface->GetRoundedGlobalTime();
 }

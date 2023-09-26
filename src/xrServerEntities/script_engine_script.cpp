@@ -72,13 +72,6 @@ bool is_editor()
 #endif
 }
 
-#ifdef XRGAME_EXPORTS
-CRenderDevice *get_device()
-{
-	return		(&Device);
-}
-#endif
-
 int bit_and(int i, int j)
 {
 	return			(i & j);
@@ -191,8 +184,8 @@ IC	profile_timer_script	operator+	(const profile_timer_script &portion0, const p
 // }
 
 #ifdef XRGAME_EXPORTS
-ICF	u32	script_time_global	()	{ return Device.dwTimeGlobal; }
-ICF	u32	script_time_global_async	()	{ return Device.TimerAsync_MMT(); }
+ICF	u32	script_time_global	()	{ return EngineInterface->GetRoundedGlobalTime(); }
+ICF	u32	script_time_global_async	()	{ return EngineInterface->GetRoundedGlobalTime(); }
 #else
 ICF	u32	script_time_global	()	{ return 0; }
 ICF	u32	script_time_global_async	()	{ return 0; }
@@ -226,7 +219,4 @@ void CScriptEngine::script_register(lua_State *L)
 	function	(L, "user_name",						user_name);
 	function	(L, "time_global",						script_time_global);
 	function	(L, "time_global_async",				script_time_global_async);
-#ifdef XRGAME_EXPORTS
-	function	(L,	"device",							get_device);
-#endif // #ifdef XRGAME_EXPORTS
 }

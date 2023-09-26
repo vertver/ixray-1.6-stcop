@@ -68,9 +68,6 @@ class	CActor:
 	public CPhraseDialogManager,
 	public CStepManager,
 	public Feel::Sound
-#ifdef DEBUG
-	,public pureRender
-#endif
 {
 	friend class CActorCondition;
 private:
@@ -608,7 +605,7 @@ public:
 			void			set_input_external_handler			(CActorInputHandler *handler);
 			bool			input_external_handler_installed	() const {return (m_input_external_handler != 0);}
 			
-	IC		void			lock_accel_for						(u32 time){m_time_lock_accel = Device.dwTimeGlobal + time;}
+	IC		void			lock_accel_for						(u32 time){m_time_lock_accel = EngineInterface->GetRoundedGlobalTime() + time;}
 
 private:	
 	CActorInputHandler		*m_input_external_handler;

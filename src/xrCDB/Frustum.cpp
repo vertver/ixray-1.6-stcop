@@ -357,7 +357,7 @@ BOOL CFrustum::CreateFromClipPoly(Fvector* p, int count, Fvector& vBase, CFrustu
 	return	true;
 }
 
-void CFrustum::CreateFromMatrix(Fmatrix &M, u32 mask)
+void CFrustum::CreateFromMatrix(const Fmatrix &M, u32 mask)
 {
 	VERIFY			(_valid(M));
 	p_count			= 0;

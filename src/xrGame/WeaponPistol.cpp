@@ -157,11 +157,11 @@ void CWeaponPistol::OnShot		()
 
 void CWeaponPistol::UpdateSounds()
 {
-	if (Device.dwFrame == dwUpdateSounds_Frame)
+	if (EngineInterface->GetFrame() == dwUpdateSounds_Frame)
 		return;
 
 	inherited::UpdateSounds();
 
-	if (Device.dwFrame % 3 == 0)
+	if (EngineInterface->GetFrame() % 3 == 0)
 		m_sounds.SetPosition("sndClose", get_LastFP());
 }

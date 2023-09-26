@@ -1,12 +1,8 @@
 #include "stdafx.h"
 
-#ifdef INGAME_EDITOR
-#	include "../include/editor/ide.hpp"
-#	include "engine_impl.hpp"
-#endif // #ifdef INGAME_EDITOR
-
 extern LRESULT CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
 
+#if 0
 #ifdef INGAME_EDITOR
 void CRenderDevice::initialize_editor	()
 {
@@ -47,4 +43,4 @@ void CRenderDevice::Initialize			()
     GetWindowRect	( m_hWnd, &m_rcWindowBounds );
     GetClientRect	( m_hWnd, &m_rcWindowClient );
 }
-
+#endif

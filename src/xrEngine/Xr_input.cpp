@@ -3,7 +3,6 @@
 
 #include "xr_input.h"
 #include "IInputReceiver.h"
-#include "../include/editor/ide.hpp"
 
 #ifndef _EDITOR
 #	include "xr_input_xinput.h"
@@ -24,10 +23,6 @@ float stop_vibration_time				= flt_max;
 static bool g_exclusive	= true;
 static void on_error_dialog			(bool before)
 {
-#ifdef INGAME_EDITOR
-	if (Device.editor())
-		return;
-#endif // #ifdef INGAME_EDITOR
 	if (!pInput || !g_exclusive)
 		return;
 
@@ -84,21 +79,10 @@ CInput::CInput						( BOOL bExclusive, int deviceForInit)
 		MOUSEBUFFERSIZE ));
 
 	Debug.set_on_dialog				(&on_error_dialog);
-
-#ifdef ENGINE_BUILD
-	Device.seqAppActivate.Add		(this);
-	Device.seqAppDeactivate.Add		(this, REG_PRIORITY_HIGH);
-	Device.seqFrame.Add				(this, REG_PRIORITY_HIGH);
-#endif
 }
 
 CInput::~CInput(void)
 {
-#ifdef ENGINE_BUILD
-	Device.seqFrame.Remove			(this);
-	Device.seqAppDeactivate.Remove	(this);
-	Device.seqAppActivate.Remove	(this);
-#endif
 	//_______________________
 
 	// Unacquire and release the device's interfaces
@@ -133,11 +117,8 @@ HRESULT CInput::CreateInputDevice( LPDIRECTINPUTDEVICE8* device, GUID guidDevice
 
 	// Set the cooperativity level to let DirectInput know how this device
 	// should interact with the system and with other DirectInput applications.
-#ifdef INGAME_EDITOR
-	if (!Device.editor())
-#endif // #ifdef INGAME_EDITOR
 	{
-		HRESULT	hr = (*device)->SetCooperativeLevel( RDEVICE.m_hWnd, dwFlags );
+		HRESULT	hr = (*device)->SetCooperativeLevel((HWND)TheEngine.GetParent()->GetNativeWindow(), dwFlags);
 		if (FAILED(hr) && (hr==E_NOTIMPL)) Msg("! INPUT: Can't set coop level. Emulation???");
 		else R_CHK(hr);
 	}
@@ -228,9 +209,6 @@ void CInput::KeyUpdate	( )
 		return;
 	}
 
-	#ifndef _EDITOR
-   	if(Device.dwPrecacheFrame==0)
-	#endif
 	{
 
 		for (u32 i = 0; i < dwElements; i++)
@@ -259,44 +237,9 @@ void CInput::KeyUpdate	( )
 
 #ifndef _EDITOR
 	if(b_alt_tab)
-		SendMessage(Device.m_hWnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+		SendMessage((HWND)TheEngine.GetParent()->GetNativeWindow(), WM_SYSCOMMAND, SC_MINIMIZE, 0);
 #endif
-/*
-#ifndef _EDITOR
-//update xinput if exist
-    for( DWORD iUserIndex=0; iUserIndex<DXUT_MAX_CONTROLLERS; iUserIndex++ )
-	{
-        DXUTGetGamepadState( iUserIndex, &g_GamePads[iUserIndex], true, false );
 
-        if( !g_GamePads[iUserIndex].bConnected )
-            continue; // unplugged?
-
-		bool new_b, old_b;
-		new_b = !!(g_GamePads[iUserIndex].wPressedButtons & XINPUT_GAMEPAD_A);
-		old_b = !!(g_GamePads[iUserIndex].wLastButtons & XINPUT_GAMEPAD_A);
-
-		if(new_b != old_b)
-		{
-			if(old_b)
-				cbStack.back()->IR_OnMousePress(0);
-			else
-				cbStack.back()->IR_OnMouseRelease(0);
-		}
-		int dx,dy;
-		dx = iFloor(g_GamePads[iUserIndex].fThumbRX*6);
-		dy = iFloor(g_GamePads[iUserIndex].fThumbRY*6);
-		if(dx || dy)
-			cbStack.back()->IR_OnMouseMove	( dx, dy );
-	}
-
-	if(Device.fTimeGlobal > stop_vibration_time)
-	{
-		stop_vibration_time		= flt_max;
-		set_vibration			(0, 0);
-	}
-//xinput
-#endif
-*/
 }
 bool CInput::get_dik_name(int dik, LPSTR dest_str, int dest_sz)
 {
@@ -359,10 +302,6 @@ void CInput::MouseUpdate( )
 		if ( hr != S_OK ) return;
 	};
 
-	#ifndef _EDITOR
-	if(Device.dwPrecacheFrame)
-		return;
-    #endif
 	BOOL				mouse_prev[COUNT_MOUSE_BUTTONS];
 
 	mouse_prev[0]		= mouseState[0];
@@ -521,11 +460,9 @@ void CInput::OnAppDeactivate	(void)
 
 void CInput::OnFrame			(void)
 {
-	RDEVICE.Statistic->Input.Begin			();
-	dwCurTime		= RDEVICE.TimerAsync_MMT	();
+	dwCurTime		= TheEngine.TimerMM.GetElapsed_ms() + TheEngine.Timer_MM_Delta;
 	if (pKeyboard)	KeyUpdate				();
 	if (pMouse)		MouseUpdate				();
-	RDEVICE.Statistic->Input.End			();
 }
 
 IInputReceiver*	 CInput::CurrentIR()
@@ -544,20 +481,12 @@ void CInput::unacquire				()
 
 void CInput::acquire				(const bool &exclusive)
 {
-	pKeyboard->SetCooperativeLevel	(
-#ifdef INGAME_EDITOR
-		Device.editor() ? Device.editor()->main_handle() : 
-#endif // #ifdef INGAME_EDITOR
-		RDEVICE.m_hWnd,
+	pKeyboard->SetCooperativeLevel	((HWND)TheEngine.GetParent()->GetNativeWindow(),
 		(exclusive ? DISCL_EXCLUSIVE : DISCL_NONEXCLUSIVE) | DISCL_FOREGROUND
 	);
 	pKeyboard->Acquire				();
 
-	pMouse->SetCooperativeLevel		(
-#ifdef INGAME_EDITOR
-		Device.editor() ? Device.editor()->main_handle() :
-#endif // #ifdef INGAME_EDITOR
-		RDEVICE.m_hWnd,
+	pMouse->SetCooperativeLevel		((HWND)TheEngine.GetParent()->GetNativeWindow(),
 		(exclusive ? DISCL_EXCLUSIVE : DISCL_NONEXCLUSIVE) | DISCL_FOREGROUND | DISCL_NOWINKEY
 	);
 	pMouse->Acquire					();
@@ -576,7 +505,7 @@ bool CInput::get_exclusive_mode		()
 
 void  CInput::feedback(u16 s1, u16 s2, float time)
 {
-	stop_vibration_time = RDEVICE.fTimeGlobal + time;
+	stop_vibration_time = TheEngine.GetGlobalTime() + time;
 #ifndef _EDITOR
 //.	set_vibration (s1, s2);
 #endif

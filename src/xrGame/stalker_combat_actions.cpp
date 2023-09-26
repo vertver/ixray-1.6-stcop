@@ -100,7 +100,7 @@ void CStalkerActionGetItemToKill::finalize	()
 void CStalkerActionGetItemToKill::execute	()
 {
 #ifdef TEST_MENTAL_STATE
-	VERIFY					((start_level_time() == Device.dwTimeGlobal) || (object().movement().mental_state() == eMentalStateDanger));
+	VERIFY					((start_level_time() == EngineInterface->GetRoundedGlobalTime()) || (object().movement().mental_state() == eMentalStateDanger));
 #endif // TEST_MENTAL_STATE
 
 	inherited::execute		();
@@ -156,7 +156,7 @@ void CStalkerActionMakeItemKilling::finalize	()
 void CStalkerActionMakeItemKilling::execute	()
 {
 #ifdef TEST_MENTAL_STATE
-	VERIFY					((start_level_time() == Device.dwTimeGlobal) || (object().movement().mental_state() == eMentalStateDanger));
+	VERIFY					((start_level_time() == EngineInterface->GetRoundedGlobalTime()) || (object().movement().mental_state() == eMentalStateDanger));
 #endif // TEST_MENTAL_STATE
 
 	inherited::execute				();
@@ -306,7 +306,7 @@ void CStalkerActionGetReadyToKill::finalize		()
 void CStalkerActionGetReadyToKill::execute		()
 {
 #ifdef TEST_MENTAL_STATE
-	VERIFY					((start_level_time() == Device.dwTimeGlobal) || (object().movement().mental_state() == eMentalStateDanger));
+	VERIFY					((start_level_time() == EngineInterface->GetRoundedGlobalTime()) || (object().movement().mental_state() == eMentalStateDanger));
 #endif // TEST_MENTAL_STATE
 
 	inherited::execute					();
@@ -408,7 +408,7 @@ void CStalkerActionKillEnemy::finalize			()
 void CStalkerActionKillEnemy::execute			()
 {
 #ifdef TEST_MENTAL_STATE
-	VERIFY					((start_level_time() == Device.dwTimeGlobal) || (object().movement().mental_state() == eMentalStateDanger));
+	VERIFY					((start_level_time() == EngineInterface->GetRoundedGlobalTime()) || (object().movement().mental_state() == eMentalStateDanger));
 #endif // TEST_MENTAL_STATE
 
 	inherited::execute					();
@@ -475,7 +475,7 @@ void CStalkerActionTakeCover::finalize		()
 void CStalkerActionTakeCover::execute		()
 {
 #ifdef TEST_MENTAL_STATE
-	VERIFY					((start_level_time() == Device.dwTimeGlobal) || (object().movement().mental_state() == eMentalStateDanger));
+	VERIFY					((start_level_time() == EngineInterface->GetRoundedGlobalTime()) || (object().movement().mental_state() == eMentalStateDanger));
 #endif // TEST_MENTAL_STATE
 
 	inherited::execute					();
@@ -541,9 +541,9 @@ void CStalkerActionLookOut::initialize		()
 {
 	inherited::initialize						();
 	
-	if (Device.dwTimeGlobal >= m_last_change_time + CROUCH_LOOK_OUT_DELTA) {
+	if (EngineInterface->GetRoundedGlobalTime() >= m_last_change_time + CROUCH_LOOK_OUT_DELTA) {
 		m_storage->set_property					(eWorldPropertyUseCrouchToLookOut,	!!m_crouch_look_out_random.random(2));
-		m_last_change_time						= Device.dwTimeGlobal;
+		m_last_change_time						= EngineInterface->GetRoundedGlobalTime();
 	}
 
 	object().movement().set_desired_direction	(0);
@@ -595,7 +595,7 @@ void CStalkerActionLookOut::finalize		()
 void CStalkerActionLookOut::execute		()
 {
 #ifdef TEST_MENTAL_STATE
-	VERIFY					((start_level_time() == Device.dwTimeGlobal) || (object().movement().mental_state() == eMentalStateDanger));
+	VERIFY					((start_level_time() == EngineInterface->GetRoundedGlobalTime()) || (object().movement().mental_state() == eMentalStateDanger));
 #endif // TEST_MENTAL_STATE
 
 	inherited::execute					();
@@ -676,7 +676,7 @@ void CStalkerActionHoldPosition::finalize		()
 void CStalkerActionHoldPosition::execute		()
 {
 #ifdef TEST_MENTAL_STATE
-	VERIFY					((start_level_time() == Device.dwTimeGlobal) || (object().movement().mental_state() == eMentalStateDanger));
+	VERIFY					((start_level_time() == EngineInterface->GetRoundedGlobalTime()) || (object().movement().mental_state() == eMentalStateDanger));
 #endif // TEST_MENTAL_STATE
 
 	inherited::execute					();
@@ -747,7 +747,7 @@ void CStalkerActionDetourEnemy::initialize		()
 		object().agent_manager().location().add	(
 			xr_new<CDangerCoverLocation>(
 				object().agent_manager().member().member(m_object).cover(),
-				Device.dwTimeGlobal,
+				EngineInterface->GetRoundedGlobalTime(),
 				TEMP_DANGER_INTERVAL,
 				TEMP_DANGER_DISTANCE
 				,object().agent_manager().member().mask(&object())
@@ -775,7 +775,7 @@ void CStalkerActionDetourEnemy::finalize		()
 void CStalkerActionDetourEnemy::execute			()
 {
 #ifdef TEST_MENTAL_STATE
-	VERIFY					((start_level_time() == Device.dwTimeGlobal) || (object().movement().mental_state() == eMentalStateDanger));
+	VERIFY					((start_level_time() == EngineInterface->GetRoundedGlobalTime()) || (object().movement().mental_state() == eMentalStateDanger));
 #endif // TEST_MENTAL_STATE
 
 	inherited::execute					();
@@ -890,7 +890,7 @@ void CStalkerActionHideFromGrenade::initialize				()
 void CStalkerActionHideFromGrenade::execute					()
 {
 #ifdef TEST_MENTAL_STATE
-	VERIFY								((start_level_time() == Device.dwTimeGlobal) || (object().movement().mental_state() == eMentalStateDanger));
+	VERIFY								((start_level_time() == EngineInterface->GetRoundedGlobalTime()) || (object().movement().mental_state() == eMentalStateDanger));
 #endif // TEST_MENTAL_STATE
 
 	inherited::execute					();
@@ -975,7 +975,7 @@ void CStalkerActionSuddenAttack::finalize					()
 void CStalkerActionSuddenAttack::execute					()
 {
 #ifdef TEST_MENTAL_STATE
-	VERIFY					((start_level_time() == Device.dwTimeGlobal) || (object().movement().mental_state() == eMentalStateDanger));
+	VERIFY					((start_level_time() == EngineInterface->GetRoundedGlobalTime()) || (object().movement().mental_state() == eMentalStateDanger));
 #endif // TEST_MENTAL_STATE
 
 	inherited::execute		();
@@ -1085,7 +1085,7 @@ void CStalkerActionKillEnemyIfPlayerOnThePath::finalize			()
 void CStalkerActionKillEnemyIfPlayerOnThePath::execute			()
 {
 #ifdef TEST_MENTAL_STATE
-	VERIFY					((start_level_time() == Device.dwTimeGlobal) || (object().movement().mental_state() == eMentalStateDanger));
+	VERIFY					((start_level_time() == EngineInterface->GetRoundedGlobalTime()) || (object().movement().mental_state() == eMentalStateDanger));
 #endif // TEST_MENTAL_STATE
 
 	inherited::execute					();
@@ -1284,7 +1284,7 @@ void CStalkerCombatActionSmartCover::execute					()
 		return;
 
 	u32 const level_time			= object().memory().visual().visible_object_time_last_seen(enemy);
-	if ( level_time + s_wait_enemy_in_smart_cover_time >= Device.dwTimeGlobal )
+	if ( level_time + s_wait_enemy_in_smart_cover_time >= EngineInterface->GetRoundedGlobalTime() )
 		return;
 
 	if	(

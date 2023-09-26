@@ -221,14 +221,14 @@ extern u32 hud_adj_mode;
 
 void CMissile::UpdateCL() 
 {
-	m_dwStateTime += Device.dwTimeDelta;
+	m_dwStateTime += EngineInterface->GetRoundedDeltaTime();
 
 	inherited::UpdateCL();
 
 	CActor* pActor	= smart_cast<CActor*>(H_Parent());
 	if(pActor && !pActor->AnyMove() && this==pActor->inventory().ActiveItem())
 	{
-		if (hud_adj_mode==0 && GetState()==eIdle && (Device.dwTimeGlobal-m_dw_curr_substate_time>20000) )
+		if (hud_adj_mode==0 && GetState()==eIdle && (EngineInterface->GetRoundedGlobalTime()-m_dw_curr_substate_time>20000) )
 		{
 			SwitchState			(eBore);
 			ResetSubStateTime	();
@@ -246,7 +246,7 @@ void CMissile::UpdateCL()
 			CActor	*actor = smart_cast<CActor*>(H_Parent());
 			if (actor) 
 			{				
-				m_fThrowForce		+= (m_fForceGrowSpeed * Device.dwTimeDelta) * .001f;
+				m_fThrowForce		+= (m_fForceGrowSpeed * EngineInterface->GetRoundedDeltaTime()) * .001f;
 				clamp(m_fThrowForce, m_fMinForce, m_fMaxForce);
 			}
 		}
@@ -403,9 +403,9 @@ void CMissile::UpdatePosition(const Fmatrix& trans)
 
 void CMissile::UpdateXForm	()
 {
-	if (Device.dwFrame!=dwXF_Frame)
+	if (EngineInterface->GetFrame()!=dwXF_Frame)
 	{
-		dwXF_Frame			= Device.dwFrame;
+		dwXF_Frame			= EngineInterface->GetFrame();
 
 		if (0==H_Parent())	return;
 
@@ -496,7 +496,7 @@ void CMissile::OnMotionMark(u32 state, const motion_marks& M)
 void CMissile::Throw() 
 {
 #ifndef MASTER_GOLD
-	Msg("throw [%d]", Device.dwFrame);
+	Msg("throw [%d]", EngineInterface->GetFrame());
 #endif // #ifndef MASTER_GOLD
 	VERIFY								(smart_cast<CEntity*>(H_Parent()));
 	setup_throw_params					();
@@ -615,8 +615,8 @@ void  CMissile::UpdateFireDependencies_internal	()
 {
 	if (0==H_Parent())		return;
 
-    if (Device.dwFrame!=dwFP_Frame){
-		dwFP_Frame = Device.dwFrame;
+    if (EngineInterface->GetFrame()!=dwFP_Frame){
+		dwFP_Frame = EngineInterface->GetFrame();
 
 		UpdateXForm			();
 		

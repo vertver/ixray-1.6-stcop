@@ -265,8 +265,7 @@ void R_dsgraph_structure::r_dsgraph_render_graph	(u32	_priority, bool _clear)
 {
 	//PIX_EVENT(SHADOWED_LIGHTS_RENDER_GRAPH);
 	//PIX_EVENT(r_dsgraph_render_graph);
-	Device.Statistic->RenderDUMP.Begin		();
-
+	// 
 	// **************************************************** NORMAL
 	// Perform sorting based on ScreenSpaceArea
 	// Sorting by SSA and changes minimizations
@@ -456,112 +455,88 @@ void R_dsgraph_structure::r_dsgraph_render_graph	(u32	_priority, bool _clear)
 		matVS.clear				();
 		if(_clear) vs.clear		();
 	}
-
-	Device.Statistic->RenderDUMP.End	();
 }
+
+template<typename T>
+void HUD_Render(T&& Function)
+{
+	extern ENGINE_API float		psHUD_FOV;
+
+	// Change projection
+	auto OldCameraState = EngineInterface->GetCameraState();
+	auto OldPrevCameraState = EngineInterface->GetPrevCameraState();
+	auto CameraState = EngineInterface->GetCameraState();
+	auto PrevCameraState = EngineInterface->GetPrevCameraState();
+
+	CameraState.Project.build_projection(
+		deg2rad(psHUD_FOV),
+		EngineInterface->GetCameraState().ASPECT, HUD_VIEWPORT_NEAR,
+		g_pGamePersistent->Environment().CurrentEnv->far_plane);
+
+	PrevCameraState.Project.build_projection(
+		deg2rad(psHUD_FOV),
+		EngineInterface->GetCameraState().ASPECT, HUD_VIEWPORT_NEAR,
+		g_pGamePersistent->Environment().CurrentEnv->far_plane);
+
+	CameraState.FullTransform.mul(EngineInterface->GetCameraState().Project, EngineInterface->GetCameraState().View);
+	PrevCameraState.FullTransform.mul(EngineInterface->GetPrevCameraState().Project, EngineInterface->GetPrevCameraState().View);
+	EngineInterface->UpdateCamera(CameraState);
+	EngineInterface->UpdatePrevCamera(PrevCameraState);
+	RCache.set_prev_xform_project(EngineInterface->GetPrevCameraState().Project);
+	RCache.set_xform_project(EngineInterface->GetCameraState().Project);
+
+	Function();
+
+	// Restore projection	
+	EngineInterface->UpdateCamera(OldCameraState);
+	EngineInterface->UpdatePrevCamera(OldPrevCameraState);
+	RCache.set_prev_xform_project(EngineInterface->GetPrevCameraState().Project);
+	RCache.set_xform_project(EngineInterface->GetCameraState().Project);
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 // HUD render
 void R_dsgraph_structure::r_dsgraph_render_hud	()
 {
-	extern ENGINE_API float		psHUD_FOV;
-	
-	//PIX_EVENT(r_dsgraph_render_hud);
-
-	// Change projection
-	Fmatrix ProjectOld				= Device.mProject;
-	Fmatrix FullTtransformOld		= Device.mFullTransform;
-	Fmatrix PrevProjectOld			= Device.mPrevProject;
-	Fmatrix PrevFullTtransformOld	= Device.mPrevFullTransform;
-
-	Device.mProject.build_projection(
-		deg2rad(psHUD_FOV),
-		Device.fASPECT, HUD_VIEWPORT_NEAR, 
-		g_pGamePersistent->Environment().CurrentEnv->far_plane);
-
-	Device.mPrevProject.build_projection(
-		deg2rad(psHUD_FOV),
-		Device.fASPECT, HUD_VIEWPORT_NEAR,
-		g_pGamePersistent->Environment().CurrentEnv->far_plane);
-
-	Device.mFullTransform.mul(Device.mProject, Device.mView);
-	Device.mPrevFullTransform.mul(Device.mPrevProject, Device.mPrevView);
-	RCache.set_prev_xform_project(Device.mPrevProject);
-	RCache.set_xform_project(Device.mProject);
-
-	// Rendering
-	rmNear						();
-	mapHUD.traverseLR			(sorted_L1);
-	mapHUD.clear				();
+	HUD_Render([this]() {
+		// Rendering
+		rmNear();
+		mapHUD.traverseLR(sorted_L1);
+		mapHUD.clear();
 
 #if	RENDER==R_R1
-	if (g_hud && g_hud->RenderActiveItemUIQuery())
-		r_dsgraph_render_hud_ui						();				// hud ui
+		if (g_hud && g_hud->RenderActiveItemUIQuery())
+			r_dsgraph_render_hud_ui();				// hud ui
 #endif
 
-	rmNormal					();
-
-	// Restore projection
-	Device.mProject				= ProjectOld;
-	Device.mFullTransform		= FullTtransformOld;
-	Device.mPrevProject			= PrevProjectOld;
-	Device.mPrevFullTransform	= PrevFullTtransformOld;
-	RCache.set_prev_xform_project(Device.mPrevProject);
-	RCache.set_xform_project	(Device.mProject);
+		rmNormal();
+	});
 }
 
 void R_dsgraph_structure::r_dsgraph_render_hud_ui()
 {
 	VERIFY(g_hud && g_hud->RenderActiveItemUIQuery());
 
-	extern ENGINE_API float		psHUD_FOV;
-
-	// Change projection
-	Fmatrix ProjectOld = Device.mProject;
-	Fmatrix FullTtransformOld = Device.mFullTransform;
-	Fmatrix PrevProjectOld = Device.mPrevProject;
-	Fmatrix PrevFullTtransformOld = Device.mPrevFullTransform;
-
-	Device.mProject.build_projection(
-		deg2rad(psHUD_FOV),
-		Device.fASPECT, HUD_VIEWPORT_NEAR, 
-		g_pGamePersistent->Environment().CurrentEnv->far_plane);
-
-	Device.mPrevProject.build_projection(
-		deg2rad(psHUD_FOV),
-		Device.fASPECT, HUD_VIEWPORT_NEAR,
-		g_pGamePersistent->Environment().CurrentEnv->far_plane);
-
-	Device.mFullTransform.mul(Device.mProject, Device.mView);
-	Device.mPrevFullTransform.mul(Device.mPrevProject, Device.mPrevView);
-	RCache.set_prev_xform_project(Device.mPrevProject);
-	RCache.set_xform_project(Device.mProject);
-
+	HUD_Render([this]() {
 #if	RENDER!=R_R1
-	// Targets, use accumulator for temporary storage
-	const ref_rt	rt_null;
-	RCache.set_RT(0,	1);
-	RCache.set_RT(0,	2);
+		// Targets, use accumulator for temporary storage
+		const ref_rt	rt_null;
+		RCache.set_RT(0, 1);
+		RCache.set_RT(0, 2);
 
 #if	(RENDER==R_R4)
-	RImplementation.Target->u_setrt(RImplementation.Target->rt_Color, rt_null, rt_null, RImplementation.Target->rt_HWDepth->pZRT);
+		RImplementation.Target->u_setrt(RImplementation.Target->rt_Color, rt_null, rt_null, RImplementation.Target->rt_HWDepth->pZRT);
 #else
-	if (RImplementation.o.albedo_wo)	RImplementation.Target->u_setrt		(RImplementation.Target->rt_Accumulator,	rt_null,	rt_null,	HW.pBaseZB);
-	else								RImplementation.Target->u_setrt		(RImplementation.Target->rt_Color,			rt_null,	rt_null,	HW.pBaseZB);
+		if (RImplementation.o.albedo_wo)	RImplementation.Target->u_setrt(RImplementation.Target->rt_Accumulator, rt_null, rt_null, HW.pBaseZB);
+		else								RImplementation.Target->u_setrt(RImplementation.Target->rt_Color, rt_null, rt_null, HW.pBaseZB);
 #endif
 #endif
 
-	rmNear						();
-	g_hud->RenderActiveItemUI	();
-	rmNormal					();
-
-	// Restore projection
-	Device.mProject = ProjectOld;
-	Device.mFullTransform = FullTtransformOld;
-	Device.mPrevProject = PrevProjectOld;
-	Device.mPrevFullTransform = PrevFullTtransformOld;
-	RCache.set_prev_xform_project(Device.mPrevProject);
-	RCache.set_xform_project(Device.mProject);
+		rmNear();
+		g_hud->RenderActiveItemUI();
+		rmNormal();
+	});
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -574,42 +549,13 @@ void	R_dsgraph_structure::r_dsgraph_render_sorted	()
 	mapSorted.traverseRL	(sorted_L1);
 	mapSorted.clear			();
 
-	ENGINE_API extern float psHUD_FOV;
-
-	// Change projection
-	Fmatrix ProjectOld = Device.mProject;
-	Fmatrix FullTtransformOld = Device.mFullTransform;
-	Fmatrix PrevProjectOld = Device.mPrevProject;
-	Fmatrix PrevFullTtransformOld = Device.mPrevFullTransform;
-
-	Device.mProject.build_projection(
-		deg2rad(psHUD_FOV),
-		Device.fASPECT, HUD_VIEWPORT_NEAR,
-		g_pGamePersistent->Environment().CurrentEnv->far_plane);
-
-	Device.mPrevProject.build_projection(
-		deg2rad(psHUD_FOV),
-		Device.fASPECT, HUD_VIEWPORT_NEAR,
-		g_pGamePersistent->Environment().CurrentEnv->far_plane);
-
-	Device.mFullTransform.mul(Device.mProject, Device.mView);
-	Device.mPrevFullTransform.mul(Device.mPrevProject, Device.mPrevView);
-	RCache.set_prev_xform_project(Device.mPrevProject);
-	RCache.set_xform_project(Device.mProject);
-
-	// Rendering
-	rmNear();
-	mapHUDSorted.traverseRL(sorted_L1);
-	mapHUDSorted.clear();
-	rmNormal();
-
-	// Restore projection
-	Device.mProject = ProjectOld;
-	Device.mFullTransform = FullTtransformOld;
-	Device.mPrevProject = PrevProjectOld;
-	Device.mPrevFullTransform = PrevFullTtransformOld;
-	RCache.set_prev_xform_project(Device.mPrevProject);
-	RCache.set_xform_project(Device.mProject);
+	HUD_Render([this]() {
+		// Rendering
+		rmNear();
+		mapHUDSorted.traverseRL(sorted_L1);
+		mapHUDSorted.clear();
+		rmNormal();
+	});
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -623,44 +569,15 @@ void	R_dsgraph_structure::r_dsgraph_render_emissive	()
 
 	//	HACK: Calculate this only once
 
-	extern ENGINE_API float		psHUD_FOV;
+	HUD_Render([this]() {
+		// Rendering
+		rmNear();
+		// Sorted (back to front)
+		mapHUDEmissive.traverseLR(sorted_L1);
+		mapHUDEmissive.clear();
 
-	// Change projection
-	Fmatrix ProjectOld = Device.mProject;
-	Fmatrix FullTtransformOld = Device.mFullTransform;
-	Fmatrix PrevProjectOld = Device.mPrevProject;
-	Fmatrix PrevFullTtransformOld = Device.mPrevFullTransform;
-
-	Device.mProject.build_projection(
-		deg2rad(psHUD_FOV),
-		Device.fASPECT, HUD_VIEWPORT_NEAR, 
-		g_pGamePersistent->Environment().CurrentEnv->far_plane);
-
-	Device.mPrevProject.build_projection(
-		deg2rad(psHUD_FOV),
-		Device.fASPECT, HUD_VIEWPORT_NEAR,
-		g_pGamePersistent->Environment().CurrentEnv->far_plane);
-
-	Device.mFullTransform.mul(Device.mProject, Device.mView);
-	Device.mPrevFullTransform.mul(Device.mPrevProject, Device.mPrevView);
-	RCache.set_prev_xform_project(Device.mPrevProject);
-	RCache.set_xform_project(Device.mProject);
-
-	// Rendering
-	rmNear						();
-	// Sorted (back to front)
-	mapHUDEmissive.traverseLR	(sorted_L1);
-	mapHUDEmissive.clear		();
-
-	rmNormal					();
-
-	// Restore projection
-	Device.mProject = ProjectOld;
-	Device.mFullTransform = FullTtransformOld;
-	Device.mPrevProject = PrevProjectOld;
-	Device.mPrevFullTransform = PrevFullTtransformOld;
-	RCache.set_prev_xform_project(Device.mPrevProject);
-	RCache.set_xform_project(Device.mProject);
+		rmNormal();
+	});
 #endif
 }
 

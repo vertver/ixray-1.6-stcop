@@ -15,10 +15,10 @@ void __stdcall	CHOM::MT_RENDER()
 {
 	MT.Enter					();
 	bool b_main_menu_is_active = (g_pGamePersistent->m_pMainMenu && g_pGamePersistent->m_pMainMenu->IsActive() );
-	if (MT_frame_rendered!=Device.dwFrame && !b_main_menu_is_active)
+	if (MT_frame_rendered!=EngineInterface->GetFrame() && !b_main_menu_is_active)
 	{
 		CFrustum					ViewBase;
-		ViewBase.CreateFromMatrix	(Device.mFullTransform, FRUSTUM_P_LRTB + FRUSTUM_P_FAR);
+		ViewBase.CreateFromMatrix	(EngineInterface->GetCameraState().FullTransform, FRUSTUM_P_LRTB + FRUSTUM_P_FAR);
 		Enable						();
 		Render						(ViewBase);
 	}
@@ -34,16 +34,10 @@ CHOM::CHOM()
 	bEnabled		= FALSE;
 	m_pModel		= 0;
 	m_pTris			= 0;
-#ifdef DEBUG
-	Device.seqRender.Add(this,REG_PRIORITY_LOW-1000);
-#endif
 }
 
 CHOM::~CHOM()
 {
-#ifdef DEBUG
-	Device.seqRender.Remove(this);
-#endif
 }
 
 #pragma pack(push,4)
@@ -143,7 +137,7 @@ public:
 	}
 	ICF bool	operator()		(const CDB::RESULT& _1)	const {
 		occTri&	T	= m_pTris	[_1.id];
-		return	T.skip>Device.dwFrame;
+		return	T.skip>EngineInterface->GetFrame();
 	}
 };
 
@@ -163,8 +157,8 @@ void CHOM::Render_DB			(CFrustum& base)
 		0.0f,				0.0f,				1.0f,		0.0f,
 		1.f/2.f + 0 + 0,	1.f/2.f + 0 + 0,	0.0f,		1.0f
 	};
-	m_xform.mul					(m_viewport,	Device.mFullTransform);
-	m_xform_01.mul				(m_viewport_01,	Device.mFullTransform);
+	m_xform.mul					(m_viewport,	EngineInterface->GetCameraState().FullTransform);
+	m_xform_01.mul				(m_viewport_01,	EngineInterface->GetCameraState().FullTransform);
 
 	// Query DB
 	xrc.frustum_options			(0);
@@ -175,15 +169,15 @@ void CHOM::Render_DB			(CFrustum& base)
 	CDB::RESULT*	it			= xrc.r_begin	();
 	CDB::RESULT*	end			= xrc.r_end		();
 	
-	Fvector			COP			= Device.vCameraPosition;
+	Fvector			COP			= EngineInterface->GetCameraState().CameraPosition;
 	end				= std::remove_if	(it,end,pred_fb(m_pTris));
 	std::sort		(it,end,pred_fb(m_pTris,COP));
 
 	// Build frustum with near plane only
 	CFrustum					clip;
-	clip.CreateFromMatrix		(Device.mFullTransform,FRUSTUM_P_NEAR);
+	clip.CreateFromMatrix		(EngineInterface->GetCameraState().FullTransform,FRUSTUM_P_NEAR);
 	sPoly						src,dst;
-	u32		_frame				= Device.dwFrame	;
+	u32		_frame				= EngineInterface->GetFrame()	;
 #ifdef DEBUG
 	tris_in_frame				= xrc.r_count();
 	tris_in_frame_visible		= 0;
@@ -230,12 +224,10 @@ void CHOM::Render		(CFrustum& base)
 {
 	if (!bEnabled)		return;
 	
-	Device.Statistic->RenderCALC_HOM.Begin	();
 	Raster.clear		();
 	Render_DB			(base);
 	Raster.propagade	();
-	MT_frame_rendered	= Device.dwFrame;
-	Device.Statistic->RenderCALC_HOM.End	();
+	MT_frame_rendered	= EngineInterface->GetFrame();
 }
 
 ICF	BOOL	xform_b0	(Fvector2& min, Fvector2& max, float& minz, Fmatrix& X, float _x, float _y, float _z)
@@ -276,7 +268,7 @@ IC	BOOL	_visible	(Fbox& B, Fmatrix& m_xform_01)
 BOOL CHOM::visible		(Fbox3& B)
 {
 	if (!bEnabled)							return TRUE;
-	if (B.contains(Device.vCameraPosition))	return TRUE;
+	if (B.contains(EngineInterface->GetCameraState().CameraPosition))	return TRUE;
 	return _visible		(B,m_xform_01)		;
 }
 
@@ -288,19 +280,16 @@ BOOL CHOM::visible		(Fbox2& B, float depth)
 
 BOOL CHOM::visible		(vis_data& vis)
 {
-	if (Device.dwFrame<vis.hom_frame)	return TRUE;				// not at this time :)
+	if (EngineInterface->GetFrame()<vis.hom_frame)	return TRUE;				// not at this time :)
 	if (!bEnabled)						return TRUE;				// return - everything visible
 	
 	// Now, the test time comes
 	// 0. The object was hidden, and we must prove that each frame	- test		| frame-old, tested-new, hom_res = false;
 	// 1. The object was visible, but we must to re-check it		- test		| frame-new, tested-???, hom_res = true;
 	// 2. New object slides into view								- delay test| frame-old, tested-old, hom_res = ???;
-	u32 frame_current	= Device.dwFrame;
+	u32 frame_current	= EngineInterface->GetFrame();
 	// u32	frame_prev		= frame_current-1;
 
-#ifdef DEBUG
-	Device.Statistic->RenderCALC_HOM.Begin	();
-#endif
 	BOOL result			= _visible			(vis.box,m_xform_01);
 	u32  delay			= 1;
 	if (result)
@@ -312,9 +301,6 @@ BOOL CHOM::visible		(vis_data& vis)
 	}
 	vis.hom_frame			= frame_current + delay;
 	vis.hom_tested			= frame_current	;
-#ifdef DEBUG
-	Device.Statistic->RenderCALC_HOM.End	();
-#endif
 
 	return result;
 }
@@ -370,35 +356,22 @@ void CHOM::OnRender	()
 			}
 			RCache.set_prev_xform_world(Fidentity);
 			RCache.set_xform_world(Fidentity);
+
 			// draw solid
-			Device.SetNearer(TRUE);
+			RImplementation.rmNear();
 			RCache.set_Shader	(dxRenderDeviceRender::Instance().m_SelectionShader);
 			RCache.dbg_Draw		(D3DPT_TRIANGLELIST,&*poly.begin(),poly.size()/3);
-			Device.SetNearer(FALSE);
+			RImplementation.rmNormal();
+
 			// draw wire
-			if (bDebug){
-				RImplementation.rmNear();
-			}else{
-				Device.SetNearer(TRUE);
-			}
+			RImplementation.rmNear();
 			RCache.set_Shader	(dxRenderDeviceRender::Instance().m_SelectionShader);
 			RCache.dbg_Draw		(D3DPT_LINELIST,&*line.begin(),line.size()/2);
-			if (bDebug){
-				RImplementation.rmNormal();
-			}else{
-				Device.SetNearer(FALSE);
-			}
+			RImplementation.rmNormal();
 		}
 	}
 }
 void CHOM::stats()
 {
-	if (m_pModel){
-		CGameFont& F		= *Device.Statistic->Font();
-		F.OutNext			(" **** HOM-occ ****");
-		F.OutNext			("  visible:  %2d", tris_in_frame_visible);
-		F.OutNext			("  frustum:  %2d", tris_in_frame);
-		F.OutNext			("    total:  %2d", m_pModel->get_tris_count());
-	}
 }
 #endif

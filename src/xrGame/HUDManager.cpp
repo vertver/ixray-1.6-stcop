@@ -21,7 +21,7 @@ extern CUIGameCustom*	CurrentGameUI()	{return HUD().GetGameUI();}
 
 CFontManager::CFontManager()
 {
-	Device.seqDeviceReset.Add(this,REG_PRIORITY_HIGH);
+	//Device.seqDeviceReset.Add(this,REG_PRIORITY_HIGH);
 
 	m_all_fonts.push_back(&pFontMedium				);// used cpp
 	m_all_fonts.push_back(&pFontDI					);// used cpp
@@ -74,7 +74,7 @@ LPCSTR CFontManager::GetFontTexName (LPCSTR section)
 	else if(w<=1280)idx = 1;
 	else 			idx = 2;
 #else
-	u32 h = Device.TargetHeight;
+	u32 h = EngineInterface->GetHeight();
 
 	if(h<=600)		idx = 0;
 	else if(h<1024)	idx = 1;
@@ -107,7 +107,7 @@ void CFontManager::InitializeFont(CGameFont*& F, LPCSTR section, u32 flags)
 
 CFontManager::~CFontManager()
 {
-	Device.seqDeviceReset.Remove(this);
+	//Device.seqDeviceReset.Remove(this);
 	FONTS_VEC_IT it		= m_all_fonts.begin();
 	FONTS_VEC_IT it_e	= m_all_fonts.end();
 	for(;it!=it_e;++it)
@@ -229,7 +229,6 @@ void   CHUDManager::RenderActiveItemUI()
 	g_player_hud->render_item_ui		();
 }
 
-extern ENGINE_API BOOL bShowPauseString;
 //отрисовка элементов интерфейса
 void  CHUDManager::RenderUI()
 {
@@ -250,7 +249,8 @@ void  CHUDManager::RenderUI()
 		m_pHUDTarget->Render();
 
 
-	if( Device.Paused() && bShowPauseString){
+#if 0
+	if( EngineInterface->GetState() == ApplicationState::Paused){
 		CGameFont* pFont	= UI().Font().pFontGraffiti50Russian;
 		pFont->SetColor		(0x80FF0000	);
 		LPCSTR _str			= CStringTable().translate("st_game_paused").c_str();
@@ -262,7 +262,7 @@ void  CHUDManager::RenderUI()
 		pFont->Out			(_pos.x, _pos.y, _str);
 		pFont->OnRender		();
 	}
-
+#endif 
 }
 
 void CHUDManager::OnEvent(EVENT E, u64 P1, u64 P2)
@@ -349,16 +349,16 @@ void CHUDManager::OnScreenResolutionChanged()
 void CHUDManager::OnDisconnected()
 {
 	b_online				= false;
-	if(pUIGame)
-		Device.seqFrame.Remove	(pUIGame);
+	//if(pUIGame)
+	//	Device.seqFrame.Remove	(pUIGame);
 }
 
 void CHUDManager::OnConnected()
 {
 	if(b_online)			return;
 	b_online				= true;
-	if(pUIGame)
-		Device.seqFrame.Add	(pUIGame,REG_PRIORITY_LOW-1000);
+	//if(pUIGame)
+	//	Device.seqFrame.Add	(pUIGame,REG_PRIORITY_LOW-1000);
 }
 
 void CHUDManager::net_Relcase( CObject* obj )

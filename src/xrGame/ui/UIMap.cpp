@@ -501,7 +501,7 @@ void CUILevelMap::Update()
 	if(m_bCursorOverWindow)
 	{
 		VERIFY(m_dwFocusReceiveTime>=0);
-		if( Device.dwTimeGlobal>(m_dwFocusReceiveTime+500) )
+		if( EngineInterface->GetRoundedGlobalTime()>(m_dwFocusReceiveTime+500) )
 		{
 			if(fsimilar(MapWnd()->GlobalMap()->GetCurrentZoom().x, MapWnd()->GlobalMap()->GetMinZoom(),EPS_L ))
 				MapWnd()->ShowHintStr(this, MapName().c_str());
@@ -605,7 +605,7 @@ void  CUIMiniMap::Draw()
 	tt_offset.y				/= GetHeight();
 	
 	Fvector2				m_scale_;	
-	m_scale_.set			( float(Device.TargetWidth)/UI_BASE_WIDTH, float(Device.TargetHeight)/UI_BASE_HEIGHT );
+	m_scale_.set			( float(EngineInterface->GetWidth())/UI_BASE_WIDTH, float(EngineInterface->GetHeight())/UI_BASE_HEIGHT );
 	
 	for(u32 idx=0; idx<segments_count;++idx)
 	{

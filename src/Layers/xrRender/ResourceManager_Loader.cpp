@@ -7,7 +7,6 @@
 
 void	CResourceManager::OnDeviceDestroy(BOOL )
 {
-	if (RDEVICE.b_is_Ready)				return;
 	m_textures_description.UnLoad		();
 
 	// Matrices
@@ -50,8 +49,6 @@ void	CResourceManager::OnDeviceDestroy(BOOL )
 
 void	CResourceManager::OnDeviceCreate	(IReader* F)
 {
-	if (!RDEVICE.b_is_Ready) return;
-
 	string256	name;
 
 #ifndef _EDITOR

@@ -24,14 +24,12 @@
 #include "../Include/xrRender/FactoryPtr.h"
 #include "../Include/xrRender/RenderDeviceRender.h"
 
-#ifdef INGAME_EDITOR
-#	include "../Include/editor/interfaces.hpp"
-#endif // #ifdef INGAME_EDITOR
-
 class engine_impl;
 
 #pragma pack(push,4)
-
+extern ENGINE_API CTimer loading_save_timer;
+extern ENGINE_API bool loading_save_timer_started;
+#if 0
 class IRenderDevice
 {
 public:
@@ -320,17 +318,12 @@ private:
 };
 
 extern		ENGINE_API		CRenderDevice		Device;
-extern ENGINE_API CTimer loading_save_timer;
-extern ENGINE_API bool loading_save_timer_started;
 
 #ifndef	_EDITOR
 #define	RDEVICE	Device
 #else
 #define RDEVICE	EDevice
 #endif
-
-typedef fastdelegate::FastDelegate0<bool>		LOADING_EVENT;
-extern	ENGINE_API xr_list<LOADING_EVENT>		g_loading_events;
 
 class ENGINE_API CLoadScreenRenderer :public pureRender
 {
@@ -344,5 +337,10 @@ public:
 	bool			b_need_user_input;
 };
 extern ENGINE_API CLoadScreenRenderer load_screen_renderer;
+#endif 
+
+
+typedef fastdelegate::FastDelegate0<bool>		LOADING_EVENT;
+extern	ENGINE_API xr_list<LOADING_EVENT>		g_loading_events;
 
 #endif

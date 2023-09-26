@@ -8,7 +8,7 @@ bool DLSSWrapper::Create(const ContextParameters& Parameters)
 {
     VERIFY(!m_created);
 
-    NVSDK_NGX_Result result = NVSDK_NGX_D3D11_Init(1602, L"", HW.pDevice);
+    NVSDK_NGX_Result result = NVSDK_NGX_D3D11_Init(1602, L"", RCache.get_Device());
     if (result != NVSDK_NGX_Result_Success) {
         return false;
     }
@@ -42,7 +42,7 @@ bool DLSSWrapper::Create(const ContextParameters& Parameters)
     dlssCreateParams.Feature.InTargetWidth = Parameters.displaySize.x;
     dlssCreateParams.Feature.InTargetHeight = Parameters.displaySize.y;
     dlssCreateParams.InFeatureCreateFlags = flags;
-    result = NGX_D3D11_CREATE_DLSS_EXT(HW.pContext, &Handle, NgxParameters, &dlssCreateParams);
+    result = NGX_D3D11_CREATE_DLSS_EXT(RCache.get_Context(), &Handle, NgxParameters, &dlssCreateParams);
     if (result != NVSDK_NGX_Result_Success) {
         return false;
     }
@@ -76,7 +76,7 @@ void DLSSWrapper::Draw(const DrawParameters& params)
     dlssEvalParams.InMVScaleY = (float)params.renderHeight * ps_r4_motion_scale;
     dlssEvalParams.pInTransparencyMask = params.transparencyAndCompositionResource;
 
-    NVSDK_NGX_Result result = NGX_D3D11_EVALUATE_DLSS_EXT(HW.pContext, Handle, NgxParameters, &dlssEvalParams);
+    NVSDK_NGX_Result result = NGX_D3D11_EVALUATE_DLSS_EXT(RCache.get_Context(), Handle, NgxParameters, &dlssEvalParams);
     VERIFY(result == NVSDK_NGX_Result_Success);
 }
 

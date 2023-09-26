@@ -199,7 +199,7 @@ void CPHMovementControl::Calculate(Fvector& vAccel,const Fvector& camDir,float /
 	{
 		if( fis_zero(gcontact_HealthLost) )
 				m_character->SetHitType( DefineCollisionHitType( mat_injurios ) );
-		gcontact_HealthLost+=Device.fTimeDelta*GMLib.GetMaterialByIdx( mat_injurios )->fInjuriousSpeed;
+		gcontact_HealthLost+=EngineInterface->GetDeltaTime()*GMLib.GetMaterialByIdx( mat_injurios )->fInjuriousSpeed;
 	}
 
 */
@@ -1376,7 +1376,7 @@ void	CPHMovementControl::				UpdateObjectBox(CPHCharacter *ach)
 	Fvector2 poses_dir;poses_dir.set(p.x-pa.x,p.z-pa.z);float plane_dist=poses_dir.magnitude(); 
 	if(plane_dist>2.f) return;
 	if(plane_dist>EPS_S)poses_dir.mul(1.f/plane_dist);
-	Fvector2 plane_cam;plane_cam.set(Device.vCameraDirection.x,Device.vCameraDirection.z);plane_cam.normalize_safe();
+	Fvector2 plane_cam;plane_cam.set(EngineInterface->GetCameraState().CameraDirection.x,EngineInterface->GetCameraState().CameraDirection.z);plane_cam.normalize_safe();
 	Fvector2 plane_i;plane_i.set(pObject->XFORM().i.x,pObject->XFORM().i.z);
 	Fvector2 plane_k;plane_k.set(pObject->XFORM().k.x,pObject->XFORM().k.z);
 	float R=_abs(poses_dir.dotproduct(plane_i)*cbox.x)+_abs(poses_dir.dotproduct(plane_k)*cbox.z);

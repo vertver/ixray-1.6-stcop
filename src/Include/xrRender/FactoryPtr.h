@@ -52,7 +52,6 @@ private:
 	T*					m_pObject;
 };
 
-
 #ifndef _EDITOR
 	FACTORY_PTR_INSTANCIATE(UISequenceVideoItem)
 	FACTORY_PTR_INSTANCIATE(UIShader)
@@ -77,18 +76,5 @@ private:
     FACTORY_PTR_INSTANCIATE(EnvDescriptorMixerRender)
 #endif // _EDITOR
 	FACTORY_PTR_INSTANCIATE(FontRender)
-/*
-void FactoryPtr<IStatsRender>::CreateObject(void)
-{
-	m_pObject = RenderFactory->CreateStatsRender();
-}
-
-void FactoryPtr<IStatsRender>::DestroyObject(void)
-{
-	RenderFactory->DestroyStatsRender(m_pObject);
-	m_pObject = NULL;
-}
-*/
-
 
 #endif	//	FactoryPtr_included

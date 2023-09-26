@@ -376,13 +376,13 @@ CRenderTarget::CRenderTarget		()
    rt_MotionVectors.create(r4_motion_vectors, s_dwWidth, s_dwHeight, DxgiFormat::DXGI_FORMAT_R16G16_FLOAT, 1);
    if (ps_r4_upscale_type == SCALETYPE_DLSS) {
        auto DisplaySize = g_DLSSWrapper.GetDisplaySize();
-       if (g_DLSSWrapper.IsCreated() && (DisplaySize.x != Device.TargetWidth || DisplaySize.y != Device.TargetHeight)) {
+       if (g_DLSSWrapper.IsCreated() && (DisplaySize.x != EngineInterface->GetWidth() || DisplaySize.y != EngineInterface->GetHeight())) {
            g_DLSSWrapper.Destroy();
        }
 
        if (!g_DLSSWrapper.IsCreated()) {
            DLSSWrapper::ContextParameters initParams;
-           initParams.device = HW.pDevice;
+           initParams.device = RCache.get_Device();
            initParams.displaySize = { (int)RCache.get_target_width(), (int)RCache.get_target_height() };
            initParams.renderSize = { (int)RCache.get_width(), (int)RCache.get_height() };
            if (!g_DLSSWrapper.Create(initParams)) {
@@ -393,15 +393,15 @@ CRenderTarget::CRenderTarget		()
 
    if (ps_r4_upscale_type == SCALETYPE_FSR2) {
        auto DisplaySize = g_Fsr2Wrapper.GetDisplaySize();
-       if (g_Fsr2Wrapper.IsCreated() && (DisplaySize.width != Device.TargetWidth || DisplaySize.height != Device.TargetHeight)) {
+       if (g_Fsr2Wrapper.IsCreated() && (DisplaySize.width != EngineInterface->GetWidth() || DisplaySize.height != EngineInterface->GetHeight())) {
            g_Fsr2Wrapper.Destroy();
        }
 
        if (!g_Fsr2Wrapper.IsCreated()) {
            Fsr2Wrapper::ContextParameters initParams;
-           initParams.device = HW.pDevice;
-           initParams.displaySize.width = Device.TargetWidth;
-           initParams.displaySize.height = Device.TargetHeight;
+           initParams.device = RCache.get_Device();
+           initParams.displaySize.width = EngineInterface->GetWidth();
+           initParams.displaySize.height = EngineInterface->GetHeight();
            initParams.maxRenderSize = initParams.displaySize;
            initParams.fpMessage = [](FfxFsr2MsgType type, const wchar_t* message) {
                static char TempString[2048] = {};
@@ -533,9 +533,9 @@ CRenderTarget::CRenderTarget		()
         t_LUM_dest.create(r2_RT_luminance_cur);
 
         FLOAT ColorRGBA[4] = { 127.0f / 255.0f, 127.0f / 255.0f, 127.0f / 255.0f, 127.0f / 255.0f };
-        HW.pContext->ClearRenderTargetView(rt_LUM->pRT, ColorRGBA);
+        RCache.get_Context()->ClearRenderTargetView(rt_LUM->pRT, ColorRGBA);
 
-        u_setrt(s_dwWidth, s_dwHeight, HW.pBaseRT, NULL, NULL, rt_HWDepth->pZRT);
+        u_setrt(s_dwWidth, s_dwHeight, ((ID3D11RenderTargetView*)EngineInterface->GetParent()->GetRenderTarget()), NULL, NULL, rt_HWDepth->pZRT);
     }
 
     // HBAO
@@ -626,7 +626,7 @@ CRenderTarget::CRenderTarget		()
             desc.CPUAccessFlags = D3D_CPU_ACCESS_READ;
             desc.MiscFlags = 0;
 
-            R_CHK( HW.pDevice->CreateTexture2D(&desc, 0, &t_ss_async) );
+            R_CHK( RCache.get_Device()->CreateTexture2D(&desc, 0, &t_ss_async) );
         }
         // Build material(s)
         {
@@ -700,7 +700,7 @@ CRenderTarget::CRenderTarget		()
                 }
             }
 
-            R_CHK(HW.pDevice->CreateTexture3D(&desc, &subData, &t_material_surf));
+            R_CHK(RCache.get_Device()->CreateTexture3D(&desc, &subData, &t_material_surf));
             t_material					= dxRenderDeviceRender::Instance().Resources->_CreateTexture(r2_material);
             t_material->surface_set		(t_material_surf);
         }
@@ -755,8 +755,8 @@ CRenderTarget::CRenderTarget		()
         {
             string_path					name;
             xr_sprintf(name, "%s%d", r2_jitter, it);
-            //R_CHK	(D3DXCreateTexture	(HW.pDevice,TEX_jitter,TEX_jitter,1,0,D3DFMT_Q8W8V8U8,D3DPOOL_MANAGED,&t_noise_surf[it]));
-            R_CHK(HW.pDevice->CreateTexture2D(&desc, &subData[it], &t_noise_surf[it]));
+            //R_CHK	(D3DXCreateTexture	(RCache.get_Device(),TEX_jitter,TEX_jitter,1,0,D3DFMT_Q8W8V8U8,D3DPOOL_MANAGED,&t_noise_surf[it]));
+            R_CHK(RCache.get_Device()->CreateTexture2D(&desc, &subData[it], &t_noise_surf[it]));
             t_noise[it] = dxRenderDeviceRender::Instance().Resources->_CreateTexture(name);
             t_noise[it]->surface_set(t_noise_surf[it]);
             //R_CHK						(t_noise_surf[it]->LockRect	(0,&R[it],0,0));
@@ -812,7 +812,7 @@ CRenderTarget::CRenderTarget		()
 
         string_path					name;
         xr_sprintf(name, "%s%d", r2_jitter, it);
-        R_CHK(HW.pDevice->CreateTexture2D(&descHBAO, &subData[it], &t_noise_surf[it]));
+        R_CHK(RCache.get_Device()->CreateTexture2D(&descHBAO, &subData[it], &t_noise_surf[it]));
         t_noise[it] = dxRenderDeviceRender::Instance().Resources->_CreateTexture(name);
         t_noise[it]->surface_set(t_noise_surf[it]);
     }
@@ -907,15 +907,15 @@ Fvector2 CRenderTarget::get_jitter(bool prevFrame)
     {
     case SCALETYPE_LINEAR:
     case SCALETYPE_NEAREST:
-        //g_CameraJitterX = (Device.dwFrame % 2) == prevFrame ? 0.1f : -0.1f;
-        //g_CameraJitterY = (Device.dwFrame % 2) == prevFrame ? 0.1f : -0.1f;
+        //g_CameraJitterX = (EngineInterface->GetFrame() % 2) == prevFrame ? 0.1f : -0.1f;
+        //g_CameraJitterY = (EngineInterface->GetFrame() % 2) == prevFrame ? 0.1f : -0.1f;
         g_CameraJitterX = 0.0f;
         g_CameraJitterY = 0.0f;
         return { g_CameraJitterX, g_CameraJitterY };
     case SCALETYPE_FSR2:
     case SCALETYPE_DLSS: {
         const int32_t jitterPhaseCount = ffxFsr2GetJitterPhaseCount(RCache.get_width(), RCache.get_target_width());
-        ffxFsr2GetJitterOffset(&g_CameraJitterX, &g_CameraJitterY, prevFrame ? Device.dwFrame - 1 : Device.dwFrame, jitterPhaseCount);
+        ffxFsr2GetJitterOffset(&g_CameraJitterX, &g_CameraJitterY, prevFrame ? EngineInterface->GetFrame() - 1 : EngineInterface->GetFrame(), jitterPhaseCount);
         float jitterX = g_CameraJitterX;
         float jitterY = g_CameraJitterY;
         return { jitterX, jitterY };
@@ -983,9 +983,7 @@ bool CRenderTarget::use_minmax_sm_this_frame()
         return need_to_render_sunshafts();
     case CRender::MMSM_AUTODETECT:
         {
-            u32 dwScreenArea = 
-                HW.m_ChainDesc.BufferDesc.Width*
-                HW.m_ChainDesc.BufferDesc.Height;
+            u32 dwScreenArea = EngineInterface->GetWidth() * EngineInterface->GetHeight();
 
             if ( ( dwScreenArea >=RImplementation.o.dx10_minmax_sm_screenarea_threshold))
                 return need_to_render_sunshafts();

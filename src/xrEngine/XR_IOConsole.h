@@ -47,10 +47,7 @@ struct TipString {
 	}
 };
 
-class ENGINE_API CConsole :
-	public pureRender,
-	public pureFrame,
-	public pureScreenResolutionChanged
+class ENGINE_API CConsole
 {
 public:
 	struct str_pred {

@@ -15,7 +15,7 @@ void CRenderTarget::phase_ssao	()
 	u32	Offset	= 0;
 
 	FLOAT ColorRGBA[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-	HW.pContext->ClearRenderTargetView(rt_ssao_temp->pRT, ColorRGBA);
+	RCache.get_Context()->ClearRenderTargetView(rt_ssao_temp->pRT, ColorRGBA);
 	
 	// low/hi RTs
 	u_setrt				( rt_ssao_temp, 0, 0, rt_HWDepth->pZRT);
@@ -28,15 +28,15 @@ void CRenderTarget::phase_ssao	()
 	}*/
 
 	// Compute params
-	Fmatrix		m_v2w;			m_v2w.invert				(Device.mView		);
+	Fmatrix		m_v2w;			m_v2w.invert				(EngineInterface->GetCameraState().View		);
 
 	float		fSSAONoise = 2.0f;
 	fSSAONoise *= tan(deg2rad(67.5f));
-	fSSAONoise /= tan(deg2rad(Device.fFOV));
+	fSSAONoise /= tan(deg2rad(EngineInterface->GetCameraState().FOV));
 
 	float		fSSAOKernelSize = 150.0f;
 	fSSAOKernelSize *= tan(deg2rad(67.5f));
-	fSSAOKernelSize /= tan(deg2rad(Device.fFOV));
+	fSSAOKernelSize /= tan(deg2rad(EngineInterface->GetCameraState().FOV));
 
 	// Fill VB
 	float	scale_X				= RCache.get_width() * 0.5f / float(TEX_jitter);
@@ -45,7 +45,7 @@ void CRenderTarget::phase_ssao	()
 	float _w = RCache.get_width() * 0.5f;
 	float _h = RCache.get_height() * 0.5f;
 
-	set_viewport(HW.pContext, _w, _h);
+	set_viewport(RCache.get_Context(), _w, _h);
 
 	// Fill vertex buffer
 	FVF::TL* pv					= (FVF::TL*)	RCache.Vertex.Lock	(4,g_combine->vb_stride,Offset);
@@ -66,7 +66,7 @@ void CRenderTarget::phase_ssao	()
 
 	RCache.Render				(D3DPT_TRIANGLELIST,Offset,0,4,0,2);
 
-	set_viewport(HW.pContext, RCache.get_width(), RCache.get_height());
+	set_viewport(RCache.get_Context(), RCache.get_width(), RCache.get_height());
 
 	RCache.set_Stencil	(FALSE);
 }
@@ -78,20 +78,20 @@ void CRenderTarget::phase_downsamp	()
 	//IDirect3DSurface9 *source, *dest;
 	//rt_Position->pSurface->GetSurfaceLevel(0, &source);
 	//rt_half_depth->pSurface->GetSurfaceLevel(0, &dest);
-	//HW.pDevice->StretchRect(source, NULL, dest, NULL, D3DTEXF_POINT);
+	//RCache.get_Device()->StretchRect(source, NULL, dest, NULL, D3DTEXF_POINT);
 
 	//Fvector2	p0,p1;
 	u32			Offset = 0;
 
     u_setrt( rt_half_depth,0,0,0/*HW.pBaseZB*/ );
 	FLOAT ColorRGBA[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    HW.pContext->ClearRenderTargetView(rt_half_depth->pRT, ColorRGBA);
+    RCache.get_Context()->ClearRenderTargetView(rt_half_depth->pRT, ColorRGBA);
 	u32 w = RCache.get_width();
 	u32 h = RCache.get_height();
 
 	if (RImplementation.o.ssao_half_data)
 	{
-		set_viewport(HW.pContext, RCache.get_width() * 0.5f, RCache.get_height() * 0.5f);
+		set_viewport(RCache.get_Context(), RCache.get_width() * 0.5f, RCache.get_height() * 0.5f);
 		w /= 2;
 		h /= 2;
 	}
@@ -99,7 +99,7 @@ void CRenderTarget::phase_downsamp	()
 	RCache.set_Stencil	(FALSE);
 
 	{
-		Fmatrix		m_v2w;			m_v2w.invert				(Device.mView		);
+		Fmatrix		m_v2w;			m_v2w.invert				(EngineInterface->GetCameraState().View		);
 
 		// Fill VB
 		float	scale_X				= float(w)	/ float(TEX_jitter);
@@ -122,5 +122,5 @@ void CRenderTarget::phase_downsamp	()
 	}
 
 	if (RImplementation.o.ssao_half_data)
-		set_viewport(HW.pContext, RCache.get_width(), RCache.get_height());
+		set_viewport(RCache.get_Context(), RCache.get_width(), RCache.get_height());
 }

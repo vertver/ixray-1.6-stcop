@@ -229,6 +229,7 @@ public:
 	IC	R_constant_array&			get_ConstantCache_Pixel		()			{ return constants.a_pixel;		}
 #endif
 
+	float								get_scale();
 	IC  float							get_width();
 	IC  float							get_height();	
 	IC  float							get_target_width();
@@ -259,6 +260,9 @@ public:
 	IC	void						set_ZB				(ID3DDepthStencilView* ZB);
 	IC	ID3DRenderTargetView*		get_RT				(u32 ID=0);
 	IC	ID3DDepthStencilView*		get_ZB				();
+
+	IC  ID3D11Device*				get_Device()		{ return (ID3D11Device*)EngineInterface->GetParent()->GetDevice(); }
+	IC  ID3D11DeviceContext*		get_Context()		{ return (ID3D11DeviceContext*)EngineInterface->GetParent()->GetContext(); }
 
 	IC	void						set_Constants		(R_constant_table* C);
 	IC	void						set_Constants		(ref_ctable& C_)						{ set_Constants(&*C_);			}
@@ -402,9 +406,9 @@ public:
 	{ VERIFY(!"Not implemented"); }
 #else //USE_DX11
 	IC void	dbg_SetRS				(D3DRENDERSTATETYPE p1, u32 p2)
-	{ CHK_DX(HW.pDevice->SetRenderState(p1,p2)); }
+	{ CHK_DX(RCache.get_Device()->SetRenderState(p1,p2)); }
 	IC void	dbg_SetSS				(u32 sampler, D3DSAMPLERSTATETYPE type, u32 value)
-	{ CHK_DX(HW.pDevice->SetSamplerState(sampler,type,value)); }
+	{ CHK_DX(RCache.get_Device()->SetSamplerState(sampler,type,value)); }
 #endif
 #ifdef DEBUG
 	void dbg_Draw					(D3DPRIMITIVETYPE T, FVF::L* pVerts, int vcnt, u16* pIdx, int pcnt);

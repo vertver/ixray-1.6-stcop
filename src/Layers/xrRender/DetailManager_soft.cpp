@@ -23,8 +23,8 @@ void CDetailManager::soft_Render	()
 {
 	// Render itself
 	// float	fPhaseRange	= PI/16;
-	// float	fPhaseX		= _sin(RDEVICE.fTimeGlobal*0.1f)	*fPhaseRange;
-	// float	fPhaseZ		= _sin(RDEVICE.fTimeGlobal*0.11f)*fPhaseRange;
+	// float	fPhaseX		= _sin(EngineInterface->GetGlobalTime()*0.1f)	*fPhaseRange;
+	// float	fPhaseZ		= _sin(EngineInterface->GetGlobalTime()*0.11f)*fPhaseRange;
 
 	// Get index-stream
 	_IndexStream&	_IS		= RCache.Index;

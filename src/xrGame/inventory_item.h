@@ -57,9 +57,6 @@ struct net_updateInvData
 class CInventoryItem : 
 	public CAttachableItem,
 	public CHitImmunity
-#ifdef DEBUG
-	, public pureRender
-#endif
 {
 private:
 	typedef CAttachableItem inherited;

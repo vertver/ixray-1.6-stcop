@@ -171,7 +171,7 @@ static void full_memory_stats	( )
 
 	//if (Device.Resources)	Device.Resources->_GetMemoryUsage	(m_base,c_base,m_lmaps,c_lmaps);
 	//	Resource check moved to m_pRender
-	if (Device.m_pRender) Device.m_pRender->ResourcesGetMemoryUsage(m_base,c_base,m_lmaps,c_lmaps);
+	if (EngineInterface->GetRender()) EngineInterface->GetRender()->ResourcesGetMemoryUsage(m_base,c_base,m_lmaps,c_lmaps);
 
 	log_vminfo	();
 
@@ -637,7 +637,7 @@ public:
 /*     moved to level_network_messages.cpp
 		CSavedGameWrapper			wrapper(args);
 		if (wrapper.level_id() == ai().level_graph().level_id()) {
-			if (Device.Paused())
+			if (EngineInterface->GetState() == ApplicationState::Paused)
 				Device.Pause		(FALSE, TRUE, TRUE, "CCC_ALifeLoadFrom");
 
 			Level().remove_objects	();
@@ -655,8 +655,10 @@ public:
 
 		Console->Execute			("stat_memory");
 
-		if (Device.Paused())
-			Device.Pause			(FALSE, TRUE, TRUE, "CCC_ALifeLoadFrom");
+		if (EngineInterface->GetState() == ApplicationState::Paused) {
+			EngineInterface->UpdateState(ApplicationState::Running);;
+			//Device.Pause(FALSE, TRUE, TRUE, "CCC_ALifeLoadFrom");
+		}
 
 		NET_Packet					net_packet;
 		net_packet.w_begin			(M_LOAD_GAME);
@@ -1325,11 +1327,11 @@ public:
 	{
 		float				time_factor = (float)atof(args);
 		clamp				(time_factor,EPS,1000.f);
-		Device.time_factor	(time_factor);
+		EngineInterface->UpdateTimeFactor(time_factor);
 	}
 	virtual void	Status			(TStatus &S)
 	{
-		xr_sprintf	(S,sizeof(S),"%f",Device.time_factor());
+		xr_sprintf	(S,sizeof(S),"%f",EngineInterface->GetTimeFactor());
 	}
 
 	virtual void	Info	(TInfo& I)
@@ -1340,7 +1342,7 @@ public:
 	virtual void	fill_tips(vecTips& tips, u32 mode)
 	{
 		TStatus  str;
-		xr_sprintf( str, sizeof(str), "%3.3f  (current)  [0.001 - 1000.0]", Device.time_factor() );
+		xr_sprintf( str, sizeof(str), "%3.3f  (current)  [0.001 - 1000.0]", EngineInterface->GetTimeFactor() );
 		tips.push_back( str );
 		IConsole_Command::fill_tips( tips, mode );
 	}
@@ -1899,7 +1901,7 @@ public:
 			return;
 		}
 
-		Fvector3 point = point.mad(Device.vCameraPosition, Device.vCameraDirection, HUD().GetCurrentRayQuery().range);
+		Fvector3 point = point.mad(EngineInterface->GetCameraState().CameraPosition, EngineInterface->GetCameraState().CameraDirection, HUD().GetCurrentRayQuery().range);
 		auto tpGame = smart_cast<game_sv_Single*>(Level().Server->game);
 		if (tpGame != nullptr) {
 			auto item = tpGame->alife().spawn_item(args, point, 0, actor->ai_location().game_vertex_id(), u16(- 1));

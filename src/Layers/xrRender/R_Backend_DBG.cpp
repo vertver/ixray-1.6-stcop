@@ -22,8 +22,8 @@ void CBackend::dbg_Draw			(D3DPRIMITIVETYPE T_, FVF::L* pVerts, int vcnt, u16* p
 	//VERIFY(!"CBackend::dbg_Draw not implemented.");
 #else //USE_DX11
 	OnFrameEnd					();
-	CHK_DX(HW.pDevice->SetFVF	(FVF::F_L));
-	CHK_DX(HW.pDevice->DrawIndexedPrimitiveUP(T_, 0, vcnt, pcnt,
+	CHK_DX(RCache.get_Device()->SetFVF	(FVF::F_L));
+	CHK_DX(RCache.get_Device()->DrawIndexedPrimitiveUP(T_, 0, vcnt, pcnt,
 		pIdx, D3DFMT_INDEX16,
 		pVerts, sizeof(FVF::L)
 		));
@@ -36,8 +36,8 @@ void CBackend::dbg_Draw			(D3DPRIMITIVETYPE T_, FVF::L* pVerts, int pcnt)
 	//VERIFY(!"CBackend::dbg_Draw not implemented.");
 #else //USE_DX11
 	OnFrameEnd					();
-	CHK_DX(HW.pDevice->SetFVF	(FVF::F_L));
-	CHK_DX(HW.pDevice->DrawPrimitiveUP(T_, pcnt, pVerts, sizeof(FVF::L)	));
+	CHK_DX(RCache.get_Device()->SetFVF	(FVF::F_L));
+	CHK_DX(RCache.get_Device()->DrawPrimitiveUP(T_, pcnt, pVerts, sizeof(FVF::L)	));
 #endif
 }
 
@@ -177,9 +177,9 @@ void CBackend::dbg_DrawEllipse(Fmatrix& T_, u32 C_)
 	//VERIFY(!"CBackend::dbg_Draw not implemented.");
 	//dbg_Draw(D3DPT_TRIANGLELIST,verts,vcnt,gFaces,224);
 #else //USE_DX11
-	HW.pDevice->SetRenderState	(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+	RCache.get_Device()->SetRenderState	(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
 	dbg_Draw(D3DPT_TRIANGLELIST,verts,vcnt,gFaces,224);
-	HW.pDevice->SetRenderState	(D3DRS_FILLMODE, D3DFILL_SOLID);
+	RCache.get_Device()->SetRenderState	(D3DRS_FILLMODE, D3DFILL_SOLID);
 #endif
 }
 

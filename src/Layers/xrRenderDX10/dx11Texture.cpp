@@ -141,7 +141,7 @@ ID3DBaseTexture* CRender::texture_load(LPCSTR fRName, u32& ret_msize, bool bStag
         auto cpuAccessFlags = (bStaging) ? D3D_CPU_ACCESS_WRITE : 0;
         auto miscFlags = imageInfo.miscFlags;
         
-        hr = CreateTextureEx(HW.pDevice, scratchImage->GetImages(), scratchImage->GetImageCount(),
+        hr = CreateTextureEx(RCache.get_Device(), scratchImage->GetImages(), scratchImage->GetImageCount(),
             imageInfo, usage, bindFlags, cpuAccessFlags, miscFlags, CREATETEX_FLAGS::CREATETEX_DEFAULT, &pTexture2D);
 
         FS.r_close(reader);
@@ -169,7 +169,7 @@ ID3DBaseTexture* CRender::texture_load(LPCSTR fRName, u32& ret_msize, bool bStag
             mip_lod = old_mipmap_cnt - imageInfo.mipLevels;
         }
 
-        hr = CreateTextureEx(HW.pDevice, scratchImage->GetImages() + mip_lod, scratchImage->GetImageCount(),
+        hr = CreateTextureEx(RCache.get_Device(), scratchImage->GetImages() + mip_lod, scratchImage->GetImageCount(),
             imageInfo, usage, bindFlags, cpuAccessFlags, miscFlags, CREATETEX_FLAGS::CREATETEX_DEFAULT, &pTexture2D);
         FS.r_close(reader);
         

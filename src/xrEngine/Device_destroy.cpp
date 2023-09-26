@@ -5,6 +5,7 @@
 #include "IGame_Persistent.h"
 #include "xr_IOConsole.h"
 
+#if 0 
 void CRenderDevice::_Destroy	(BOOL bKeepTextures)
 {
 	DU->OnDeviceDestroy();
@@ -83,3 +84,4 @@ void CRenderDevice::Reset(bool precache)
 		seqResolutionChanged.Process(rp_ScreenResolutionChanged);
 	}
 }
+#endif

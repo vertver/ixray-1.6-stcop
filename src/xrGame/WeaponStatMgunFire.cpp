@@ -34,7 +34,7 @@ void CWeaponStatMgun::FireEnd()
 
 void CWeaponStatMgun::UpdateFire()
 {
-	fShotTimeCounter -= Device.fTimeDelta;
+	fShotTimeCounter -= EngineInterface->GetDeltaTime();
 	
 
 	inheritedShooting::UpdateFlameParticles();
@@ -51,8 +51,8 @@ void CWeaponStatMgun::UpdateFire()
 		fShotTimeCounter		+= fOneShotTime;
 	}else
 	{
-		angle_lerp		(m_dAngle.x,0.f,5.f,Device.fTimeDelta);
-		angle_lerp		(m_dAngle.y,0.f,5.f,Device.fTimeDelta);
+		angle_lerp		(m_dAngle.x,0.f,5.f,EngineInterface->GetDeltaTime());
+		angle_lerp		(m_dAngle.y,0.f,5.f,EngineInterface->GetDeltaTime());
 	}
 }
 

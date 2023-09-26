@@ -282,10 +282,12 @@ void CCameraManager::UpdateFromCamera(const CCameraBase* C)
 void CCameraManager::Update(const Fvector& P, const Fvector& D, const Fvector& N, float fFOV_Dest, float fASPECT_Dest, float fFAR_Dest, u32 flags)
 {
 #ifdef DEBUG
-	if (!Device.Paused()) {
-		VERIFY				(dbg_upd_frame!=Device.dwFrame);// already updated !!!
-		dbg_upd_frame		= Device.dwFrame;
+	if (TheEngine.GetState() != ApplicationState::Paused) {
+
+		VERIFY(dbg_upd_frame != TheEngine.GetFrame());// already updated !!!
+		dbg_upd_frame = TheEngine.GetFrame();
 	}
+
 #endif // DEBUG
 	// camera
 	if (flags&CCameraBase::flPositionRigid)
@@ -307,8 +309,8 @@ void CCameraManager::Update(const Fvector& P, const Fvector& D, const Fvector& N
 	m_cam_info.r.crossproduct	(m_cam_info.n, m_cam_info.d);
 	m_cam_info.n.crossproduct	(m_cam_info.d, m_cam_info.r);
 
-	float aspect				= ((float)Device.TargetHeight * 0.5f) / ((float)Device.TargetWidth * 0.5f);
-	float src					= 10*Device.fTimeDelta;	clamp(src,0.f,1.f);
+	float aspect				= ((float)TheEngine.GetHeight() * 0.5f) / ((float)TheEngine.GetWidth() * 0.5f);
+	float src					= 10* TheEngine.GetDeltaTime();	clamp(src,0.f,1.f);
 	float dst					= 1-src;
 	m_cam_info.fFov				= m_cam_info.fFov*dst		+ fFOV_Dest*src;
 	m_cam_info.fFar				= m_cam_info.fFar*dst		+ fFAR_Dest*src;
@@ -413,18 +415,16 @@ void CCameraManager::UpdatePPEffectors()
 
 void CCameraManager::ApplyDevice (float _viewport_near)
 {
-	// Device params
-	Device.mView.build_camera_dir(m_cam_info.p, m_cam_info.d, m_cam_info.n);
-
-	Device.vCameraPosition.set	( m_cam_info.p );
-	Device.vCameraDirection.set	( m_cam_info.d );
-	Device.vCameraTop.set		( m_cam_info.n );
-	Device.vCameraRight.set		( m_cam_info.r );
-
-	// projection
-	Device.fFOV					= m_cam_info.fFov;
-	Device.fASPECT				= m_cam_info.fAspect;
-	Device.mProject.build_projection(deg2rad(m_cam_info.fFov), m_cam_info.fAspect, _viewport_near, m_cam_info.fFar);
+	auto Camera = TheEngine.GetCameraState();
+	Camera.View.build_camera_dir(m_cam_info.p, m_cam_info.d, m_cam_info.n);
+	Camera.CameraPosition.set(m_cam_info.p);
+	Camera.CameraDirection.set(m_cam_info.d);
+	Camera.CameraTop.set(m_cam_info.n);
+	Camera.CameraRight.set(m_cam_info.r);
+	Camera.FOV = m_cam_info.fFov;
+	Camera.ASPECT = m_cam_info.fAspect;
+	Camera.Project.build_projection(deg2rad(m_cam_info.fFov), m_cam_info.fAspect, _viewport_near, m_cam_info.fFar);
+	TheEngine.UpdateCamera(Camera);
 
 	if( g_pGamePersistent && g_pGamePersistent->m_pMainMenu->IsActive() )
 		ResetPP					();
@@ -477,7 +477,7 @@ void CCameraManager::Dump()
 	Fmatrix mInvCamera;
 	Fvector _R,_U,_T,_P;
 	
-	mInvCamera.invert(Device.mView);
+	mInvCamera.invert(TheEngine.GetCameraState().View);
 	_R.set( mInvCamera._11, mInvCamera._12, mInvCamera._13 );
 	_U.set( mInvCamera._21, mInvCamera._22, mInvCamera._23 );
 	_T.set( mInvCamera._31, mInvCamera._32, mInvCamera._33 );

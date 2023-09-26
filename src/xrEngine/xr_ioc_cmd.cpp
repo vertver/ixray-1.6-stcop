@@ -114,7 +114,7 @@ class CCC_TexturesStat : public IConsole_Command
 public:
 	CCC_TexturesStat(LPCSTR N) : IConsole_Command(N)  { bEmptyArgsHandled = TRUE; };
 	virtual void Execute(LPCSTR args) {
-		Device.DumpResourcesMemoryUsage();
+		//Device.DumpResourcesMemoryUsage();
 		//Device.Resources->_DumpMemoryUsage();
 		//	TODO: move this console commant into renderer
 		//VERIFY(0);
@@ -369,9 +369,7 @@ class CCC_VID_Reset : public IConsole_Command
 public:
 	CCC_VID_Reset(LPCSTR N) : IConsole_Command(N) { bEmptyArgsHandled = TRUE; };
 	virtual void Execute(LPCSTR args) {
-		if (Device.b_is_Ready) {
-			Device.Reset	();
-		}
+		TheEngine.Reset();
 	}
 };
 class CCC_VidMode : public CCC_Token
@@ -445,14 +443,10 @@ public:
 	virtual void Execute(LPCSTR args)
 	{
 		CCC_Float::Execute		(args);
-		//Device.Gamma.Gamma		(ps_gamma);
-		Device.m_pRender->setGamma(ps_gamma);
-		//Device.Gamma.Brightness	(ps_brightness);
-		Device.m_pRender->setBrightness(ps_brightness);
-		//Device.Gamma.Contrast	(ps_contrast);
-		Device.m_pRender->setContrast(ps_contrast);
-		//Device.Gamma.Update		();
-		Device.m_pRender->updateGamma();
+		TheEngine.Render->setGamma(ps_gamma);
+		TheEngine.Render->setBrightness(ps_brightness);
+		TheEngine.Render->setContrast(ps_contrast);
+		TheEngine.Render->updateGamma();
 	}
 };
 
@@ -484,7 +478,7 @@ class CCC_DR_TakePoint : public IConsole_Command
 public:
 	CCC_DR_TakePoint(LPCSTR N) : IConsole_Command(N)	{ bEmptyArgsHandled = TRUE; };
 	virtual void Execute(LPCSTR args) {
-		Fvector CamPos =  Device.vCameraPosition;
+		Fvector CamPos =  EngineInterface->GetCameraState().CameraPosition;
 
 		if (g_DR_LM_Min.x > CamPos.x)	g_DR_LM_Min.x = CamPos.x;
 		if (g_DR_LM_Min.z > CamPos.z)	g_DR_LM_Min.z = CamPos.z;
@@ -742,7 +736,6 @@ void CCC_Register()
 
 	// General video control
 	CMD1(CCC_VidMode,	"vid_mode"				);
-	CMD4(CCC_Float,		"vid_scale",			&Device.RenderScale,		0.1f, 1.0f);
 
 #ifdef DEBUG
 	CMD3(CCC_Token,		"vid_bpp",				&psCurrentBPP,	vid_bpp_token );

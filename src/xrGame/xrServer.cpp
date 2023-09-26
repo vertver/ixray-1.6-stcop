@@ -30,8 +30,7 @@
 
 u32 g_sv_traffic_optimization_level = eto_none;
 
-xrClientData::xrClientData	() :
-	IClient(Device.GetTimerGlobal())
+xrClientData::xrClientData	() : IClient(&TheEngine.TimerGlobal)
 {
 	ps = NULL;
 	Clear		();
@@ -55,7 +54,7 @@ xrClientData::~xrClientData()
 }
 
 
-xrServer::xrServer() : IPureServer(Device.GetTimerGlobal(), g_dedicated_server)
+xrServer::xrServer() : IPureServer(&TheEngine.TimerGlobal, g_dedicated_server)
 {
 	m_file_transfers	= NULL;
 	m_aDelayedPackets.clear();
@@ -156,7 +155,7 @@ void		xrServer::client_Destroy	(IClient* C)
 		{
 			NET_Packet			P;
 			P.w_begin			(M_EVENT);
-			P.w_u32				(Level().timeServer());//Device.TimerAsync());
+			P.w_u32				(Level().timeServer());//EngineInterface->GetRoundedGlobalTime());
 			P.w_u16				(GE_DESTROY);
 			P.w_u16				(pS->ID);
 			SendBroadcast		(C->ID,P,net_flags(TRUE,TRUE));
@@ -224,7 +223,7 @@ void xrServer::Update	()
 	game->Update						();
 
 	// spawn queue
-	u32 svT								= Device.TimerAsync();
+	u32 svT								= EngineInterface->GetRoundedGlobalTime();
 	while (!(q_respawn.empty() || (svT<q_respawn.begin()->timestamp)))
 	{
 		// get
@@ -254,7 +253,7 @@ void xrServer::Update	()
 	PerformCheckClientsForMaxPing	();
 	Flush_Clients_Buffers			();
 	
-	if( 0==(Device.dwFrame%100) )//once per 100 frames
+	if( 0==(EngineInterface->GetFrame()%100) )//once per 100 frames
 	{
 		UpdateBannedList();
 	}
@@ -354,7 +353,7 @@ void xrServer::SendUpdatesToAll()
 	sendtofd.bind(this, &xrServer::SendGameUpdateTo);
 	ForEachClientDoSender(sendtofd);
 
-	if ((Device.dwTimeGlobal - m_last_update_time) >= u32(1000/psNET_ServerUpdate))
+	if ((EngineInterface->GetRoundedGlobalTime() - m_last_update_time) >= u32(1000/psNET_ServerUpdate))
 	{
 		MakeUpdatePackets				();
 		SendUpdatePacketsToAll			();
@@ -364,7 +363,7 @@ void xrServer::SendUpdatesToAll()
 #endif			
 		if (game->sv_force_sync)	Perform_game_export();
 		VERIFY						(verify_entities());
-		m_last_update_time			= Device.dwTimeGlobal;
+		m_last_update_time			= EngineInterface->GetRoundedGlobalTime();
 	}
 	if (m_file_transfers)
 	{
@@ -649,7 +648,7 @@ u32 xrServer::OnMessage	(NET_Packet& P, ClientID sender)			// Non-Zero means bro
 				bool res = CheckAdminRights(user, pass, reason);
 				if(res){
 					CL->m_admin_rights.m_has_admin_rights	= TRUE;
-					CL->m_admin_rights.m_dwLoginTime		= Device.dwTimeGlobal;
+					CL->m_admin_rights.m_dwLoginTime		= EngineInterface->GetRoundedGlobalTime();
 					if (CL->ps)
 					{
 						CL->ps->setFlag(GAME_PLAYER_HAS_ADMIN_RIGHTS);
@@ -785,7 +784,7 @@ if( dbg_net_Draw_Flags.test( dbg_destroy ) )
 #endif
 	R_ASSERT					(P);
 	entities.erase				(P->ID);
-	m_tID_Generator.vfFreeID	(P->ID,Device.TimerAsync());
+	m_tID_Generator.vfFreeID	(P->ID,EngineInterface->GetRoundedGlobalTime());
 
 	if(P->owner && P->owner->owner==P)
 		P->owner->owner		= NULL;
@@ -1006,10 +1005,10 @@ void xrServer::PerformCheckClientsForMaxPing()
 				return;
 
 			if(	ps->ping > g_sv_dwMaxClientPing && 
-				Client->m_ping_warn.m_dwLastMaxPingWarningTime+g_sv_time_for_ping_check < Device.dwTimeGlobal )
+				Client->m_ping_warn.m_dwLastMaxPingWarningTime+g_sv_time_for_ping_check < EngineInterface->GetRoundedGlobalTime() )
 			{
 				++Client->m_ping_warn.m_maxPingWarnings;
-				Client->m_ping_warn.m_dwLastMaxPingWarningTime	= Device.dwTimeGlobal;
+				Client->m_ping_warn.m_dwLastMaxPingWarningTime	= EngineInterface->GetRoundedGlobalTime();
 				
 				if(Client->m_ping_warn.m_maxPingWarnings >= g_sv_maxPingWarningsCount)
 				{  //kick
@@ -1050,7 +1049,7 @@ void xrServer::GetServerInfo( CServerInfo* si )
 	string256 tmp256;
 
 	si->AddItem( "Server port", _itoa( GetPort(), tmp, 10 ), RGB(128,128,255) );
-	LPCSTR time = InventoryUtilities::GetTimeAsString( Device.dwTimeGlobal, InventoryUtilities::etpTimeToSecondsAndDay ).c_str();
+	LPCSTR time = InventoryUtilities::GetTimeAsString( EngineInterface->GetRoundedGlobalTime(), InventoryUtilities::etpTimeToSecondsAndDay ).c_str();
 	si->AddItem( "Uptime", time, RGB(255,228,0) );
 
 //	xr_strcpy( tmp256, get_token_name(game_types, game->Type() ) );

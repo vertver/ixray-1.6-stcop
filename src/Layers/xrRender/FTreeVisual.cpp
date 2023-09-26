@@ -99,17 +99,17 @@ struct	FTreeVisual_setup
 
 	void		calculate	()
 	{
-		dwFrame					= Device.dwFrame;
+		dwFrame					= EngineInterface->GetFrame();
 
 		auto& currentEnv = g_pGamePersistent->Environment().CurrentEnv;
 
 		// Calc wind-vector3, scale
-		float	tm_rot			= PI_MUL_2 * Device.fTimeGlobal / currentEnv->trees_rotation;
+		float	tm_rot			= PI_MUL_2 * EngineInterface->GetGlobalTime() / currentEnv->trees_rotation;
 		wind.set				(_sin(tm_rot),0,_cos(tm_rot),0);	wind.normalize	();	wind.mul(currentEnv->trees_amplitude);	// dir1*amplitude
 		scale					= 1.f/float(FTreeVisual_quant);
 
 		// setup constants
-		wave.set				(currentEnv->trees_wave.x, currentEnv->trees_wave.y, currentEnv->trees_wave.z, Device.fTimeGlobal * currentEnv->trees_speed);			// wave
+		wave.set				(currentEnv->trees_wave.x, currentEnv->trees_wave.y, currentEnv->trees_wave.z, EngineInterface->GetGlobalTime() * currentEnv->trees_speed);			// wave
 		wave.div				(PI_MUL_2);
 	}
 };
@@ -117,7 +117,7 @@ struct	FTreeVisual_setup
 void FTreeVisual::Render	(float LOD)
 {
 	static FTreeVisual_setup	tvs;
-	if (tvs.dwFrame!=Device.dwFrame)	tvs.calculate();
+	if (tvs.dwFrame!=EngineInterface->GetFrame())	tvs.calculate();
 	// setup constants
 #if RENDER!=R_R1
 	Fmatrix					xform_v			;

@@ -14,13 +14,8 @@ class ENGINE_API CPS_Instance;
 //-----------------------------------------------------------------------------------------------------------
 class ENGINE_API IGame_Persistent	: 
 #ifndef _EDITOR
-	public DLL_Pure,
+	public DLL_Pure
 #endif
-	public pureAppStart, 
-	public pureAppEnd,
-	public pureAppActivate, 
-	public pureAppDeactivate,
-	public pureFrame
 {
 public:
 	union params {

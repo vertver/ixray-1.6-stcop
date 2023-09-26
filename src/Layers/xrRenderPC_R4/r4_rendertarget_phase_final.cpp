@@ -12,8 +12,8 @@ void CRenderTarget::DoAsyncScreenshot()
 	{
 		HRESULT hr;
 		ID3DTexture2D* pBuffer = nullptr;
-		hr = HW.m_pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBuffer));
-		HW.pContext->CopyResource(t_ss_async, pBuffer);
+		hr = ((IDXGISwapChain*)(EngineInterface->GetParent()->GetSwapchain()))->GetBuffer(0, IID_PPV_ARGS(&pBuffer));
+		RCache.get_Context()->CopyResource(t_ss_async, pBuffer);
 		RImplementation.m_bMakeAsyncSS = false;
 	}
 }
@@ -30,7 +30,7 @@ void  CRenderTarget::phase_copy_depth()
 	PIX_EVENT(Copy_Depth);
 
 	FLOAT ColorRGBA[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	HW.pContext->ClearRenderTargetView(rt_Depth->pRT, ColorRGBA);
+	RCache.get_Context()->ClearRenderTargetView(rt_Depth->pRT, ColorRGBA);
 
 	u32 Offset = 0;
 	float d_Z = EPS_S;
@@ -40,7 +40,7 @@ void  CRenderTarget::phase_copy_depth()
 	u32 w = RCache.get_width();
 	u32 h = RCache.get_height();
 
-	set_viewport(HW.pContext, RCache.get_width(), RCache.get_height());
+	set_viewport(RCache.get_Context(), RCache.get_width(), RCache.get_height());
 	u_setrt(w, h, rt_Depth->pRT, nullptr, nullptr, nullptr);
 
 	u32 CullMode = RCache.get_CullMode();
@@ -60,7 +60,7 @@ void  CRenderTarget::phase_copy_depth()
 	RCache.set_c("far_plane", g_pGamePersistent->Environment().CurrentEnv->far_plane);
 	RCache.Render(D3DPT_TRIANGLELIST, Offset, 0, 4, 0, 2);
 
-	HW.pContext->CopyResource(rt_CopyDepth->pSurface, rt_Depth->pSurface);
+	RCache.get_Context()->CopyResource(rt_CopyDepth->pSurface, rt_Depth->pSurface);
 }
 
 //	TODO: DX10: Remove half poxel offset
@@ -85,7 +85,7 @@ void CRenderTarget::phase_final()
 	}
 
 	FLOAT ColorRGBA[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	HW.pContext->ClearRenderTargetView(rt_Target->pRT, ColorRGBA);
+	RCache.get_Context()->ClearRenderTargetView(rt_Target->pRT, ColorRGBA);
 	RCache.set_CullMode(CULL_NONE);
 	RCache.set_Stencil(FALSE);
 

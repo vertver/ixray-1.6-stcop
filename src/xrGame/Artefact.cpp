@@ -166,7 +166,7 @@ void CArtefact::UpdateCL		()
 	inherited::UpdateCL			();
 	
 	if (o_fastmode || m_activationObj)
-		UpdateWorkload			(Device.dwTimeDelta);	
+		UpdateWorkload			(EngineInterface->GetRoundedDeltaTime());	
 
 }
 
@@ -224,8 +224,8 @@ void CArtefact::shedule_Update		(u32 dt)
 	if (H_Parent())			o_switch_2_slow	();
 	else					{
 		Fvector	center;			Center(center);
-		BOOL	rendering		= (Device.dwFrame==o_render_frame);
-		float	cam_distance	= Device.vCameraPosition.distance_to(center)-Radius();
+		BOOL	rendering		= (EngineInterface->GetFrame()==o_render_frame);
+		float	cam_distance	= EngineInterface->GetCameraState().CameraPosition.distance_to(center)-Radius();
 		if (rendering || (cam_distance < FASTMODE_DISTANCE))	o_switch_2_fast	();
 		else													o_switch_2_slow	();
 	}
@@ -332,9 +332,9 @@ void CArtefact::MoveTo(Fvector const &  position)
 #include "Entity_alive.h"
 void CArtefact::UpdateXForm()
 {
-	if (Device.dwFrame!=dwXF_Frame)
+	if (EngineInterface->GetFrame()!=dwXF_Frame)
 	{
-		dwXF_Frame			= Device.dwFrame;
+		dwXF_Frame			= EngineInterface->GetFrame();
 
 		if (0==H_Parent())	return;
 
@@ -506,7 +506,7 @@ SArtefactDetectorsSupport::~SArtefactDetectorsSupport()
 
 void SArtefactDetectorsSupport::SetVisible(bool b)
 {
-	m_switchVisTime			= Device.dwTimeGlobal; 
+	m_switchVisTime			= EngineInterface->GetRoundedGlobalTime(); 
 	if(b == !!m_parent->getVisible())	return;
 	
 	if(b)
@@ -579,14 +579,14 @@ void SArtefactDetectorsSupport::UpdateOnFrame()
 		}
 	}
 
-	if(m_parent->getVisible() && m_parent->GetAfRank()!=0 && m_switchVisTime+5000 < Device.dwTimeGlobal)
+	if(m_parent->getVisible() && m_parent->GetAfRank()!=0 && m_switchVisTime+5000 < EngineInterface->GetRoundedGlobalTime())
 		SetVisible(false);
 
 	u32 dwDt = 2*3600*1000/10; //2 hour of game time
-	if(!m_parent->getVisible() && m_switchVisTime+dwDt < Device.dwTimeGlobal)
+	if(!m_parent->getVisible() && m_switchVisTime+dwDt < EngineInterface->GetRoundedGlobalTime())
 	{
-		m_switchVisTime		= Device.dwTimeGlobal;
-		if(m_parent->Position().distance_to(Device.vCameraPosition)>40.0f)
+		m_switchVisTime		= EngineInterface->GetRoundedGlobalTime();
+		if(m_parent->Position().distance_to(EngineInterface->GetCameraState().CameraPosition)>40.0f)
 			Blink			();
 	}
 }

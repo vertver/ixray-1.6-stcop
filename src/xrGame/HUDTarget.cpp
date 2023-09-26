@@ -108,8 +108,8 @@ void CHUDTarget::CursorOnFrame ()
 {
 	Fvector				p1,dir;
 
-	p1					= Device.vCameraPosition;
-	dir					= Device.vCameraDirection;
+	p1					= EngineInterface->GetCameraState().CameraPosition;
+	dir					= EngineInterface->GetCameraState().CameraDirection;
 	
 	// Render cursor
 	if(Level().CurrentEntity())
@@ -147,8 +147,8 @@ void CHUDTarget::Render()
 	CEntity*	E		= smart_cast<CEntity*>(O);
 	if (0==E)			return;
 
-	Fvector p1			= Device.vCameraPosition;
-	Fvector dir			= Device.vCameraDirection;
+	Fvector p1			= EngineInterface->GetCameraState().CameraPosition;
+	Fvector dir			= EngineInterface->GetCameraState().CameraDirection;
 	
 	// Render cursor
 	u32 C				= C_DEFAULT;
@@ -156,7 +156,7 @@ void CHUDTarget::Render()
 	Fvector				p2;
 	p2.mad				(p1,dir,PP.RQ.range);
 	Fvector4			pt;
-	Device.mFullTransform.transform(pt, p2);
+	EngineInterface->GetCameraState().FullTransform.transform(pt, p2);
 	pt.y = -pt.y;
 	float				di_size = C_SIZE/powf(pt.w,.2f);
 
@@ -210,7 +210,7 @@ void CHUDTarget::Render()
 						}
 					}
 
-					fuzzyShowInfo += SHOW_INFO_SPEED*Device.fTimeDelta;
+					fuzzyShowInfo += SHOW_INFO_SPEED*EngineInterface->GetDeltaTime();
 				}
 				else 
 					if (l_pI && our_inv_owner && PP.RQ.range < 2.0f*2.0f)
@@ -220,7 +220,7 @@ void CHUDTarget::Render()
 							F->SetColor	(subst_alpha(C,u8(iFloor(255.f*(fuzzyShowInfo-0.5f)*2.f))));
 							F->OutNext	("%s",l_pI->NameItem());
 						}
-						fuzzyShowInfo += SHOW_INFO_SPEED*Device.fTimeDelta;
+						fuzzyShowInfo += SHOW_INFO_SPEED*EngineInterface->GetDeltaTime();
 					}
 			}
 			else
@@ -239,10 +239,10 @@ void CHUDTarget::Render()
 						{
 							float ddist = (PP.RQ.range - recon_mindist())/(recon_maxdist() - recon_mindist());
 							float dspeed = recon_minspeed() + (recon_maxspeed() - recon_minspeed())*ddist;
-							fuzzyShowInfo += Device.fTimeDelta/dspeed;
+							fuzzyShowInfo += EngineInterface->GetDeltaTime()/dspeed;
 						}else{
 							if (PP.RQ.range < recon_mindist()) 
-								fuzzyShowInfo += recon_minspeed()*Device.fTimeDelta;
+								fuzzyShowInfo += recon_minspeed()*EngineInterface->GetDeltaTime();
 							else 
 								fuzzyShowInfo = 0;
 						};
@@ -260,7 +260,7 @@ void CHUDTarget::Render()
 			};
 
 		}else{
-			fuzzyShowInfo -= HIDE_INFO_SPEED*Device.fTimeDelta;
+			fuzzyShowInfo -= HIDE_INFO_SPEED*EngineInterface->GetDeltaTime();
 		}
 		clamp(fuzzyShowInfo,0.f,1.f);
 	}
@@ -283,7 +283,7 @@ void CHUDTarget::Render()
 		UIRender->StartPrimitive	(6, IUIRender::ptTriList, UI().m_currentPointType);
 		
 		Fvector2		scr_size;
-		scr_size.set	(float(Device.TargetWidth) ,float(Device.TargetHeight));
+		scr_size.set	(float(EngineInterface->GetWidth()) ,float(EngineInterface->GetHeight()));
 		float			size_x = scr_size.x	* di_size;
 		float			size_y = scr_size.y * di_size;
 

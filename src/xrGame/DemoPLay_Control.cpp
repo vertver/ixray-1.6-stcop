@@ -27,9 +27,10 @@ void demoplay_control::pause_on(EAction const action, shared_str const & param)
 		Msg("! ERROR: already active.");
 		return;
 	}
-	if (Device.Paused())
+	if (EngineInterface->GetState() == ApplicationState::Paused)
 	{
-		Device.Pause(FALSE, TRUE, TRUE, "playing demo until");
+		EngineInterface->UpdateState(ApplicationState::Running);
+		//Device.Pause(FALSE, TRUE, TRUE, "playing demo until");
 	}
 	m_current_mode	= waiting_for_actions;
 	activate_filer	(action, param);
@@ -54,9 +55,10 @@ bool demoplay_control::rewind_until(EAction const action, shared_str const & par
 		Msg("! ERROR: already active.");
 		return false;
 	}
-	if (Device.Paused())
+	if (EngineInterface->GetState() == ApplicationState::Paused)
 	{
-		Device.Pause(FALSE, TRUE, TRUE, "playing demo until");
+		EngineInterface->UpdateState(ApplicationState::Running);
+		//Device.Pause(FALSE, TRUE, TRUE, "playing demo until");
 	}
 	m_prev_speed	= Level().GetDemoPlaySpeed();
 	m_current_mode	= rewinding;
@@ -164,7 +166,8 @@ void demoplay_control::process_action()
 	{
 		Level().SetDemoPlaySpeed(m_prev_speed);
 	}
-	Device.Pause(TRUE, TRUE, TRUE, "game action captured");
+	EngineInterface->UpdateState(ApplicationState::Paused);
+	//Device.Pause(TRUE, TRUE, TRUE, "game action captured");
 	deactivate_filter();
 	if (m_user_callback)
 		m_user_callback();

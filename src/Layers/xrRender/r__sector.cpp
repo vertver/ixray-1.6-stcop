@@ -15,16 +15,10 @@
 //////////////////////////////////////////////////////////////////////
 CPortal::CPortal		()
 {
-#ifdef DEBUG
-	Device.seqRender.Add(this,REG_PRIORITY_LOW-1000);
-#endif
 }
 
 CPortal::~CPortal		()
 {
-#ifdef DEBUG
-	Device.seqRender.Remove(this);
-#endif
 }
 
 #ifdef DEBUG
@@ -51,18 +45,10 @@ void CPortal::OnRender	()
 		RCache.dbg_Draw		(D3DPT_TRIANGLEFAN,&*V.begin(),V.size()-2);
 
 		// draw wire
-		if (bDebug){
-			RImplementation.rmNear();
-		}else{
-			Device.SetNearer(TRUE);
-		}
+		RImplementation.rmNear();
 		RCache.set_Shader	(dxRenderDeviceRender::Instance().m_WireShader);
 		RCache.dbg_Draw		(D3DPT_LINESTRIP,&*(V.begin()+1),V.size()-2);
-		if (bDebug){
-			RImplementation.rmNormal();
-		}else{
-			Device.SetNearer(FALSE);
-		}
+		RImplementation.rmNormal();
 	}
 }
 #endif

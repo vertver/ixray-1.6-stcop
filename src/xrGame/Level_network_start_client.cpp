@@ -16,7 +16,9 @@
 
 #include "phcommander.h"
 #include "physics_game.h"
-extern	pureFrame*				g_pNetProcessor;
+
+class _NetworkProcessor;
+extern	_NetworkProcessor*				g_pNetProcessor;
 
 BOOL CLevel::net_Start_client	( LPCSTR options )
 {
@@ -136,7 +138,7 @@ bool	CLevel::net_start_client4				()
 
 		// Send physics to single or multithreaded mode
 		
-		create_physics_world				(!!psDeviceFlags.test(mtPhysics),&ObjectSpace,&Objects,&Device);
+		create_physics_world				(!!psDeviceFlags.test(mtPhysics),&ObjectSpace,&Objects);
 
 
 
@@ -154,10 +156,19 @@ bool	CLevel::net_start_client4				()
 
 		// Send network to single or multithreaded mode
 		// *note: release version always has "mt_*" enabled
-		Device.seqFrameMT.Remove			(g_pNetProcessor);
-		Device.seqFrame.Remove				(g_pNetProcessor);
-		if (psDeviceFlags.test(mtNetwork))	Device.seqFrameMT.Add	(g_pNetProcessor,REG_PRIORITY_HIGH	+ 2);
-		else								Device.seqFrame.Add		(g_pNetProcessor,REG_PRIORITY_LOW	- 2);
+		R_ASSERT(false);
+		//Device.seqFrameMT.Remove			(g_pNetProcessor);
+		//Device.seqFrame.Remove				(g_pNetProcessor);
+		if (psDeviceFlags.test(mtNetwork)){
+			R_ASSERT(false);
+			//Device.seqFrameMT.Add{ (g_pNetProcessor,REG_PRIORITY_HIGH + 2);
+		}
+		else {
+		R_ASSERT(false);
+			//Device.seqFrame.Add(g_pNetProcessor, REG_PRIORITY_LOW - 2);
+		}
+
+
 
 		if(!psNET_direct_connect)
 		{
@@ -212,9 +223,9 @@ bool	CLevel::net_start_client5				()
 //			g_pGamePersistent->LoadTitle		("st_loading_textures");
 			g_pGamePersistent->LoadTitle		();
 			//Device.Resources->DeferredLoad	(FALSE);
-			Device.m_pRender->DeferredLoad		(FALSE);
+			EngineInterface->GetRender()->DeferredLoad		(FALSE);
 			//Device.Resources->DeferredUpload	();
-			Device.m_pRender->ResourcesDeferredUpload();
+			EngineInterface->GetRender()->ResourcesDeferredUpload();
 			LL_CheckTextures					();
 		}
 		sended_request_connection_data	= FALSE;
@@ -256,7 +267,7 @@ bool	CLevel::net_start_client6				()
 
 //		g_pGamePersistent->LoadTitle		("st_client_synchronising");
 		g_pGamePersistent->LoadTitle		();
-		Device.PreCache						(60, true, true);
+		EngineInterface->PreCache(60);
 		net_start_result_total				= TRUE;
 
 	}else{

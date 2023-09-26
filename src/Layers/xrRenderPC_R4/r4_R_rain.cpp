@@ -44,7 +44,7 @@ void CRender::render_rain()
 
 	static const float	source_offset		= 10000.f;
 	RainLight.direction.set(0.0f, -1.0f, 0.0f);
-	RainLight.position.set(Device.vCameraPosition.x,Device.vCameraPosition.y+source_offset,Device.vCameraPosition.z);
+	RainLight.position.set(EngineInterface->GetCameraState().CameraPosition.x,EngineInterface->GetCameraState().CameraPosition.y+source_offset,EngineInterface->GetCameraState().CameraPosition.z);
 
 	float	fBoundingSphereRadius = 0;
 
@@ -54,8 +54,8 @@ void CRender::render_rain()
 	{
 		//	
 		const float fRainFar = ps_r3_dyn_wet_surf_far;
-		ex_project.build_projection	(deg2rad(Device.fFOV/* *Device.fASPECT*/),Device.fASPECT,VIEWPORT_NEAR, fRainFar);
-		ex_full.mul					(ex_project,Device.mView);
+		ex_project.build_projection	(deg2rad(EngineInterface->GetCameraState().FOV/* *EngineInterface->GetCameraState().ASPECT*/),EngineInterface->GetCameraState().ASPECT,VIEWPORT_NEAR, fRainFar);
+		ex_full.mul					(ex_project,EngineInterface->GetCameraState().View);
 		XMStoreFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&ex_full_inverse),
 			XMMatrixInverse(nullptr, XMLoadFloat4x4(reinterpret_cast<XMFLOAT4X4*>(&ex_full))));
 
@@ -64,14 +64,14 @@ void CRender::render_rain()
 			//	b^2 = 2RH, B - side enge of the pyramid, h = height
 			//	R = b^2/(2*H)
 			const float H = fRainFar;
-			const float a = tanf(deg2rad(Device.fFOV)/2);
-			const float c = tanf(deg2rad(Device.fFOV*Device.fASPECT)/2);
+			const float a = tanf(deg2rad(EngineInterface->GetCameraState().FOV)/2);
+			const float c = tanf(deg2rad(EngineInterface->GetCameraState().FOV*EngineInterface->GetCameraState().ASPECT)/2);
 			const float b_2 = H*H* ( 1.0f + a*a + c*c );
 			fBoundingSphereRadius = b_2/(2.0f*H);
 		}
 	}
 
-	//Device.vCameraDirection
+	//EngineInterface->GetCameraState().CameraDirection
 
 	// Compute volume(s) - something like a frustum for infinite directional light
 	// Also compute virtual light position and sector it is inside
@@ -126,9 +126,9 @@ void CRender::render_rain()
 		cull_sector	= largest_sector;
 
 		// COP - 100 km away
-		cull_COP.mad				(Device.vCameraPosition, RainLight.direction, -tweak_rain_COP_initial_offs	);
-		cull_COP.x += fBoundingSphereRadius*Device.vCameraDirection.x;
-		cull_COP.z += fBoundingSphereRadius*Device.vCameraDirection.z;
+		cull_COP.mad				(EngineInterface->GetCameraState().CameraPosition, RainLight.direction, -tweak_rain_COP_initial_offs	);
+		cull_COP.x += fBoundingSphereRadius*EngineInterface->GetCameraState().CameraDirection.x;
+		cull_COP.z += fBoundingSphereRadius*EngineInterface->GetCameraState().CameraDirection.z;
 
 		// Create frustum for query
 		cull_frustum._clear			();
@@ -168,7 +168,7 @@ void CRender::render_rain()
 
 		//	Offset RainLight position to center rain shadowmap
 		Fvector3	vRectOffset;
-		vRectOffset.set( fBoundingSphereRadius*Device.vCameraDirection.x, 0, fBoundingSphereRadius*Device.vCameraDirection.z);
+		vRectOffset.set( fBoundingSphereRadius*EngineInterface->GetCameraState().CameraDirection.x, 0, fBoundingSphereRadius*EngineInterface->GetCameraState().CameraDirection.z);
 		bb.min.x = -fBoundingSphereRadius + vRectOffset.x;
 		bb.max.x = fBoundingSphereRadius + vRectOffset.x;
 		bb.min.y = -fBoundingSphereRadius + vRectOffset.z;
@@ -261,8 +261,8 @@ void CRender::render_rain()
 
 	// Restore XForms
 	RCache.set_xform_world		(Fidentity			);
-	RCache.set_xform_view		(Device.mView		);
-	RCache.set_xform_project	(Device.mProject	);
+	RCache.set_xform_view		(EngineInterface->GetCameraState().View		);
+	RCache.set_xform_project	(EngineInterface->GetCameraState().Project	);
 
 	// Accumulate
 	Target->phase_rain	();

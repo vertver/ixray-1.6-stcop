@@ -80,7 +80,7 @@ void dxDebugRender::NextSceneMode()
 
 void dxDebugRender::ZEnable(bool bEnable)
 {
-	//CHK_DX(HW.pDevice->SetRenderState(D3DRS_ZENABLE,bEnable));
+	//CHK_DX(RCache.get_Device()->SetRenderState(D3DRS_ZENABLE,bEnable));
 	RCache.set_Z(bEnable);
 }
 
@@ -111,7 +111,7 @@ void dxDebugRender::SetAmbient(u32 colour)
 	//	TODO: DX10: Check if need this for DX10
 	VERIFY(!"Not implemented for DX10");
 #else //USE_DX11
-	CHK_DX(HW.pDevice->SetRenderState (D3DRS_AMBIENT, colour));
+	CHK_DX(RCache.get_Device()->SetRenderState (D3DRS_AMBIENT, colour));
 #endif
 }
 
@@ -145,8 +145,7 @@ void dxDebugRender::dbg_DrawTRI(Fmatrix& T, Fvector& p1, Fvector& p2, Fvector& p
 
 
 struct RDebugRender: 
-	public dxDebugRender,
-	public pureRender
+	public dxDebugRender
 {
 private:
  xr_vector<u16>		_line_indices;
@@ -158,12 +157,11 @@ public:
 	RDebugRender()
 	{
 		//Device.seqRender.Add		(this);
-		Device.seqRender.Add		(this,REG_PRIORITY_LOW-100);
 	}
 
 virtual	~RDebugRender()
 	{
-		Device.seqRender.Remove		(this);
+
 	}
 
 void OnRender()

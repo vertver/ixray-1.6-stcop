@@ -64,7 +64,7 @@ void CUIGameSP::OnFrame()
 {
 	inherited::OnFrame();
 	
-	if(Device.Paused())	return;
+	if(EngineInterface->GetState() == ApplicationState::Paused)	return;
 
 	if(m_game_objective)
 	{
@@ -89,7 +89,7 @@ void CUIGameSP::OnFrame()
 bool CUIGameSP::IR_UIOnKeyboardPress(int dik) 
 {
 	if(inherited::IR_UIOnKeyboardPress(dik)) return true;
-	if( Device.Paused()		) return false;
+	if( EngineInterface->GetState() == ApplicationState::Paused		) return false;
 
 #ifdef DEBUG
 	hud_adjust_mode_keyb	(dik);
@@ -208,7 +208,6 @@ void CUIGameSP::StartCarBody(CInventoryOwner* pActorInv, CInventoryBox* pBox) //
 }
 
 
-extern ENGINE_API BOOL bShowPauseString;
 void CUIGameSP::ChangeLevel(	GameGraph::_GRAPH_ID game_vert_id, 
 								u32 level_vert_id, 
 								Fvector pos, 
@@ -302,10 +301,12 @@ void CChangeLevelWnd::Show(bool status)
 	m_messageBox->SetText	(m_message_str.c_str());
 	
 	g_block_pause							= true;
-	Device.Pause							(TRUE, TRUE, TRUE, "CChangeLevelWnd_show");
-	bShowPauseString						= FALSE;
+	EngineInterface->UpdateState(ApplicationState::Paused);
+	//Device.Pause							(TRUE, TRUE, TRUE, "CChangeLevelWnd_show");
+	//bShowPauseString						= FALSE;
 	} else {
 		g_block_pause = false;
-		Device.Pause(FALSE, TRUE, TRUE, "CChangeLevelWnd_hide");
+		EngineInterface->UpdateState(ApplicationState::Running);
+		//Device.Pause(FALSE, TRUE, TRUE, "CChangeLevelWnd_hide");
 }
 }

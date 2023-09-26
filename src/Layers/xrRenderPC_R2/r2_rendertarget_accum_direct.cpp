@@ -80,8 +80,8 @@ void CRenderTarget::accum_direct_cascade	( u32 sub_phase, Fmatrix& xform, Fmatri
 	}
 
 	// recalculate d_Z, to perform depth-clipping
-	Fvector	center_pt;			center_pt.mad	(Device.vCameraPosition,Device.vCameraDirection,ps_r2_sun_near);
-	Device.mFullTransform.transform(center_pt)	;
+	Fvector	center_pt;			center_pt.mad	(EngineInterface->GetCameraState().CameraPosition,Device.vCameraDirection,ps_r2_sun_near);
+	EngineInterface->GetCameraState().FullTransform.transform(center_pt)	;
 	d_Z							= center_pt.z	;
 
 	// nv-stencil recompression
@@ -137,7 +137,7 @@ void CRenderTarget::accum_direct_cascade	( u32 sub_phase, Fmatrix& xform, Fmatri
 			float	w_dir				= g_pGamePersistent->Environment().CurrentEnv->wind_direction	;
 			//float	w_speed				= g_pGamePersistent->Environment().CurrentEnv->wind_velocity	;
 			Fvector			normal	;	normal.setHP(w_dir,0);
-							w_shift		+=	0.003f*Device.fTimeDelta;
+							w_shift		+=	0.003f*EngineInterface->GetDeltaTime();
 			Fvector			position;	position.set(0,0,0);
 			m_xform.build_camera_dir	(position,direction,normal)	;
 			Fvector			localnormal;m_xform.transform_dir(localnormal,normal); localnormal.normalize();
@@ -228,10 +228,10 @@ void CRenderTarget::accum_direct_cascade	( u32 sub_phase, Fmatrix& xform, Fmatri
 			zMin = ps_r2_sun_near;
 			zMax = OLES_SUN_LIMIT_27_01_07;
 		}
-		center_pt.mad(Device.vCameraPosition,Device.vCameraDirection,zMin);	Device.mFullTransform.transform	(center_pt);
+		center_pt.mad(EngineInterface->GetCameraState().CameraPosition,Device.vCameraDirection,zMin);	EngineInterface->GetCameraState().FullTransform.transform	(center_pt);
 		zMin = center_pt.z	;
 
-		center_pt.mad(Device.vCameraPosition,Device.vCameraDirection,zMax);	Device.mFullTransform.transform	(center_pt);
+		center_pt.mad(EngineInterface->GetCameraState().CameraPosition,Device.vCameraDirection,zMax);	EngineInterface->GetCameraState().FullTransform.transform	(center_pt);
 		zMax = center_pt.z	;
 
 		// Enable Z function only for near and middle cascades, the far one is restricted by only stencil.
@@ -376,12 +376,12 @@ void CRenderTarget::accum_direct_volumetric	(u32 sub_phase, const u32 Offset, co
 		RCache.set_c("volume_range", zMin, zMax, 0, 0);
 
 		Fvector	center_pt;
-		center_pt.mad(Device.vCameraPosition,Device.vCameraDirection,zMin);	
-		Device.mFullTransform.transform(center_pt);
+		center_pt.mad(EngineInterface->GetCameraState().CameraPosition,Device.vCameraDirection,zMin);	
+		EngineInterface->GetCameraState().FullTransform.transform(center_pt);
 		zMin = center_pt.z	;
 
-		center_pt.mad(Device.vCameraPosition,Device.vCameraDirection,zMax);	
-		Device.mFullTransform.transform	(center_pt);
+		center_pt.mad(EngineInterface->GetCameraState().CameraPosition,Device.vCameraDirection,zMax);	
+		EngineInterface->GetCameraState().FullTransform.transform	(center_pt);
 		zMax = center_pt.z	;
 
 		if (SE_SUN_NEAR == sub_phase)
