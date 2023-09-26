@@ -5,6 +5,7 @@ add_subdirectory("grr")
 add_subdirectory("magic_enum")
 add_subdirectory("rapidjson")
 add_subdirectory("imgui")
+add_subdirectory("sdl")
 add_subdirectory("nri")
 add_subdirectory("tracy")
 
