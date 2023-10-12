@@ -8,6 +8,8 @@
 
 #include "hwcaps.h"
 
+#include <renderdoc/api/app/renderdoc_app.h>
+
 #ifndef _MAYA_EXPORT
 #include "stats_manager.h"
 #endif
@@ -26,6 +28,10 @@ public:
 	void					CreateD3D				();
 	void					DestroyD3D				();
 	void					CreateDevice			(HWND hw, bool move_window);
+
+#ifdef USE_DX11
+	void					CreateRDoc				();
+#endif
 
 	void					DestroyDevice			();
 
@@ -66,8 +72,6 @@ public:
 	bool					m_bUsePerfhud;
 	D3D_FEATURE_LEVEL		FeatureLevel;
 #else //USE_DX11
-private:
-	HINSTANCE 				hD3D;
 
 public:
 
@@ -94,6 +98,11 @@ public:
 	virtual	void	OnAppActivate();
 	virtual void	OnAppDeactivate();
 #endif //USE_DX11
+
+#ifdef USE_DX11
+public:
+	RENDERDOC_API_1_6_0* rdoc_api;
+#endif
 
 private:
 	bool					m_move_window;

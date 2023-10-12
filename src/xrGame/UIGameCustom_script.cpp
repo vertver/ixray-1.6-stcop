@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "pch_script.h"
 #include "UIGameCustom.h"
 #include "level.h"
@@ -22,6 +23,7 @@ void CUIGameCustom::script_register(lua_State *L)
 			.def("AddDialogToRender",		&CUIGameCustom::AddDialogToRender)
 			.def("RemoveDialogToRender",	&CUIGameCustom::RemoveDialogToRender)
 			.def("AddCustomStatic",			&CUIGameCustom::AddCustomStatic)
+			.def("AddHudMessage",			&CUIGameCustom::AddHudMessage)
 			.def("RemoveCustomStatic",		&CUIGameCustom::RemoveCustomStatic)
 			.def("HideActorMenu",			&CUIGameCustom::HideActorMenu)
 			.def("HidePdaMenu",				&CUIGameCustom::HidePdaMenu)

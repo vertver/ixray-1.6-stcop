@@ -18,7 +18,6 @@
 #include "gamepersistent.h"
 #include "effectorFall.h"
 #include "debug_renderer.h"
-#include "static_cast_checked.hpp"
 #include "clsid_game.h"
 #include "weaponBinocularsVision.h"
 #include "ui/UIWindow.h"
@@ -32,6 +31,8 @@
 
 BOOL	b_toggle_weapon_aim		= FALSE;
 extern CUIXml*	pWpnScopeXml;
+
+ENGINE_API extern float psHUD_FOV_def;
 
 CWeapon::CWeapon()
 {
@@ -81,6 +82,7 @@ CWeapon::CWeapon()
 	m_bRememberActorNVisnStatus = false;
 	bReloadKeyPressed		= false;
 	bAmmotypeKeyPressed		= false;
+	m_HudFovZoom = 0.0f;
 }
 
 CWeapon::~CWeapon		()
@@ -250,10 +252,6 @@ void CWeapon::Load		(LPCSTR section)
 	iAmmoElapsed		= pSettings->r_s32		(section,"ammo_elapsed"		);
 	iMagazineSize		= pSettings->r_s32		(section,"ammo_mag_size"	);
 	
-	////////////////////////////////////////////////////
-	// ��������� ��������
-
-	//������������� ������ �� ����� ������
 	u8 rm = READ_IF_EXISTS( pSettings, r_u8, section, "cam_return", 1 );
 	cam_recoil.ReturnMode = (rm == 1);
 	
@@ -301,7 +299,7 @@ void CWeapon::Load		(LPCSTR section)
 	
 	cam_recoil.DispersionFrac	= _abs( READ_IF_EXISTS( pSettings, r_float, section, "cam_dispersion_frac", 0.7f ) );
 
-	//������������� ������ �� ����� ������ � ������ zoom ==> ironsight or scope
+	
 	//zoom_cam_recoil.Clone( cam_recoil ); ==== ������ !!!!!!!!!!
 	zoom_cam_recoil.RelaxSpeed		= cam_recoil.RelaxSpeed;
 	zoom_cam_recoil.RelaxSpeed_AI	= cam_recoil.RelaxSpeed_AI;
@@ -363,6 +361,8 @@ void CWeapon::Load		(LPCSTR section)
 	m_pdm.m_fPDM_disp_crouch		= pSettings->r_float( section, "PDM_disp_crouch"		);
 	m_pdm.m_fPDM_disp_crouch_no_acc	= pSettings->r_float( section, "PDM_disp_crouch_no_acc" );
 	m_crosshair_inertion			= READ_IF_EXISTS(pSettings, r_float, section, "crosshair_inertion",	5.91f);
+	m_HudFovZoom = READ_IF_EXISTS(pSettings, r_float, hud_sect, "hud_fov_zoom", 0.0f);
+
 	m_first_bullet_controller.load	(section);
 	fireDispersionConditionFactor = pSettings->r_float(section,"fire_dispersion_condition_factor");
 
@@ -576,7 +576,7 @@ void CWeapon::net_Destroy	()
 {
 	inherited::net_Destroy	();
 
-	//������� ������� ���������
+	//удалить объекты партиклов
 	StopFlameParticles	();
 	StopFlameParticles2	();
 	StopLight			();
@@ -779,7 +779,7 @@ void CWeapon::OnActiveItem ()
 //-
 
 	inherited::OnActiveItem		();
-	//���� �� ����������� � ������ ���� � �����
+	//если мы занружаемся и оружие было в руках
 //.	SetState					(eIdle);
 //.	SetNextState				(eIdle);
 }
@@ -836,10 +836,10 @@ void CWeapon::UpdateCL		()
 {
 	inherited::UpdateCL		();
 	UpdateHUDAddonsVisibility();
-	//��������� �� ��������
+	//подсветка от выстрела
 	UpdateLight				();
 
-	//���������� ��������
+	//нарисовать партиклы
 	UpdateFlameParticles	();
 	UpdateFlameParticles2	();
 
@@ -942,11 +942,11 @@ void CWeapon::renderable_Render		()
 {
 	UpdateXForm				();
 
-	//���������� ���������
+	//нарисовать подсветку
 
 	RenderLight				();	
 
-	//���� �� � ������ ���������, �� ��� HUD �������� �� ����
+	//если мы в режиме снайперки, то сам HUD рисовать не надо
 	if(IsZoomed() && !IsRotatingToZoom() && ZoomTexture())
 		RenderHud		(FALSE);
 	else
@@ -989,7 +989,7 @@ bool CWeapon::Action(u16 cmd, u32 flags)
 	{
 		case kWPN_FIRE: 
 			{
-				//���� ������ ���-�� ������, �� ������ �� ������
+				//если оружие чем-то занято, то ничего не делать
 				{				
 					if(IsPending())		
 						return				false;
@@ -1158,7 +1158,7 @@ int CWeapon::GetSuitableAmmoTotal( bool use_item_to_spawn ) const
 		return ae_count;
 	}
 
-	//���� �� ������ ������ ����������
+	//чтоб не делать лишних пересчетов
 	if ( m_pInventory->ModifyFrame() <= m_BriefInfo_CalcFrame )
 	{
 		return ae_count + m_iAmmoCurrentTotal;
@@ -1630,7 +1630,7 @@ int		g_iWeaponRemove = 1;
 
 bool CWeapon::NeedToDestroyObject()	const
 {
-	if (GameID() == eGameIDSingle) return false;
+	if (IsGameTypeSingle()) return false;
 	if (Remote()) return false;
 	if (H_Parent()) return false;
 	if (g_iWeaponRemove == -1) return false;
@@ -2012,6 +2012,13 @@ u32 CWeapon::Cost() const
 
 		res			+= iFloor(w*(iAmmoElapsed/bs));
 	}
-	return res;
 
+	return res;
+}
+
+float CWeapon::GetHudFov() {
+	auto base = inherited::GetHudFov();
+	auto zoom = m_HudFovZoom ? m_HudFovZoom : (psHUD_FOV_def * Device.fFOV / g_fov);
+	base += (zoom - base) * m_zoom_params.m_fZoomRotationFactor;
+	return base;
 }

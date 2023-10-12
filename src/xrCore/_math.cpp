@@ -164,7 +164,7 @@ namespace CPU
 		clk_per_second = GetCLK() - start;
 
 		// Detect RDTSC Overhead
-		u64 clk_overhead = 0;
+		clk_overhead = 0;
 		for (u32 i = 0; i < 256; i++) {
 			start = GetCLK();
 			clk_overhead += GetCLK() - start;
@@ -311,7 +311,7 @@ void thread_name(const char* name)
 	{
 		__try
 		{
-			RaiseException(0x406D1388, 0, sizeof(tn) / sizeof(DWORD), (DWORD*)&tn);
+			RaiseException(0x406D1388, 0, sizeof(tn) / sizeof(DWORD), (ULONG_PTR*)&tn);
 		}
 		__except (EXCEPTION_CONTINUE_EXECUTION)
 		{

@@ -6,6 +6,7 @@
 //	Description : AI Behaviour for monster "Stalker"
 ////////////////////////////////////////////////////////////////////////////
 
+#include "stdafx.h"
 #include "pch_script.h"
 #include "ai_stalker.h"
 #include "../ai_monsters_misc.h"
@@ -14,7 +15,7 @@
 #include "../../phdestroyable.h"
 #include "../../CharacterPhysicsSupport.h"
 #include "../../script_entity_action.h"
-#include "../../game_level_cross_table.h"
+#include "../../../xrServerEntities/game_level_cross_table.h"
 #include "../../game_graph.h"
 #include "../../inventory.h"
 #include "../../artefact.h"
@@ -617,11 +618,11 @@ BOOL CAI_Stalker::net_Spawn			(CSE_Abstract* DC)
 
 	
 	CHARACTER_RANK_VALUE rank = Rank();
-	clamp(rank, 0, 100);
-	float rank_k = float(rank)/100.f;
+	clamp(rank, 0, 1000);
+	float rank_k = float(rank)/1000.f;
 	m_fRankImmunity = novice_rank_immunity + (expirienced_rank_immunity - novice_rank_immunity) * rank_k;
 	m_fRankVisibility = novice_rank_visibility + (expirienced_rank_visibility - novice_rank_visibility) * rank_k;
-	m_fRankDisperison = expirienced_rank_dispersion + (novice_rank_dispersion - expirienced_rank_dispersion) * (1-rank_k);
+	m_fRankDisperison = novice_rank_dispersion + (expirienced_rank_dispersion - novice_rank_dispersion) * rank_k;
 
 	if (!fis_zero(SpecificCharacter().panic_threshold()))
 		m_panic_threshold						= SpecificCharacter().panic_threshold();
@@ -798,7 +799,7 @@ void CAI_Stalker::update_object_handler	()
 		try {
 			CObjectHandler::update	();
 		}
-#ifdef DEBUG
+#if defined(DEBUG) && !defined(LUABIND_NO_EXCEPTIONS)
 		catch (luabind::cast_failed &message) {
 			Msg						("! Expression \"%s\" from luabind::object to %s",message.what(),message.info()->name());
 			throw;

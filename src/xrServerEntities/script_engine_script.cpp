@@ -6,6 +6,7 @@
 //	Description : ALife Simulator script engine export
 ////////////////////////////////////////////////////////////////////////////
 
+#include "stdafx.h"
 #include "pch_script.h"
 #include "script_engine.h"
 #include "ai_space.h"
@@ -109,14 +110,13 @@ void prefetch_module(LPCSTR file_name)
 }
 
 struct profile_timer_script {
-	u64							m_start_cpu_tick_count;
+	CTimer						measure;
 	u64							m_accumulator;
 	u64							m_count;
 	int							m_recurse_mark;
 	
 	IC								profile_timer_script	()
 	{
-		m_start_cpu_tick_count	= 0;
 		m_accumulator			= 0;
 		m_count					= 0;
 		m_recurse_mark			= 0;
@@ -129,7 +129,7 @@ struct profile_timer_script {
 
 	IC		profile_timer_script&	operator=				(const profile_timer_script &profile_timer)
 	{
-		m_start_cpu_tick_count	= profile_timer.m_start_cpu_tick_count;
+		measure					= profile_timer.measure;
 		m_accumulator			= profile_timer.m_accumulator;
 		m_count					= profile_timer.m_count;
 		m_recurse_mark			= profile_timer.m_recurse_mark;
@@ -150,7 +150,7 @@ struct profile_timer_script {
 
 		++m_recurse_mark;
 		++m_count;
-		m_start_cpu_tick_count	= CPU::GetCLK();
+		measure.Start();
 	}
 
 	IC		void					stop					()
@@ -161,26 +161,22 @@ struct profile_timer_script {
 		if (m_recurse_mark)
 			return;
 		
-		u64						finish = CPU::GetCLK();
-		if (finish > m_start_cpu_tick_count)
-			m_accumulator		+= finish - m_start_cpu_tick_count;
+		m_accumulator += measure.GetElapsed_mcs();
 	}
 
 	IC		float					time					() const
 	{
-		FPU::m64r				();
-		float					result_ = (float(double(m_accumulator)/double(CPU::clk_per_second))*1000000.f);
-		FPU::m24r				();
-		return					(result_);
+		float result = float(double(m_accumulator));
+		return (result);
 	}
 };
 
 IC	profile_timer_script	operator+	(const profile_timer_script &portion0, const profile_timer_script &portion1)
 {
-	profile_timer_script	result_;
-	result_.m_accumulator	= portion0.m_accumulator + portion1.m_accumulator;
-	result_.m_count			= portion0.m_count + portion1.m_count;
-	return					(result_);
+	profile_timer_script	result;
+	result.m_accumulator	= portion0.m_accumulator + portion1.m_accumulator;
+	result.m_count			= portion0.m_count + portion1.m_count;
+	return					(result);
 }
 
 // IC	std::ostream& operator<<(std::ostream &stream, profile_timer_script &timer)
@@ -196,7 +192,9 @@ ICF	u32	script_time_global_async	()	{ return Device.TimerAsync_MMT(); }
 ICF	u32	script_time_global	()	{ return 0; }
 ICF	u32	script_time_global_async	()	{ return 0; }
 #endif
-
+void SemiLog(const char* Msg) {
+	Log(Msg);
+}
 #pragma optimize("s",on)
 void CScriptEngine::script_register(lua_State *L)
 {
@@ -213,6 +211,7 @@ void CScriptEngine::script_register(lua_State *L)
 	];
 
 	function	(L,	"log",								LuaLog);
+	function	(L,	"SemiLog",							SemiLog);
 	function	(L,	"error_log",						ErrorLog);
 	function	(L,	"flush",							FlushLogs);
 	function	(L,	"prefetch",							prefetch_module);

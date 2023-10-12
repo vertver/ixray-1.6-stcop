@@ -214,7 +214,7 @@ void CControlManagerCustom::ta_deactivate()
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Ðàáîòà ñ ïîñëåäîâàòåëüíîñòÿìè
+// Ð Ð°Ð±Ð¾Ñ‚Ð° Ñ Ð¿Ð¾ÑÐ»ÐµÐ´Ð¾Ð²Ð°Ñ‚ÐµÐ»ÑŒÐ½Ð¾ÑÑ‚ÑÐ¼Ð¸
 void CControlManagerCustom::seq_init()
 {
 	m_man->capture				(this,	ControlCom::eControlSequencer);
@@ -302,7 +302,7 @@ void CControlManagerCustom::load_jump_data(LPCSTR s1, LPCSTR s2, LPCSTR s3, LPCS
 	if (s2) {
 		m_jump->setup_data().state_prepare_in_move.motion = skel_animated->ID_Cycle_Safe(s2);
 		VERIFY(m_jump->setup_data().state_prepare_in_move.motion);
-		m_jump->setup_data().flags.or(SControlJumpData::ePrepareInMove);
+		m_jump->setup_data().flags.bor(SControlJumpData::ePrepareInMove);
 	} else m_jump->setup_data().state_prepare_in_move.motion.invalidate();
 
 	m_jump->setup_data().state_glide.motion = skel_animated->ID_Cycle_Safe(s3);
@@ -313,15 +313,15 @@ void CControlManagerCustom::load_jump_data(LPCSTR s1, LPCSTR s2, LPCSTR s3, LPCS
 		VERIFY(m_jump->setup_data().state_ground.motion);
 	} else {
 		m_jump->setup_data().state_ground.motion.invalidate();
-		m_jump->setup_data().flags.or(SControlJumpData::eGroundSkip);
+		m_jump->setup_data().flags.bor(SControlJumpData::eGroundSkip);
 	}
 
 	if (!s1 && !s2) {
-		m_jump->setup_data().flags.or(SControlJumpData::ePrepareSkip);
+		m_jump->setup_data().flags.bor(SControlJumpData::ePrepareSkip);
 	}
 	
-	m_jump->setup_data().flags.or(SControlJumpData::eGlidePlayAnimOnce);
-	m_jump->setup_data().flags.or(SControlJumpData::eGlideOnPrepareFailed);
+	m_jump->setup_data().flags.bor(SControlJumpData::eGlidePlayAnimOnce);
+	m_jump->setup_data().flags.bor(SControlJumpData::eGlideOnPrepareFailed);
 
 	m_jump->setup_data().state_prepare_in_move.velocity_mask	= vel_mask_prepare;
 	m_jump->setup_data().state_ground.velocity_mask				= vel_mask_ground;
@@ -374,7 +374,7 @@ void CControlManagerCustom::jump(const Fvector &position)
 
 	ctrl_data->target_object						= 0;
 	ctrl_data->target_position						= position;
-	ctrl_data->flags.or								(SControlJumpData::ePrepareSkip);
+	ctrl_data->flags.bor								(SControlJumpData::ePrepareSkip);
 	ctrl_data->force_factor							= -1.f;
 
 	m_man->activate		(ControlCom::eControlJump);
@@ -480,7 +480,7 @@ void CControlManagerCustom::check_jump_over_physics()
 	for(u32 i = m_man->path_builder().detail().curr_travel_point_index(); i<m_man->path_builder().detail().path().size();i++) {
 		const DetailPathManager::STravelPathPoint &travel_point = m_man->path_builder().detail().path()[i];
 
-		// ïîëó÷èòü ñïèñîê îáúåêòîâ âîêðóã âðàãà
+		// Ð¿Ð¾Ð»ÑƒÑ‡Ð¸Ñ‚ÑŒ ÑÐ¿Ð¸ÑÐ¾Ðº Ð¾Ð±ÑŠÐµÐºÑ‚Ð¾Ð² Ð²Ð¾ÐºÑ€ÑƒÐ³ Ð²Ñ€Ð°Ð³Ð°
 		m_nearest.clear();
 		Level().ObjectSpace.GetNearest	(m_nearest,travel_point.position, m_object->Radius(), NULL);
 
@@ -491,7 +491,7 @@ void CControlManagerCustom::check_jump_over_physics()
 
 			Fvector dir = Fvector().sub(travel_point.position, m_object->Position());
 
-			// ïðîâåðêà íà  Field-Of-View
+			// Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ° Ð½Ð°  Field-Of-View
 			float	my_h	= m_object->Direction().getH();
 			float	h		= dir.getH();
 
@@ -502,7 +502,7 @@ void CControlManagerCustom::check_jump_over_physics()
 
 			dir = Fvector().sub(obj->Position(), m_object->Position());
 
-			// âû÷èñëèòü öåëåâóþ ïîçèöèþ äëÿ ïðûæêà
+			// Ð²Ñ‹Ñ‡Ð¸ÑÐ»Ð¸Ñ‚ÑŒ Ñ†ÐµÐ»ÐµÐ²ÑƒÑŽ Ð¿Ð¾Ð·Ð¸Ñ†Ð¸ÑŽ Ð´Ð»Ñ Ð¿Ñ€Ñ‹Ð¶ÐºÐ°
 			Fvector target;
 			obj->Center(target);
 			target.y += obj->Radius();
@@ -540,7 +540,7 @@ void CControlManagerCustom::check_rotation_jump()
 	SControlRotationJumpData	*ctrl_data = (SControlRotationJumpData *) m_man->data(this, ControlCom::eControlRotationJump);
 	VERIFY						(ctrl_data);
 
-	(*ctrl_data)				= m_rot_jump_data[Random.randI(m_rot_jump_data.size())];
+	(*ctrl_data)				= m_rot_jump_data[Random.randI((u32)m_rot_jump_data.size())];
 
 	m_man->activate				(ControlCom::eControlRotationJump);
 }

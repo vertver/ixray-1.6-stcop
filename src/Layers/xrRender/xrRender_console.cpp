@@ -154,6 +154,7 @@ Flags32		ps_r2_ls_flags				= { R2FLAG_SUN
 	|R2FLAG_SUN_TSM
 	|R2FLAG_TONEMAP
 	|R2FLAG_VOLUMETRIC_LIGHTS
+	| RFLAG_CLOUD_SHADOWS
 	};	// r2-only
 
 Flags32		ps_r2_ls_flags_ext			= {
@@ -161,7 +162,7 @@ Flags32		ps_r2_ls_flags_ext			= {
 		|R2FLAGEXT_ENABLE_TESSELLATION
 	};
 
-Flags32 ps_r__common_flags = { R2FLAG_USE_BUMP | RFLAG_USE_CACHE };
+Flags32 ps_r__common_flags = { R2FLAG_USE_BUMP | RFLAG_USE_CACHE | RFLAG_NO_RAM_TEXTURES | RFLAG_MT_TEX_LOAD };
 
 float		ps_r2_df_parallax_h			= 0.02f;
 float		ps_r2_df_parallax_range		= 75.f;
@@ -219,10 +220,17 @@ Fvector3	ps_r2_dof					= Fvector3().set(-1.25f, 1.4f, 600.f);
 float		ps_r2_dof_sky				= 30;				//	distance to sky
 float		ps_r2_dof_kernel_size		= 5.0f;						//	7.0f
 
+float		ps_r2_def_aref_quality = 100.0f;
+
 float		ps_r3_dyn_wet_surf_near		= 10.f;				// 10.0f
 float		ps_r3_dyn_wet_surf_far		= 30.f;				// 30.0f
 int			ps_r3_dyn_wet_surf_sm_res	= 256;				// 256
 
+// Test float exported to shaders for development
+float		ps_r__test_exp_to_shaders_1	= 1.0f;
+float		ps_r__test_exp_to_shaders_2	= 1.0f;
+float		ps_r__test_exp_to_shaders_3	= 1.0f;
+float		ps_r__test_exp_to_shaders_4	= 1.0f;
 
 //- Mad Max
 float		ps_r2_gloss_factor			= 4.0f;
@@ -425,6 +433,33 @@ public:
 	}
 };
 
+#ifdef USE_DX11
+class CCC_RenderDocCaptureStart : public IConsole_Command {
+public:
+	CCC_RenderDocCaptureStart(LPCSTR N) : IConsole_Command(N) {
+		bEmptyArgsHandled = true;
+	};
+
+	virtual void Execute(LPCSTR args) {
+		if (HW.rdoc_api) {
+			HW.rdoc_api->StartFrameCapture(HW.pDevice, Device.m_hWnd);
+		}
+	}
+};
+
+class CCC_RenderDocCaptureEnd : public IConsole_Command {
+public:
+	CCC_RenderDocCaptureEnd(LPCSTR N) : IConsole_Command(N) {
+		bEmptyArgsHandled = true;
+	};
+
+	virtual void Execute(LPCSTR args) {
+		if (HW.rdoc_api) {
+			HW.rdoc_api->EndFrameCapture(HW.pDevice, Device.m_hWnd);
+		}
+	}
+};
+#endif
 
 class CCC_memory_stats : public IConsole_Command
 {
@@ -678,6 +713,8 @@ void		xrRender_initconsole	()
 #endif // DEBUG
 	CMD4(CCC_Float,		"r__wallmark_ttl",		&ps_r__WallmarkTTL,			1.0f,	5.f*60.f);
 
+	CMD3(CCC_Mask, "r__no_ram_textures", &ps_r__common_flags, RFLAG_NO_RAM_TEXTURES);
+
 	CMD4(CCC_Integer,	"r__supersample",		&ps_r__Supersample,			1,		8		);
 
 	Fvector	tw_min,tw_max;
@@ -695,6 +732,9 @@ void		xrRender_initconsole	()
 
 	CMD2(CCC_tf_Aniso, "r__tf_aniso", &ps_r__tf_Anisotropic); //	{1..16}
 	CMD2(CCC_tf_MipBias, "r__tf_mipbias", &ps_r__tf_Mipbias);//	{-3 +3}
+	CMD3(CCC_Mask, "r2_cloud_shadows", &ps_r2_ls_flags, RFLAG_CLOUD_SHADOWS);	//Need restart
+
+	CMD3(CCC_Mask, "r__mt_texture_load", &ps_r__common_flags, RFLAG_MT_TEX_LOAD);
 
 	// R1
 	CMD4(CCC_Float,		"r1_ssa_lod_a",			&ps_r1_ssaLOD_A,			16,		96		);
@@ -836,8 +876,9 @@ void		xrRender_initconsole	()
 	CMD3(CCC_Mask,		"r4_enable_tessellation",		&ps_r2_ls_flags_ext,		R2FLAGEXT_ENABLE_TESSELLATION);//Need restart
 	CMD3(CCC_Mask,		"r4_wireframe",					&ps_r2_ls_flags_ext,		R2FLAGEXT_WIREFRAME);//Need restart
 
-	CMD3(CCC_Mask,		"r__actor_shadow",				&ps_r__common_flags,		RFLAG_ACTOR_SHADOW);
+	CMD3(CCC_Mask, "r__actor_shadow", &ps_r__common_flags, RFLAG_ACTOR_SHADOW);
 	CMD3(CCC_Mask, "r__shader_cache", &ps_r__common_flags, RFLAG_USE_CACHE);
+	CMD4(CCC_Float, "r2_def_aref_quality", &ps_r2_def_aref_quality, 70.0f, 200.0f);
 
 	CMD3(CCC_Mask,		"r2_steep_parallax",			&ps_r2_ls_flags,			R2FLAG_STEEP_PARALLAX);
 	CMD3(CCC_Mask,		"r2_detail_bump",				&ps_r2_ls_flags,			R2FLAG_DETAIL_BUMP);
@@ -874,7 +915,17 @@ void		xrRender_initconsole	()
 
 	CMD3(CCC_Mask,			"r3_volumetric_smoke",			&ps_r2_ls_flags,			R3FLAG_VOLUMETRIC_SMOKE);
 	CMD1(CCC_memory_stats,	"render_memory_stats" );
-	
+
+#ifdef USE_DX11
+	CMD1(CCC_RenderDocCaptureStart,	"rdoc_start");
+	CMD1(CCC_RenderDocCaptureEnd,	"rdoc_end");
+#endif
+
+	// test
+	CMD4(CCC_Float,		"r_developer_float_1",				&ps_r__test_exp_to_shaders_1, -10000000.0f, 10000000.0f);
+	CMD4(CCC_Float,		"r_developer_float_2",				&ps_r__test_exp_to_shaders_2, -10000000.0f, 10000000.0f);
+	CMD4(CCC_Float,		"r_developer_float_3",				&ps_r__test_exp_to_shaders_3, -10000000.0f, 10000000.0f);
+	CMD4(CCC_Float,		"r_developer_float_4",				&ps_r__test_exp_to_shaders_4, -10000000.0f, 10000000.0f);
 
 //	CMD3(CCC_Mask,		"r2_sun_ignore_portals",		&ps_r2_ls_flags,			R2FLAG_SUN_IGNORE_PORTALS);
 }

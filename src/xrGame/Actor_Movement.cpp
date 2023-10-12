@@ -14,7 +14,6 @@
 #include "WeaponMagazined.h"
 #include "CharacterPhysicsSupport.h"
 #include "actoreffector.h"
-#include "static_cast_checked.hpp"
 #include "player_hud.h"
 
 #ifdef DEBUG
@@ -38,9 +37,13 @@ IC static void generate_orthonormal_basis1(const Fvector& dir,Fvector& updir, Fv
 void CActor::g_cl_ValidateMState(float dt, u32 mstate_wf)
 {
 	// Lookout
-	if (mstate_wf&mcLookout)	mstate_real		|= mstate_wf&mcLookout;
-	else						mstate_real		&= ~mcLookout;
-	
+	if (mstate_wf&mcLLookout && mstate_wf&mcRLookout)
+		mstate_real &= ~mcLookout;
+	else if (mstate_wf & mcLookout)
+		mstate_real	|= mstate_wf&mcLookout;
+	else
+		mstate_real	&= ~mcLookout;
+		
 	if (mstate_real&(mcJump|mcFall|mcLanding|mcLanding2))
 		mstate_real		&= ~mcLookout;
 
@@ -298,7 +301,7 @@ void CActor::g_cl_CheckControls(u32 mstate_wf, Fvector &vControlAccel, float &Ju
 
 		if(state_anm)
 		{ //play moving cam effect
-			CActor*	control_entity		= static_cast_checked<CActor*>(Level().CurrentControlEntity());
+			CActor*	control_entity		= static_cast<CActor*>(Level().CurrentControlEntity());
 			R_ASSERT2					(control_entity, "current control entity is NULL");
 			CEffectorCam* ec			= control_entity->Cameras().GetCamEffector(eCEActorMoving);
 			if(NULL==ec)

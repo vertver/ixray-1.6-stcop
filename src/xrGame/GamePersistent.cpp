@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "pch_script.h"
 #include "gamepersistent.h"
 #include "../xrEngine/fmesh.h"
@@ -696,6 +697,10 @@ void CGamePersistent::OnEvent(EVENT E, u64 P1, u64 P2)
 {
 	if(E==eQuickLoad)
 	{
+		loading_save_timer.Start();
+		loading_save_timer_started = true;
+		Msg("* Game Loading Timer: Started from Save Reloading");
+
 		if (Device.Paused())
 			Device.Pause		(FALSE, TRUE, TRUE, "eQuickLoad");
 		
@@ -751,7 +756,7 @@ static BOOL bEntryFlag		= TRUE;
 
 void CGamePersistent::OnAppActivate		()
 {
-	bool bIsMP = (g_pGameLevel && Level().game && GameID() != eGameIDSingle);
+	bool bIsMP = (g_pGameLevel && Level().game && !IsGameTypeSingle());
 	bIsMP		&= !Device.Paused();
 
 	if( !bIsMP )
@@ -769,7 +774,7 @@ void CGamePersistent::OnAppDeactivate	()
 {
 	if(!bEntryFlag) return;
 
-	bool bIsMP = (g_pGameLevel && Level().game && GameID() != eGameIDSingle);
+	bool bIsMP = (g_pGameLevel && Level().game && !IsGameTypeSingle());
 
 	bRestorePause = FALSE;
 

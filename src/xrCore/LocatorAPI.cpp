@@ -170,7 +170,7 @@ XRCORE_API void _dump_open_files(int mode)
 		}
 	}
 	if(bShow)
-		Log("----total count=",g_open_files.size());
+		Msg("----total count=%d",(int)g_open_files.size());
 }
 
 CLocatorAPI::CLocatorAPI()
@@ -429,7 +429,7 @@ void CLocatorAPI::ProcessArchive(LPCSTR _path)
 
 	m_archives.push_back		(archive());
 	archive& A					= m_archives.back();
-	A.vfs_idx					= m_archives.size()-1;
+	A.vfs_idx					= (u32)m_archives.size()-1;
 	A.path						= path;
 
 	A.open						();

@@ -6,6 +6,7 @@
 //	Description : Patrol path manager
 ////////////////////////////////////////////////////////////////////////////
 
+#include "stdafx.h"
 #include "pch_script.h"
 #include "gameobject.h"
 #include "patrol_path_manager.h"
@@ -112,7 +113,7 @@ void CPatrolPathManager::select_point(const Fvector &position, u32 &dest_vertex_
 				break;
 			}
 			case ePatrolStartTypeLast : {
-				vertex		= m_path->vertex(m_path->vertices().size() - 1);
+				vertex		= m_path->vertex((u32)m_path->vertices().size() - 1);
 				VERIFY3		(accessible(vertex) || show_restrictions(m_object),*m_path_name,*m_game_object->cName());
 				break;
 			}

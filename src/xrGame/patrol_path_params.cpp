@@ -6,6 +6,7 @@
 //	Description : Patrol path parameters class
 ////////////////////////////////////////////////////////////////////////////
 
+#include "stdafx.h"
 #include "pch_script.h"
 #include "patrol_path_params.h"
 #include "patrol_path_manager.h"
@@ -31,7 +32,7 @@ CPatrolPathParams::~CPatrolPathParams	()
 u32	CPatrolPathParams::count			() const
 {
 	VERIFY				(m_path);
-	return				(m_path->vertices().size());
+	return				((u32)m_path->vertices().size());
 }
 
 const Fvector &CPatrolPathParams::point	(u32 index) const

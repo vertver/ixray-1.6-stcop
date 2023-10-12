@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "pch_script.h"
 #include "GameObject.h"
 //#include "../Include/xrRender/RenderVisual.h"
@@ -27,7 +28,7 @@
 #include "game_cl_base_weapon_usage_statistic.h"
 #include "game_cl_mp.h"
 #include "reward_event_generator.h"
-#include "game_level_cross_table.h"
+#include "../xrServerEntities/game_level_cross_table.h"
 #include "ai_obstacle.h"
 #include "magic_box3.h"
 #include "animation_movement_controller.h"
@@ -204,7 +205,7 @@ void CGameObject::OnEvent		(NET_Packet& P, u16 type)
 			{
 			case GE_HIT_STATISTIC:
 				{
-					if (GameID() != eGameIDSingle)
+					if (!IsGameTypeSingle())
 						Game().m_WeaponUsageStatistic->OnBullet_Check_Request(&HDS);
 				}break;
 			default:
@@ -214,7 +215,7 @@ void CGameObject::OnEvent		(NET_Packet& P, u16 type)
 			SetHitInfo(Hitter, Weapon, HDS.bone(), HDS.p_in_bone_space, HDS.dir);
 			Hit				(&HDS);
 			//---------------------------------------------------------------------------
-			if (GameID() != eGameIDSingle)
+			if (!IsGameTypeSingle())
 			{
 				Game().m_WeaponUsageStatistic->OnBullet_Check_Result(false);
 				game_cl_mp*	mp_game = smart_cast<game_cl_mp*>(&Game());
@@ -286,7 +287,7 @@ BOOL CGameObject::net_Spawn		(CSE_Abstract*	DC)
 
 
 	setID							(E->ID);
-//	if (GameID() != eGameIDSingle)
+//	if (!IsGameTypeSingle())
 //		Msg ("CGameObject::net_Spawn -- object %s[%x] setID [%d]", *(E->s_name), this, E->ID);
 	
 	// XForm
@@ -822,7 +823,7 @@ void CGameObject::DestroyObject()
 
 void CGameObject::shedule_Update	(u32 dt)
 {
-	//уничтожить
+	//СѓРЅРёС‡С‚РѕР¶РёС‚СЊ
 	if(NeedToDestroyObject())
 	{
 #ifndef MASTER_GOLD
@@ -843,7 +844,7 @@ BOOL CGameObject::net_SaveRelevant	()
 	return	(CScriptBinder::net_SaveRelevant());
 }
 
-//игровое имя объекта
+//РёРіСЂРѕРІРѕРµ РёРјСЏ РѕР±СЉРµРєС‚Р°
 LPCSTR CGameObject::Name () const
 {
 	return	(*cName());

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "pch_script.h"
 
 #include "uiiteminfo.h"
@@ -252,8 +253,6 @@ void CUIItemInfo::InitItem(CUICellItem* pCellItem, CInventoryItem* pCompareItem,
 		}
 		UICost->Show(true);
 	}
-	else
-		UICost->Show(false);
 	
 //	CActor* actor = smart_cast<CActor*>( Level().CurrentViewEntity() );
 //	if ( g_pGameLevel && Level().game && actor )

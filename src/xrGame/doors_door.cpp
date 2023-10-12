@@ -4,6 +4,7 @@
 //	Copyright (C) GSC Game World - 2009
 ////////////////////////////////////////////////////////////////////////////
 
+#include "stdafx.h"
 #include "pch_script.h"
 #include "doors_door.h"
 #include "physicobject.h"
@@ -32,6 +33,8 @@ door::door						( CPhysicObject* object ) :
 	VERIFY						( valid(m_state) );
 	VERIFY						( valid(m_target_state) );
 	VERIFY						( valid(m_previous_state) );
+
+	m_object.get_door_vectors(m_closed_vector, m_open_vector);
 
 	Fmatrix invert;
 	invert.invert				( m_object.XFORM() );

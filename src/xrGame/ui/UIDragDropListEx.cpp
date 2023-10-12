@@ -427,16 +427,19 @@ void CUIDragDropListEx::SetItem(CUICellItem* itm) //auto
 	SetItem						(itm,dest_cell_pos);
 }
 
-void CUIDragDropListEx::SetItem(CUICellItem* itm, Fvector2 abs_pos) // start at cursor pos
+bool CUIDragDropListEx::SetItem(CUICellItem* itm, Fvector2 abs_pos) // start at cursor pos
 {
-	if(m_container->AddSimilar(itm))	return;
+	if (m_container->AddSimilar(itm))
+		return true;
 
-	const Ivector2 dest_cell_pos =	m_container->PickCell		(abs_pos);
+	const Ivector2 dest_cell_pos = m_container->PickCell(abs_pos);
 
-	if(m_container->ValidCell(dest_cell_pos) && m_container->IsRoomFree(dest_cell_pos,itm->GetGridSize()))
-		SetItem						(itm, dest_cell_pos);
+	if (m_container->ValidCell(dest_cell_pos) && m_container->IsRoomFree(dest_cell_pos, itm->GetGridSize()))
+		SetItem(itm, dest_cell_pos);
 	else
-		SetItem						(itm);
+		SetItem(itm);
+
+	return true;
 }
 
 void CUIDragDropListEx::SetItem(CUICellItem* itm, Ivector2 cell_pos) // start at cell
@@ -585,22 +588,23 @@ void CUICellContainer::PlaceItemAtPos(CUICellItem* itm, Ivector2& cell_pos)
 		}
 	}
 	itm->SetWndSize			( Fvector2().set( (m_cellSize.x*cs.x),		(m_cellSize.y*cs.y)		 )	);
-	if(!m_pParentDragDropList->GetVirtualCells())
-		itm->SetWndPos			( Fvector2().set( ((m_cellSpacing.x+m_cellSize.x)*cell_pos.x), ((m_cellSpacing.y+m_cellSize.y)*cell_pos.y))	);
+
+	// FX: (Отступ + размер) * позиция грида... Логично
+	Fvector2 ValidItemPos = { float((m_cellSpacing.x + m_cellSize.x) * cell_pos.x), float(((m_cellSpacing.y + m_cellSize.y) * cell_pos.y)) };
+
+	if (!m_pParentDragDropList->GetVirtualCells()) {
+		itm->SetWndPos(ValidItemPos);
+	}
 	else
 	{
-		Ivector2 alignment_vec	= m_pParentDragDropList->GetVirtualCellsAlignment();
-		Fvector2 pos = Fvector2().set(0,0);
-		if(alignment_vec.x == 1)
-			pos.x = (m_pParentDragDropList->GetWndSize().x-cs.x*(m_cellSpacing.x+m_cellSize.x))/2;
-		else if(alignment_vec.x == 2)
-			pos.x = m_pParentDragDropList->GetWndSize().x-cs.x*(m_cellSpacing.x+m_cellSize.x);
-		
-		if(alignment_vec.y == 1)
-			pos.y = (m_pParentDragDropList->GetWndSize().y-cs.y*(m_cellSpacing.y+m_cellSize.y))/2;
-		else if(alignment_vec.y == 2)
-			pos.y = m_pParentDragDropList->GetWndSize().y-cs.y*(m_cellSpacing.y+m_cellSize.y);
-		itm->SetWndPos(pos);
+		Fvector2 WndSize = m_pParentDragDropList->GetWndSize();
+		Fvector2 AlignPos = WndSize;
+
+		// FX: We get the coordinates from the center of the window, taking into account the size of the item
+		AlignPos.sub(itm->GetWndSize());
+		AlignPos.div(2);
+
+		itm->SetWndPos(AlignPos);
 	}
 
 

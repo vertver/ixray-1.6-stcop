@@ -130,6 +130,7 @@
       <WarningLevel>Level4</WarningLevel>
       <DisableSpecificWarnings>4237;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386  %(AdditionalOptions)</AdditionalOptions>
@@ -979,8 +980,8 @@
     <ClInclude Include="game_events_handler.h" />
     <ClInclude Include="game_graph.h" />
     <ClInclude Include="game_graph_inline.h" />
-    <ClInclude Include="game_level_cross_table.h" />
-    <ClInclude Include="game_level_cross_table_inline.h" />
+    <ClInclude Include="..\xrServerEntities\game_level_cross_table.h" />
+    <ClInclude Include="..\xrServerEntities\game_level_cross_table_inline.h" />
     <ClInclude Include="game_location_selector.h" />
     <ClInclude Include="game_location_selector_inline.h" />
     <ClInclude Include="game_news.h" />
@@ -1763,6 +1764,7 @@
     <ClInclude Include="ui\UI_IB_Static.h" />
     <ClInclude Include="ui\xrUIXmlParser.h" />
     <ClInclude Include="ui_base.h" />
+    <ClInclude Include="UIFontDefines.h" />
     <ClInclude Include="ui_defs.h" />
     <ClInclude Include="UsableScriptObject.h" />
     <ClInclude Include="vertex_allocator_fixed.h" />
