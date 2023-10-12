@@ -10,7 +10,7 @@ atlas_submit_queue::atlas_submit_queue(gamespy_profile::stats_submitter* stats_s
 	m_atlas_in_process(false)
 {
 	VERIFY(m_stats_submitter);
-	m_atlas_submitted.bind(this, &atlas_submit_queue::atlas_submitted);
+	m_atlas_submitted.bind_cpp(this, &atlas_submit_queue::atlas_submitted);
 }
 
 atlas_submit_queue::~atlas_submit_queue()
@@ -150,7 +150,7 @@ void atlas_submit_queue::do_atlas_submit_all(gamespy_gp::profile const * profile
 	);
 }
 
-void __stdcall atlas_submit_queue::atlas_submitted(bool result, char const * err_string)
+void xr_stdcall atlas_submit_queue::atlas_submitted(bool result, char const * err_string)
 {
 	if (result)
 	{

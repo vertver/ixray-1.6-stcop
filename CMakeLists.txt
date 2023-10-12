@@ -5,6 +5,11 @@ project(IXRay)
 option(IXRAY_UTILS "Apply utils to solution" OFF)
 option(IXRAY_MP "Apply multiplayer xrGame and multiplayer utilities to solution" OFF)
 option(IXRAY_COMPRESSOR_ONLY "Build only compressor" OFF)
+option(IXRAY_ASAN "Enable Address Sanitizer" OFF)
+
+# Wrap CMake general configs 
+set(CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "" FORCE)
+set(PREDEFINED_TARGETS_FOLDER "CustomTargets")
 
 # Output target
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -13,16 +18,25 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # VS options
 set(CMAKE_EXECUTABLE_ENABLE_EXPORTS ON)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS_DEBUG "/MD")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /UMBCS /D_UNICODE /DUNICODE")
+
+# Enable gcc/clang style 
+add_compile_options(/permissive-)
 
 string(REGEX REPLACE "/EH[a-z]+" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 add_compile_options("$<$<CONFIG:RELWITHDEBINFO>:/Ob2>" "$<$<CONFIG:DEBUG>:/EHsc>"
-                    "$<$<CONFIG:RELWITHDEBINFO>:/Ot>" "$<$<CONFIG:RELWITHDEBINFO>:/wd4577>")
+                    "$<$<CONFIG:RELEASE>:/Ot>" "$<$<CONFIG:RELWITHDEBINFO>:/wd4577>")
 add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
+add_compile_options("$<$<CONFIG:RELEASE>:/wd4530>" "$<$<CONFIG:DEBUG>:/wd4275>" "$<$<CONFIG:DEBUG>:/wd4251>" "$<$<CONFIG:RELWITHDEBINFO>:/wd4530>" /wd4595 /wd4996)
 
-# Edit and Continue mode
+if (IXRAY_ASAN)
+    add_compile_options(-fsanitize=address)
+endif()
+
+## Edit and Continue mode
 add_compile_options("$<$<CONFIG:DEBUG>:/ZI>" "$<$<CONFIG:RELWITHDEBINFO>:/Zi>")
 
 # Set NuGet command
@@ -128,7 +142,6 @@ set_target_properties(xrRender_R1 PROPERTIES ${IXRAY_FOLDER_RENDER})
 set_target_properties(xrRender_R2 PROPERTIES ${IXRAY_FOLDER_RENDER})
 set_target_properties(xrRender_R4 PROPERTIES ${IXRAY_FOLDER_RENDER})
 
-
 if(IXRAY_UTILS)
     if(NOT IXRAY_COMPRESSOR_ONLY)
         set_target_properties(xrCompress PROPERTIES ${IXRAY_FOLDER_UTILS})
@@ -158,7 +171,6 @@ set_target_properties(CxImage PROPERTIES ${IXRAY_FOLDER_3RD})
 
 # CMake targets
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-set(PREDEFINED_TARGETS_FOLDER "CustomTargets")
 
 # Set default project
 if(NOT IXRAY_COMPRESSOR_ONLY)

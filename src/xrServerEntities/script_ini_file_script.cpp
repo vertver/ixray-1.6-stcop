@@ -24,7 +24,7 @@ CScriptIniFile *get_game_ini()
 }
 #endif // XRGAME_EXPORTS
 
-bool r_line(CScriptIniFile *self_, LPCSTR S, int L,	luabind::internal_string &N, luabind::internal_string &V)
+bool r_line(CScriptIniFile *self_, LPCSTR S, int L,	luabind::string &N, luabind::string&V)
 {
 	THROW3			(self_->section_exist(S),"Cannot find section",S);
 	THROW2			((int)self_->line_count(S) > L,"Invalid line number");
@@ -47,13 +47,15 @@ bool r_line(CScriptIniFile *self_, LPCSTR S, int L,	luabind::internal_string &N,
 #pragma warning(disable:4238)
 CScriptIniFile *create_ini_file	(LPCSTR ini_string)
 {
+	IReader temp(
+		(void*)ini_string,
+		xr_strlen(ini_string)
+	);
+
 	return			(
 		(CScriptIniFile*)
 		xr_new<CInifile>(
-			&IReader			(
-				(void*)ini_string,
-				xr_strlen(ini_string)
-			),
+			&temp,
 			FS.get_path("$game_config$")->m_Path
 		)
 	);
@@ -79,12 +81,12 @@ void CScriptIniFile::script_register(lua_State *L)
 			.def("r_s32",			&CScriptIniFile::r_s32)
 			.def("r_float",			&CScriptIniFile::r_float)
 			.def("r_vector",		&CScriptIniFile::r_fvector3)
-			.def("r_line",			&::r_line, out_value(_4) + out_value(_5)),
+            .def("r_line", &::r_line, policy_list<policy::out_value<4>, policy::out_value<5>>()),
 
 		def("system_ini",			&get_system_ini),
 #ifdef XRGAME_EXPORTS
 		def("game_ini",				&get_game_ini),
 #endif // XRGAME_EXPORTS
-		def("create_ini_file",		&create_ini_file,	adopt(result))
+		def("create_ini_file",		&create_ini_file,	adopt<0>())
 	];
 }

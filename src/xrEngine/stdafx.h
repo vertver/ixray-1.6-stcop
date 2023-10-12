@@ -45,6 +45,7 @@
 #define ECORE_API
 
 // Our headers
+#include "EngineExternal.h"
 #include "engine.h"
 #include "defines.h"
 #ifndef NO_XRLOG
@@ -67,11 +68,6 @@ extern ENGINE_API CInifile *pGameIni;
 
 #ifndef DEBUG
 #	define LUABIND_NO_ERROR_CHECKING
-#endif
-
-#if	!defined(DEBUG) || defined(FORCE_NO_EXCEPTIONS)
-#	define LUABIND_NO_EXCEPTIONS
-#	define BOOST_NO_EXCEPTIONS
 #endif
 
 #define LUABIND_DONT_COPY_STRINGS

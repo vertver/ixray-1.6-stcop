@@ -64,31 +64,6 @@ public:
 	}
 };
 //-----------------------------------------------------------------------
-#ifdef DEBUG_MEMORY_MANAGER
-class CCC_MemStat : public IConsole_Command
-{
-public:
-	CCC_MemStat(LPCSTR N) : IConsole_Command(N)  { bEmptyArgsHandled = TRUE; };
-	virtual void Execute(LPCSTR args) {
-		string_path fn;
-		if (args&&args[0])	xr_sprintf	(fn,sizeof(fn),"%s.dump",args);
-		else				strcpy_s_s	(fn,sizeof(fn),"x:\\$memory$.dump");
-		Memory.mem_statistic				(fn);
-//		g_pStringContainer->dump			();
-//		g_pSharedMemoryContainer->dump		();
-	}
-};
-#endif // DEBUG_MEMORY_MANAGER
-
-#ifdef DEBUG_MEMORY_MANAGER
-class CCC_DbgMemCheck : public IConsole_Command
-{
-public:
-	CCC_DbgMemCheck(LPCSTR N) : IConsole_Command(N)  { bEmptyArgsHandled = TRUE; };
-	virtual void Execute(LPCSTR args) { if (Memory.debug_mode){ Memory.dbg_check();}else{Msg("~ Run with -mem_debug options.");} }
-};
-#endif // DEBUG_MEMORY_MANAGER
-
 class CCC_DbgStrCheck : public IConsole_Command
 {
 public:
@@ -219,7 +194,7 @@ public:
 		
 		BOOL b_allow = TRUE;
 		if ( FS.exist(cfg_full_name) )
-			b_allow = SetFileAttributes(cfg_full_name,FILE_ATTRIBUTE_NORMAL);
+			b_allow = SetFileAttributes(ANSI_TO_TCHAR(cfg_full_name),FILE_ATTRIBUTE_NORMAL);
 
 		if ( b_allow ){
 			IWriter* F			= FS.w_open(cfg_full_name);
@@ -543,16 +518,14 @@ public:
 	virtual void	Save	(IWriter *F)	
 	{
 		//fill_render_mode_list	();
-		tokens					= vid_quality_token;
-		if( !strstr(Core.Params, "-r2") )
-		{
-			inherited::Save(F);
-		}
+		tokens = vid_quality_token;
+		inherited::Save(F);
 	}
+
 	virtual xr_token* GetToken()
 	{
-		tokens					= vid_quality_token;
-		return					inherited::GetToken();
+		tokens = vid_quality_token;
+		return inherited::GetToken();
 	}
 
 };
@@ -684,11 +657,6 @@ void CCC_Register()
 	CMD1(CCC_MotionsStat,	"stat_motions"		);
 	CMD1(CCC_TexturesStat,	"stat_textures"		);
 #endif // DEBUG
-
-#ifdef DEBUG_MEMORY_MANAGER
-	CMD1(CCC_MemStat,		"dbg_mem_dump"		);
-	CMD1(CCC_DbgMemCheck,	"dbg_mem_check"		);
-#endif // DEBUG_MEMORY_MANAGER
 
 #ifdef DEBUG
 	CMD3(CCC_Mask,		"mt_particles",			&psDeviceFlags,			mtParticles);

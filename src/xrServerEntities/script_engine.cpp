@@ -55,7 +55,7 @@ static void initialize_lua_studio	( lua_State* state, cs::lua_studio::world*& wo
 	world							= 0;
 
 	u32 const old_error_mode		= SetErrorMode(SEM_FAILCRITICALERRORS);
-	s_script_debugger_handle		= LoadLibrary(CS_LUA_STUDIO_BACKEND_FILE_NAME);
+	s_script_debugger_handle		= LoadLibraryA(CS_LUA_STUDIO_BACKEND_FILE_NAME);
 	SetErrorMode					(old_error_mode);
 	if (!s_script_debugger_handle) {
 		Msg							("! cannot load %s dynamic library", CS_LUA_STUDIO_BACKEND_FILE_NAME);
@@ -185,24 +185,25 @@ void CScriptEngine::lua_error			(lua_State *L)
 #endif
 }
 
-int  CScriptEngine::lua_pcall_failed	(lua_State *L)
+int CScriptEngine::lua_pcall_failed(lua_State* L)
 {
-	print_output			(L,"",LUA_ERRRUN);
-	ai().script_engine().on_error	(L);
+	print_output(L, "", LUA_ERRRUN);
+	ai().script_engine().on_error(L);
 
 #if !XRAY_EXCEPTIONS
-	Debug.fatal				(DEBUG_INFO,"LUA error: %s",lua_isstring(L,-1) ? lua_tostring(L,-1) : "");
+	Debug.fatal(DEBUG_INFO, "LUA error: %s", lua_isstring(L, -1) ? lua_tostring(L, -1) : "");
 #endif
-	if (lua_isstring(L,-1))
-		lua_pop				(L,1);
-	return					(LUA_ERRRUN);
+	if (lua_isstring(L, -1))
+		lua_pop(L, 1);
+
+	return (LUA_ERRRUN);
 }
 
-void lua_cast_failed					(lua_State *L, LUABIND_TYPE_INFO info)
+void lua_cast_failed					(lua_State *L, luabind::type_id const& info)
 {
 	CScriptEngine::print_output	(L,"",LUA_ERRRUN);
 
-	Debug.fatal				(DEBUG_INFO,"LUA error: cannot cast lua value to %s",info->name());
+	Debug.fatal				(DEBUG_INFO,"LUA error: cannot cast lua value to %s",info.name());
 }
 
 void CScriptEngine::setup_callbacks		()
@@ -220,19 +221,26 @@ void CScriptEngine::setup_callbacks		()
 #	endif // #ifndef USE_LUA_STUDIO
 #endif
 	{
-#if !XRAY_EXCEPTIONS
+#ifdef LUABIND_NO_EXCEPTIONS
 		luabind::set_error_callback		(CScriptEngine::lua_error);
 #endif
 
 #ifndef MASTER_GOLD
-		luabind::set_pcall_callback		(CScriptEngine::lua_pcall_failed);
+		luabind::set_pcall_callback
+		(
+			[](lua_State* L) ->void
+			{  
+				lua_pushcfunction(L, CScriptEngine::lua_pcall_failed);
+			}
+		);
 #endif // MASTER_GOLD
 	}
 
-#if !XRAY_EXCEPTIONS
+#ifdef LUABIND_NO_EXCEPTIONS
 	luabind::set_cast_failed_callback	(lua_cast_failed);
 #endif
 	lua_atpanic							(lua(),CScriptEngine::lua_panic);
+	luabind::disable_super_deprecation();
 }
 
 #ifdef DEBUG

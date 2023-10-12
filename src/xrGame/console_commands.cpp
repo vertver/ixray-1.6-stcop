@@ -68,10 +68,6 @@ string_path		g_last_saved_game;
 	extern float air_resistance_epsilon;
 #endif // #ifdef DEBUG
 
-extern void show_smart_cast_stats		();
-extern void clear_smart_cast_stats		();
-extern void release_smart_cast_stats	();
-
 extern	u64		g_qwStartGameTime;
 extern	u64		g_qwEStartGameTime;
 
@@ -144,9 +140,7 @@ enum E_COMMON_FLAGS{
 CUIOptConCom g_OptConCom;
 
 #ifndef PURE_ALLOC
-//#	ifndef USE_MEMORY_MONITOR
 #		define SEVERAL_ALLOCATORS
-//#	endif // USE_MEMORY_MONITOR
 #endif // PURE_ALLOC
 
 #ifdef SEVERAL_ALLOCATORS
@@ -202,19 +196,7 @@ public:
 		full_memory_stats( );
 	}
 };
-#ifdef DEBUG
-class CCC_MemCheckpoint : public IConsole_Command
-{
-public:
-	CCC_MemCheckpoint(LPCSTR N) : IConsole_Command(N)  { bEmptyArgsHandled = FALSE; };
-	virtual void Execute(LPCSTR args) 
-	{
-		memory_monitor::make_checkpoint(args);
-	}
-	virtual void	Save	(IWriter *F)	{}
-};
 
-#endif // #ifdef DEBUG
 // console commands
 class CCC_GameDifficulty : public CCC_Token {
 public:
@@ -238,10 +220,6 @@ public:
 		xr_strcpy(I,"game difficulty"); 
 	}
 };
-
-
-
-
 
 #ifdef DEBUG
 class CCC_ALifePath : public IConsole_Command {
@@ -545,19 +523,20 @@ public:
 
 		Console->Execute			("stat_memory");
 
-		string_path				S, S1;
-		S[0]					= 0;
+		string_path				S = {}, S_UTF8 = {}, S1 = {};
 		strncpy_s				(S, sizeof(S), args, _MAX_PATH - 1 );
-		
+
+		xr_strcpy(S_UTF8, S);
+		ANSI_TO_UTF8(S_UTF8);
 #ifdef DEBUG
 		CTimer					timer;
 		timer.Start				();
 #endif
 		if (!xr_strlen(S)){
-			strconcat			(sizeof(S),S,Core.UserName," - ","quicksave");
+			strconcat			(sizeof(S_UTF8), S_UTF8,Core.UserName," - ","quicksave");
 			NET_Packet			net_packet;
 			net_packet.w_begin	(M_SAVE_GAME);
-			net_packet.w_stringZ(S);
+			net_packet.w_stringZ(S_UTF8);
 			net_packet.w_u8		(0);
 			Level().Send		(net_packet,net_flags(TRUE));
 		}else{
@@ -568,7 +547,7 @@ public:
 
 			NET_Packet			net_packet;
 			net_packet.w_begin	(M_SAVE_GAME);
-			net_packet.w_stringZ(S);
+			net_packet.w_stringZ(S_UTF8);
 			net_packet.w_u8		(1);
 			Level().Send		(net_packet,net_flags(TRUE));
 		}
@@ -580,8 +559,8 @@ public:
 		STRCONCAT					(save_name, CStringTable().translate("st_game_saved").c_str(), ": ", S);
 		_s->wnd()->TextItemControl()->SetText(save_name);
 
-		xr_strcat				(S,".dds");
-		FS.update_path			(S1,"$game_saves$",S);
+		xr_strcat				(S_UTF8,".dds");
+		FS.update_path			(S1,"$game_saves$", S_UTF8);
 		
 #ifdef DEBUG
 		timer.Start				();
@@ -689,7 +668,11 @@ public:
 		
 		if (saved_game && *saved_game)
 		{
-			xr_strcpy				(g_last_saved_game,saved_game);
+			xr_strcpy(g_last_saved_game, saved_game);
+			wchar_t WName[256];
+			MultiByteToWideChar(CP_ACP, 0, g_last_saved_game, strlen(g_last_saved_game), WName, strlen(g_last_saved_game));
+			WideCharToMultiByte(CP_UTF8, 0, WName, strlen(g_last_saved_game), g_last_saved_game, strlen(g_last_saved_game), 0, 0);
+
 			return;
 		}
 
@@ -1155,21 +1138,6 @@ struct CCC_LuaHelp : public IConsole_Command {
 	}
 };
 
-struct CCC_ShowSmartCastStats : public IConsole_Command {
-	CCC_ShowSmartCastStats(LPCSTR N) : IConsole_Command(N)  { bEmptyArgsHandled = true; };
-
-	virtual void Execute(LPCSTR args) {
-		show_smart_cast_stats();
-	}
-};
-
-struct CCC_ClearSmartCastStats : public IConsole_Command {
-	CCC_ClearSmartCastStats(LPCSTR N) : IConsole_Command(N)  { bEmptyArgsHandled = true; };
-
-	virtual void Execute(LPCSTR args) {
-		clear_smart_cast_stats();
-	}
-};
 /*
 struct CCC_NoClip : public CCC_Mask 
 {
@@ -1559,26 +1527,6 @@ public:
 		*pointer				= 0;
 	}
 };
-
-#ifdef DEBUG_MEMORY_MANAGER
-
-class CCC_MemAllocShowStats : public IConsole_Command {
-public:
-	CCC_MemAllocShowStats(LPCSTR N) : IConsole_Command(N)  { bEmptyArgsHandled = true; };
-	virtual void Execute(LPCSTR) {
-		mem_alloc_show_stats	();
-	}
-};
-
-class CCC_MemAllocClearStats : public IConsole_Command {
-public:
-	CCC_MemAllocClearStats(LPCSTR N) : IConsole_Command(N)  { bEmptyArgsHandled = true; };
-	virtual void Execute(LPCSTR) {
-		mem_alloc_clear_stats	();
-	}
-};
-
-#endif // DEBUG_MEMORY_MANAGER
 
 class CCC_DumpModelBones : public IConsole_Command {
 public:
@@ -1994,9 +1942,6 @@ void CCC_RegisterCommands()
 	CMD1(CCC_GSpawnToInventory, "g_spawn_inv");
 
 	CMD1(CCC_MemStats,			"stat_memory"			);
-#ifdef DEBUG
-	CMD1(CCC_MemCheckpoint,		"stat_memory_checkpoint");
-#endif //#ifdef DEBUG	
 	// game
 	CMD3(CCC_Mask,				"g_crouch_toggle",		&psActorFlags,	AF_CROUCH_TOGGLE);
 	CMD1(CCC_GameDifficulty,	"g_game_difficulty"		);
@@ -2126,13 +2071,6 @@ CMD4(CCC_Float,				"hit_anims_reduce_blend_factor",		&ghit_anims_params.reduce_p
 CMD4(CCC_Integer,			"hit_anims_tune",						&tune_hit_anims,		0, 1);
 /////////////////////////////////////////////HIT ANIMATION END////////////////////////////////////////////////////
 
-#ifdef DEBUG_MEMORY_MANAGER
-	CMD3(CCC_Mask,				"debug_on_frame_gather_stats",				&psAI_Flags,	aiDebugOnFrameAllocs);
-	CMD4(CCC_Float,				"debug_on_frame_gather_stats_frequency",	&debug_on_frame_gather_stats_frequency, 0.f, 1.f);
-	CMD1(CCC_MemAllocShowStats,	"debug_on_frame_show_stats");
-	CMD1(CCC_MemAllocClearStats,"debug_on_frame_clear_stats");
-#endif // DEBUG_MEMORY_MANAGER
-
 	CMD1(CCC_DumpModelBones,	"debug_dump_model_bones");
 
 	CMD1(CCC_DrawGameGraphAll,		"ai_draw_game_graph_all");
@@ -2194,9 +2132,7 @@ CMD4(CCC_Integer,			"hit_anims_tune",						&tune_hit_anims,		0, 1);
 	CMD3(CCC_Mask,		"g_important_save",		&psActorFlags,	AF_IMPORTANT_SAVE);
 	
 #ifdef DEBUG
-	CMD1(CCC_LuaHelp,				"lua_help");
-	CMD1(CCC_ShowSmartCastStats,	"show_smart_cast_stats");
-	CMD1(CCC_ClearSmartCastStats,	"clear_smart_cast_stats");
+	CMD1(CCC_LuaHelp,	"lua_help");
 
 	CMD3(CCC_Mask,		"dbg_draw_actor_alive",		&dbg_net_Draw_Flags,	dbg_draw_actor_alive);
 	CMD3(CCC_Mask,		"dbg_draw_actor_dead",		&dbg_net_Draw_Flags,	dbg_draw_actor_dead );

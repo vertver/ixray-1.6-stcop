@@ -41,7 +41,7 @@ int CDbgLuaHelper::PrepareLua(lua_State* l)
 void CDbgLuaHelper::PrepareLuaBind()
 {
 	luabind::set_pcall_callback	(hookLuaBind);
-#if !XRAY_EXCEPTIONS
+#ifdef LUABIND_NO_EXCEPTIONS 
 	luabind::set_error_callback (errormessageLuaBind);
 #endif
 }
@@ -182,9 +182,11 @@ void print_stack(lua_State *L)
 		Msg("%2d : %s",-i-1,lua_typename(L, lua_type(L, -i-1)));
 }
 
-int CDbgLuaHelper::hookLuaBind (lua_State *l)
+void CDbgLuaHelper::hookLuaBind (lua_State *l)
 {
-	if(!m_pThis) return 0;
+	if (!m_pThis) 
+		return;
+
 	L =l;
 	int top1 = lua_gettop(L);
 	
@@ -208,7 +210,6 @@ int CDbgLuaHelper::hookLuaBind (lua_State *l)
 
 	int top2 = lua_gettop(L);
 	VERIFY(top2==top1);
-	return 0;
 }
 
 void CDbgLuaHelper::hookLua (lua_State *l, lua_Debug *ar)
